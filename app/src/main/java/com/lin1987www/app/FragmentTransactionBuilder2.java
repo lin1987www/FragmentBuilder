@@ -62,10 +62,9 @@ public class FragmentTransactionBuilder2 {
     private boolean isTraceable = defaultTraceable;
     private String fragmentTag;
     private String srcFragmentTag;
-    private String assignBackStackName;
+    private String assignBackStackName = "";
     private int srcViewId = 0;
-    private String srcViewIndexChainListString = "";
-    private final static String delimiter = ",";
+    private String srcFragmentPathString = "";
     private long builtTimeMillis = 0;
     // addBackStack
     private int enter = 0;
@@ -98,7 +97,6 @@ public class FragmentTransactionBuilder2 {
         return this;
     }
 
-
     public FragmentTransactionBuilder2 setTransition(@Transit int transition) {
         this.transition = transition;
         return this;
@@ -116,38 +114,25 @@ public class FragmentTransactionBuilder2 {
     private FragmentTransactionBuilder2() {
     }
 
-    private FragmentTransactionBuilder2(FragmentActivity srcFragmentActivity, Fragment srcFragment, int srcViewId) {
-        this.content = new Content(srcFragmentActivity, srcFragment);
+    private FragmentTransactionBuilder2(FragmentActivity srcFragmentActivity, Fragment srcFragment, View srcView) {
+        this.content = new Content(srcFragmentActivity, srcFragment, srcView);
         this.srcFragmentTag = (srcFragment == null) ? "" : srcFragment.getTag();
-        setSrcViewId(srcViewId);
-    }
-
-    public static FragmentTransactionBuilder2 create(View srcView) {
-        FragmentTransactionBuilder2 builder = new FragmentTransactionBuilder2((FragmentActivity) srcView.getContext(), null, srcView.getId());
-        ArrayList<Integer> srcViewPathList = new ArrayList<Integer>();
-        findFragmentIndexChain(srcViewPathList, srcView);
-        if (srcViewPathList.size() > 0) {
-            builder.srcViewIndexChainListString = TextUtils.join(delimiter, srcViewPathList);
+        if (srcView != null) {
+            setSrcViewId(srcView.getId());
         }
-        View findSrcView = findSrcView((FragmentActivity) srcView.getContext(), builder.srcViewIndexChainListString, srcView.getId());
-        if (!findSrcView.equals(srcView)) {
-            throw new RuntimeException(String.format("Could not match source view. You need unique id for %s.", srcView.toString()));
-        } else {
-            if (DEBUG) {
-                Toast.makeText(srcView.getContext(), String.format("indexChain: %s", builder.srcViewIndexChainListString), Toast.LENGTH_SHORT).show();
-            }
-        }
-        return builder;
     }
 
     public static FragmentTransactionBuilder2 create(FragmentActivity srcFragmentActivity) {
-        return new FragmentTransactionBuilder2(srcFragmentActivity, null, 0);
+        return new FragmentTransactionBuilder2(srcFragmentActivity, null, null);
     }
 
     public static FragmentTransactionBuilder2 create(Fragment srcFragment) {
-        FragmentTransactionBuilder2 builder = new FragmentTransactionBuilder2(null, srcFragment, 0);
-        // TODO 仿照 srcViewIndexChainListString 的作法，可以找到 srcFragmentManager
-        // 目前只有在 popBackStack的時候，才知道自己是被誰呼叫的
+        FragmentTransactionBuilder2 builder = new FragmentTransactionBuilder2(null, srcFragment, null);
+        return builder;
+    }
+
+    public static FragmentTransactionBuilder2 create(View srcView) {
+        FragmentTransactionBuilder2 builder = new FragmentTransactionBuilder2(null, null, srcView);
         return builder;
     }
 
@@ -229,8 +214,12 @@ public class FragmentTransactionBuilder2 {
                 if (content.srcFragmentActivity.findViewById(srcViewId) == null) {
                     throw new RuntimeException("Didn't find sourceContentView");
                 }
-            } else {
+            } else if (content.srcFragment != null) {
                 if (content.srcFragment.getView().findViewById(srcViewId) == null) {
+                    throw new RuntimeException("Didn't find sourceContentView");
+                }
+            } else {
+                if (((FragmentActivity) content.srcView.getContext()).findViewById(srcViewId) == null) {
                     throw new RuntimeException("Didn't find sourceContentView");
                 }
             }
@@ -317,7 +306,7 @@ public class FragmentTransactionBuilder2 {
                 builder.popEnter = lastBuilder.popEnter;
                 builder.popExit = lastBuilder.popExit;
                 //
-                builder.srcViewIndexChainListString = lastBuilder.srcViewIndexChainListString;
+                builder.srcFragmentPathString = lastBuilder.srcFragmentPathString;
 
                 // Find containerFragment in containerView
                 builder.containerFragment = null;
@@ -349,8 +338,8 @@ public class FragmentTransactionBuilder2 {
         if (content == null) {
             throw new RuntimeException("Forbid build!");
         }
+        FragmentPath.fillFragmentPath(this);
         FragmentManager fragmentManager = getFragmentManager();
-
         // Check fragment already exist
         final Fragment fragmentAlreadyExist = fragmentManager.findFragmentByTag(fragmentTag);
         if (fragmentAlreadyExist != null) {
@@ -418,10 +407,20 @@ public class FragmentTransactionBuilder2 {
         private static String noExistContainerView = "Didn't find container view.";
         public final FragmentActivity srcFragmentActivity;
         public final Fragment srcFragment;
+        public final View srcView;
 
-        public Content(FragmentActivity srcFragmentActivity, Fragment srcFragment) {
+        public Content(FragmentActivity srcFragmentActivity, Fragment srcFragment, View srcView) {
             this.srcFragmentActivity = srcFragmentActivity;
             this.srcFragment = srcFragment;
+            this.srcView = srcView;
+            if (srcView != null) {
+                if (srcView.getId() <= 0) {
+                    throw new RuntimeException(String.format("You must set id to %s", srcView));
+                }
+                if (!(srcView.getContext() instanceof FragmentActivity)) {
+                    throw new RuntimeException(String.format("You must use FragmentActivity. %s", srcView));
+                }
+            }
         }
 
         private FragmentManager fragmentManager = null;
@@ -429,8 +428,10 @@ public class FragmentTransactionBuilder2 {
         public FragmentActivity getFragmentActivity() {
             if (srcFragmentActivity != null) {
                 return srcFragmentActivity;
-            } else {
+            } else if (srcFragment != null) {
                 return srcFragment.getActivity();
+            } else {
+                return (FragmentActivity) srcView.getContext();
             }
         }
 
@@ -438,8 +439,10 @@ public class FragmentTransactionBuilder2 {
             View rootView = null;
             if (srcFragmentActivity != null) {
                 rootView = srcFragmentActivity.getWindow().getDecorView();
-            } else {
+            } else if (srcFragment != null) {
                 rootView = srcFragment.getActivity().getWindow().getDecorView();
+            } else {
+                rootView = srcView.getRootView();
             }
             return rootView;
         }
@@ -456,10 +459,16 @@ public class FragmentTransactionBuilder2 {
                 } else {
                     throw new RuntimeException(noExistContainerView);
                 }
-            } else if (null != srcFragmentActivity.findViewById(containerViewId)) {
+            } else if (null != srcFragmentActivity) {
                 fragmentManager = srcFragmentActivity.getSupportFragmentManager();
-            } else {
-                throw new RuntimeException(noExistContainerView);
+                if (null == srcFragmentActivity.findViewById(containerViewId)) {
+                    throw new RuntimeException(noExistContainerView);
+                }
+            } else if (null != srcView) {
+                fragmentManager = ((FragmentActivity) srcView.getContext()).getSupportFragmentManager();
+                if (null == ((FragmentActivity) srcView.getContext()).findViewById(containerViewId)) {
+                    throw new RuntimeException(noExistContainerView);
+                }
             }
             return fragmentManager;
         }
@@ -477,7 +486,7 @@ public class FragmentTransactionBuilder2 {
                 builder.assignBackStackName,
                 builder.builtTimeMillis,
                 builder.transition, builder.styleRes, builder.enter, builder.exit, builder.popEnter, builder.popExit,
-                builder.srcViewIndexChainListString
+                builder.srcFragmentPathString
         );
         return backStackName;
     }
@@ -506,7 +515,7 @@ public class FragmentTransactionBuilder2 {
             builder.popEnter = Integer.parseInt(m.group(i++));
             builder.popExit = Integer.parseInt(m.group(i++));
             //
-            builder.srcViewIndexChainListString = m.group(i++);
+            builder.srcFragmentPathString = m.group(i++);
         }
         return builder;
     }
@@ -557,94 +566,6 @@ public class FragmentTransactionBuilder2 {
         }
     }
 
-    // ******findFragmentIndexChain***** START
-    public static View findSrcView(FragmentActivity activity, String indexChainListString, int srcViewId) {
-        List<Integer> indexChainList = new ArrayList<Integer>();
-        for (String index : TextUtils.split(indexChainListString, delimiter)) {
-            indexChainList.add(Integer.parseInt(index));
-        }
-        return findSrcView(activity, indexChainList, srcViewId);
-    }
-
-    public static View findSrcView(FragmentActivity activity, List<Integer> indexChainList, int srcViewId) {
-        View view = null;
-        if (indexChainList == null || indexChainList.size() == 0) {
-            view = activity.findViewById(srcViewId);
-        } else {
-            FragmentManager fm = activity.getSupportFragmentManager();
-            Fragment fragment = null;
-            for (Integer index : indexChainList) {
-                fragment = fm.getFragments().get(index);
-                fm = fragment.getChildFragmentManager();
-            }
-            view = fragment.getView().findViewById(srcViewId);
-        }
-        return view;
-    }
-
-    public static void findFragmentIndexChain(List<Integer> indexChainList, View srcView) {
-        FragmentActivity activity = (FragmentActivity) srcView.getContext();
-        ArrayList<Fragment> fragmentArrayList = new ArrayList<Fragment>();
-        HashMap<Fragment, Fragment> parentMap = new HashMap<Fragment, Fragment>();
-        HashMap<Fragment, Integer> fragmentIndexMap = new HashMap<Fragment, Integer>();
-        findAllFragments(null, parentMap, activity.getSupportFragmentManager(), fragmentArrayList, fragmentIndexMap);
-        if (fragmentArrayList.size() > 0) {
-            Fragment srcFragment = findFragmentByView(fragmentArrayList, srcView);
-            if (srcFragment != null) {
-                buildFragmentIndexChain(indexChainList, parentMap, fragmentIndexMap, srcFragment);
-            }
-        }
-    }
-
-    private static void findAllFragments(Fragment parent, Map<Fragment, Fragment> parentMap, FragmentManager fm, List<Fragment> fragmentList, Map<Fragment, Integer> fragmentIndexMap) {
-        if (fm != null) {
-            List<Fragment> fragList = fm.getFragments();
-            if (fragList != null && fragList.size() > 0) {
-                int index = -1;
-                for (Fragment frag : fragList) {
-                    index = index + 1;
-                    if (frag == null) {
-                        continue;
-                    }
-                    fragmentList.add(frag);
-                    parentMap.put(frag, parent);
-                    fragmentIndexMap.put(frag, index);
-                    findAllFragments(frag, parentMap, frag.getChildFragmentManager(), fragmentList, fragmentIndexMap);
-                }
-            }
-        }
-    }
-
-    private static Fragment findFragmentByView(List<Fragment> fragmentList, View srcView) {
-        for (Fragment frag : fragmentList) {
-            if (frag.getView() != null) {
-                if (frag.getView().equals(srcView)) {
-                    return frag;
-                }
-            }
-        }
-        if (srcView.getParent().equals(srcView.getRootView())) {
-            return null;
-        }
-        View parent = (View) srcView.getParent();
-        if (parent != null) {
-            return findFragmentByView(fragmentList, parent);
-        } else {
-            return null;
-        }
-    }
-
-    private static void buildFragmentIndexChain(List<Integer> indexChainList, Map<Fragment, Fragment> parentMap, Map<Fragment, Integer> fragmentIndexMap, Fragment srcFragment) {
-        indexChainList.add(0, fragmentIndexMap.get(srcFragment));
-        Fragment parentFragment = parentMap.get(srcFragment);
-        if (parentFragment == null) {
-            return;
-        } else {
-            buildFragmentIndexChain(indexChainList, parentMap, fragmentIndexMap, parentFragment);
-        }
-    }
-    // ******findFragmentIndexChain***** END
-
     private static class NotifyPopFragment implements FragmentManager.OnBackStackChangedListener {
         private FragmentActivity srcFragmentActivity;
         private Fragment srcFragment;
@@ -667,13 +588,15 @@ public class FragmentTransactionBuilder2 {
             srcFragmentManager.removeOnBackStackChangedListener(this);
             PopFragmentListener listener = null;
             Object srcObject = null;
-            if (srcFragment == null) {
+
+            if (TextUtils.isEmpty(builder.srcFragmentPathString)) {
                 if (builder.srcViewId == 0) {
                     srcObject = srcFragmentActivity;
                 } else {
-                    srcObject = findSrcView(srcFragmentActivity, builder.srcViewIndexChainListString, builder.srcViewId);
+                    srcObject = srcFragmentActivity.findViewById(builder.srcViewId);
                 }
             } else {
+                Fragment srcFragment = FragmentPath.findSrcFragment(srcFragmentActivity, builder.srcFragmentPathString);
                 if (builder.srcViewId == 0) {
                     srcObject = srcFragment;
                 } else {
@@ -721,6 +644,162 @@ public class FragmentTransactionBuilder2 {
                 break;
         }
         return result;
+    }
+
+    public static class FragmentPath extends ArrayList<Integer> {
+        private final static String delimiter = ",";
+
+        public static void fillFragmentPath(FragmentTransactionBuilder2 builder) {
+            View srcView = null;
+            if (builder.content.srcFragment != null) {
+                srcView = builder.content.srcFragment.getView();
+            } else if (builder.content.srcView != null) {
+                srcView = builder.content.srcView;
+            } else {
+                return;
+            }
+            builder.srcFragmentPathString = FragmentPath.buildFragmentPathString(srcView);
+            // Check
+            if (builder.content.srcFragment != null) {
+                Fragment findSrcFragment = FragmentPath.findSrcFragment(builder.content.srcFragment.getActivity(), builder.srcFragmentPathString);
+                if (!builder.content.srcFragment.equals(findSrcFragment)) {
+                    throw new RuntimeException(String.format("Could not match source view. You need unique id for %s.", builder.content.srcFragment.toString()));
+                } else {
+                    if (DEBUG) {
+                        Toast.makeText(builder.content.srcFragment.getActivity(), String.format("FragmentTag %s\nFragmentPath: %s\n%s", builder.fragmentTag, builder.srcFragmentPathString, builder.content.srcFragment), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            } else if (builder.content.srcView != null) {
+                View findSrcView = FragmentPath.findSrcView((FragmentActivity) srcView.getContext(), builder.srcFragmentPathString, srcView.getId());
+                if (!findSrcView.equals(srcView)) {
+                    throw new RuntimeException(String.format("Could not match source view. You need unique id for %s.", srcView.toString()));
+                } else {
+                    if (DEBUG) {
+                        Toast.makeText(srcView.getContext(), String.format("SrcViewId: %s\nFragmentPath: %s\n%s", builder.srcViewId, builder.srcFragmentPathString, builder.content.srcView), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        }
+
+        public static View getContentView(View view) {
+            return view.getRootView().findViewById(android.R.id.content);
+        }
+
+        public static View findSrcView(FragmentActivity activity, String fragmentPathString, int srcViewId) {
+            return findSrcView(activity, FragmentPath.covert(fragmentPathString), srcViewId);
+        }
+
+        public static View findSrcView(FragmentActivity activity, List<Integer> fragmentPath, int srcViewId) {
+            View view = null;
+            Fragment srcFragment = findSrcFragment(activity, fragmentPath);
+            if (srcFragment == null) {
+                view = activity.findViewById(srcViewId);
+            } else {
+                view = srcFragment.getView().findViewById(srcViewId);
+            }
+            return view;
+        }
+
+        public static Fragment findSrcFragment(FragmentActivity activity, String fragmentPathString) {
+            return findSrcFragment(activity, FragmentPath.covert(fragmentPathString));
+        }
+
+        public static Fragment findSrcFragment(FragmentActivity activity, List<Integer> fragmentPath) {
+            Fragment fragment = null;
+            if (fragmentPath == null || fragmentPath.size() == 0) {
+                fragment = null;
+            } else {
+                FragmentManager fm = activity.getSupportFragmentManager();
+                for (Integer index : fragmentPath) {
+                    fragment = fm.getFragments().get(index);
+                    fm = fragment.getChildFragmentManager();
+                }
+            }
+            return fragment;
+        }
+
+        public static FragmentPath buildFragmentPath(View srcView) {
+            FragmentPath indexChainList = new FragmentPath();
+            FragmentActivity activity = (FragmentActivity) srcView.getContext();
+            ArrayList<Fragment> fragmentArrayList = new ArrayList<Fragment>();
+            HashMap<Fragment, Fragment> parentMap = new HashMap<Fragment, Fragment>();
+            HashMap<Fragment, Integer> fragmentIndexMap = new HashMap<Fragment, Integer>();
+            fillAllFragments(null, parentMap, activity.getSupportFragmentManager(), fragmentArrayList, fragmentIndexMap);
+            View contentView = getContentView(srcView);
+            if (fragmentArrayList.size() > 0) {
+                Fragment srcFragment = findFragmentByView(fragmentArrayList, srcView, contentView);
+                if (srcFragment != null) {
+                    fillFragmentPath(indexChainList, parentMap, fragmentIndexMap, srcFragment);
+                }
+            }
+            return indexChainList;
+        }
+
+        private static void fillFragmentPath(List<Integer> fragmentPath, Map<Fragment, Fragment> parentMap, Map<Fragment, Integer> fragmentIndexMap, Fragment srcFragment) {
+            fragmentPath.add(0, fragmentIndexMap.get(srcFragment));
+            Fragment parentFragment = parentMap.get(srcFragment);
+            if (parentFragment == null) {
+                return;
+            } else {
+                fillFragmentPath(fragmentPath, parentMap, fragmentIndexMap, parentFragment);
+            }
+        }
+
+        private static void fillAllFragments(Fragment parent, Map<Fragment, Fragment> parentMap, FragmentManager fm, List<Fragment> fragmentList, Map<Fragment, Integer> fragmentIndexMap) {
+            if (fm != null) {
+                List<Fragment> fragList = fm.getFragments();
+                if (fragList != null && fragList.size() > 0) {
+                    int index = -1;
+                    for (Fragment frag : fragList) {
+                        index = index + 1;
+                        if (frag == null) {
+                            continue;
+                        }
+                        fragmentList.add(frag);
+                        parentMap.put(frag, parent);
+                        fragmentIndexMap.put(frag, index);
+                        fillAllFragments(frag, parentMap, frag.getChildFragmentManager(), fragmentList, fragmentIndexMap);
+                    }
+                }
+            }
+        }
+
+        private static Fragment findFragmentByView(List<Fragment> fragmentList, View srcView, View contentView) {
+            for (Fragment frag : fragmentList) {
+                //If Fragment view is null, Fragment must be invisible.
+                if (frag.getView() != null) {
+                    if (frag.getView().equals(srcView)) {
+                        return frag;
+                    }
+                }
+            }
+            if (srcView.getParent().equals(contentView)) {
+                return null;
+            }
+            View parent = (View) srcView.getParent();
+            if (parent != null) {
+                return findFragmentByView(fragmentList, parent, contentView);
+            } else {
+                return null;
+            }
+        }
+
+        public static String buildFragmentPathString(View srcView) {
+            String srcFragmentPathString = "";
+            FragmentPath srcFragmentPath = buildFragmentPath(srcView);
+            if (srcFragmentPath.size() > 0) {
+                srcFragmentPathString = TextUtils.join(delimiter, srcFragmentPath);
+            }
+            return srcFragmentPathString;
+        }
+
+        public static FragmentPath covert(String fragmentPathString) {
+            FragmentPath fragmentPath = new FragmentPath();
+            for (String index : TextUtils.split(fragmentPathString, delimiter)) {
+                fragmentPath.add(Integer.parseInt(index));
+            }
+            return fragmentPath;
+        }
     }
 }
 

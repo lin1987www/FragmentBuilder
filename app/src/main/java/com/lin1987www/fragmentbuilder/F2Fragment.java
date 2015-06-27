@@ -31,14 +31,16 @@ public class F2Fragment extends Fragment {
             public void onClick(View view) {
                 FragmentTransactionBuilder2
                         .create(F2Fragment.this)
-                        .setContainerViewId(R.id.container_f2)
-                        .setFragment(F111Fragment.class, F111Fragment.class.getSimpleName())
+                        .setFragment(F21Fragment.class, F21Fragment.class.getSimpleName())
                         .add()
                         .traceable()
                         .build();
             }
         });
-
         return view;
+    }
+
+    public void onPopFragment(F21Fragment fragment) {
+        mTextView.setText(String.format("Pop %s %s", fragment.getClass().getSimpleName(), fragment.enterName));
     }
 }
