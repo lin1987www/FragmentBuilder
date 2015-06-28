@@ -23,6 +23,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
-            android:text="Click to pop up F21Fragment" />
+            android:text="Click to test Backward path." />
     </FrameLayout>
 </LinearLayout>

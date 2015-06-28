@@ -12,6 +12,18 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:textAppearanceLarge" />
 
+    <TextView
+        android:id="@+id/f11TextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/f12TextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:textAppearanceLarge" />
+
     <FrameLayout
         android:id="@+id/container_f1"
         android:layout_width="match_parent"
@@ -23,12 +35,13 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
-            android:text="Click to pop up F11Fragment" />
+            android:text="Click to test Wizard Steps" />
     </FrameLayout>
 
     <Button
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Open F12Fragment" />
+        android:text="Next Step F12Fragment"
+        android:visibility="gone" />
 </LinearLayout>
