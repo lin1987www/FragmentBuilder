@@ -2,9 +2,9 @@
 
 ## Wizard Steps Test
 
-![](images\WizardStepsTest.gif)
+![](/images/WizardStepsTest.gif)
 
 
 ## Architecture
 
-![](images\FragmentViewArchitecture.png)
+![](/images/FragmentViewArchitecture.png)
