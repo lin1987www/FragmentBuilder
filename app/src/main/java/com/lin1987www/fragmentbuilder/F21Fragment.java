@@ -15,10 +15,9 @@ import lin1987www.com.fragmentbuilder.R;
  * Created by Administrator on 2015/6/26.
  */
 public class F21Fragment extends Fragment {
+    public String result;
     TextView mTextView;
     ShowNameTextView mShowNameTextView;
-
-    public String enterName;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -32,7 +31,7 @@ public class F21Fragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        enterName = mShowNameTextView.getText().toString();
+        result = mShowNameTextView.getText().toString();
         super.onDestroyView();
     }
 }

@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import com.lin1987www.app.FragmentTransactionBuilder2;
+import com.lin1987www.app.FragmentBuilder;
 
 import lin1987www.com.fragmentbuilder.R;
 
@@ -24,12 +24,12 @@ public class F2Fragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f2, container, false);
         mTextView = (TextView) view.findViewById(R.id.textView);
-        mTextView.setText(String.format("tag: %s id: %s", getTag(), getId()));
+        mTextView.setText(String.format("%s id:[%s]", getTag(), getId()));
         mContainer = (FrameLayout) view.findViewById(R.id.container_f2);
         mContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FragmentTransactionBuilder2
+                FragmentBuilder
                         .create(F2Fragment.this)
                         .setFragment(F21Fragment.class, F21Fragment.class.getSimpleName())
                         .add()
@@ -41,6 +41,6 @@ public class F2Fragment extends Fragment {
     }
 
     public void onPopFragment(F21Fragment fragment) {
-        mTextView.setText(String.format("Pop %s %s", fragment.getClass().getSimpleName(), fragment.enterName));
+        mTextView.setText(String.format("->%s %s", fragment.getClass().getSimpleName(), fragment.result));
     }
 }

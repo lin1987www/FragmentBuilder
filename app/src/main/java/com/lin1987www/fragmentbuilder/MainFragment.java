@@ -8,14 +8,14 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import com.lin1987www.app.FragmentTransactionBuilder2;
+import com.lin1987www.app.FragmentBuilder;
 
 import lin1987www.com.fragmentbuilder.R;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainFragment extends Fragment implements FragmentTransactionBuilder2.PopFragmentListener {
+public class MainFragment extends Fragment implements FragmentBuilder.PopFragmentListener {
     FrameLayout mContainerMain4;
     FrameLayout mContainerMain5;
     TextView mTextView;
@@ -25,7 +25,7 @@ public class MainFragment extends Fragment implements FragmentTransactionBuilder
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
 
-        FragmentTransactionBuilder2
+        FragmentBuilder
                 .create(this)
                 .setContainerViewId(R.id.container_main_1)
                 .setFragment(F1Fragment.class, F1Fragment.class.getSimpleName())
@@ -33,7 +33,7 @@ public class MainFragment extends Fragment implements FragmentTransactionBuilder
                 .untraceable()
                 .build();
 
-        FragmentTransactionBuilder2
+        FragmentBuilder
                 .create(this)
                 .setContainerViewId(R.id.container_main_2)
                 .setFragment(F2Fragment.class, F2Fragment.class.getSimpleName())
@@ -41,7 +41,7 @@ public class MainFragment extends Fragment implements FragmentTransactionBuilder
                 .untraceable()
                 .build();
 
-        FragmentTransactionBuilder2
+        FragmentBuilder
                 .create(this)
                 .setContainerViewId(R.id.container_main_3)
                 .setFragment(F3Fragment.class, F3Fragment.class.getSimpleName())
@@ -53,7 +53,7 @@ public class MainFragment extends Fragment implements FragmentTransactionBuilder
         mContainerMain4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FragmentTransactionBuilder2
+                FragmentBuilder
                         .create(MainFragment.this)
                         .setContainerViewId(R.id.container_main_4)
                         .setFragment(F4Fragment.class, F4Fragment.class.getSimpleName())
@@ -67,7 +67,7 @@ public class MainFragment extends Fragment implements FragmentTransactionBuilder
         mContainerMain5.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FragmentTransactionBuilder2
+                FragmentBuilder
                         .create(MainFragment.this)
                         .setContainerViewId(R.id.container_main_5)
                         .setFragment(F5Fragment.class, F5Fragment.class.getSimpleName())
@@ -87,10 +87,10 @@ public class MainFragment extends Fragment implements FragmentTransactionBuilder
     }
 
     public void onPopFragment(F4Fragment fragment) {
-        mTextView.setText(String.format("Pop %s %s", fragment.getClass().getSimpleName(), fragment.enterNumber));
+        mTextView.setText(String.format("->%s %s", fragment.getClass().getSimpleName(), fragment.result));
     }
 
     public void onPopFragment(F5Fragment fragment) {
-        mTextView.setText(String.format("Pop %s %s", fragment.getClass().getSimpleName(), fragment.enterNumber));
+        mTextView.setText(String.format("->%s %s", fragment.getClass().getSimpleName(), fragment.result));
     }
 }

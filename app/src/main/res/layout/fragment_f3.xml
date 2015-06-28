@@ -16,6 +16,6 @@
         android:id="@+id/showNameTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter name"
+        android:hint="Enter name ( Test View )"
         android:textAppearance="?android:textAppearanceLarge" />
 </LinearLayout>
