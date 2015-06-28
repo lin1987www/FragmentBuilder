@@ -5,7 +5,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
 
-import com.lin1987www.app.FragmentBuilder;
+import com.lin1987www.app.FragmentTransactionBuilder2;
 import com.lin1987www.fragmentbuilder.EnterNameFragment;
 
 /**
@@ -26,7 +26,7 @@ public class ShowNameTextView extends TextView implements View.OnClickListener {
 
     @Override
     public void onClick(View view) {
-        FragmentBuilder
+        FragmentTransactionBuilder2
                 .create(this)
                 .setFragment(EnterNameFragment.class, getClass().getName() + " " + getId())
                 .replace()

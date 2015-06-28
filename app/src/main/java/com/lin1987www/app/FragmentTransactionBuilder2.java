@@ -36,24 +36,12 @@ import static android.support.v4.app.FragmentTransaction.TRANSIT_NONE;
  * 3. reset
  * <p/>
  * Class BackStackRecord implements interface of FragmentTransaction.
- * TODO 策畫所以常用Use Case
- * 0. popStackName(   name of a previous back state )
- * onPushFragmentListener(  ) -> fragment detach notify src
- * onBuildFragmentListener( add ) ->  fragment add notify src
- * back() -> back  from FragmentPath
- * <p/>
- * 1. Wizard Step
- * 2. Fragment -> Fragment ( Outside )
- * 2. View -> Fragment ( Outside )
- * 3. FragmentActivity -> Fragment ( Inside * Only way )
- * 3. Fragment -> Fragment (Inside)
- * 4. View -> Fragment ( Inside ) * 應該不會用到
  * TODO 超級可能性
  * 當因為 onBackStack 發生時，FragmentActivity 處理 onBackStack時，觸發FragmentTransactionBuilder2.popBackStack()   Stong Ref 到那個Fragment ，然後監聽 onBackStackChanged() 時，再將Fragment 丟回去。
  * 當 onBackPressed 去呼叫特定 FragmentManager 去執行 popBackStack，但執行前，透過預先儲存在 BackEntry中Name屬性的相關資料，得知這Fragment是"誰"呼叫，然後使用addOnBackStackChangedListener當 Fragment 被移除的時候，丟回去原本呼叫的地方(FragmentActivity, Fragment, View)。
  */
-public class FragmentBuilder {
-    public static final String TAG = FragmentBuilder.class.getName();
+public class FragmentTransactionBuilder2 {
+    public static final String TAG = FragmentTransactionBuilder2.class.getName();
     public static boolean DEBUG = true;
 
     @IntDef({TRANSIT_NONE, TRANSIT_FRAGMENT_OPEN, TRANSIT_FRAGMENT_CLOSE})
@@ -61,42 +49,34 @@ public class FragmentBuilder {
     public @interface Transit {
     }
 
-    // Temp Object
     private Content content;
     private Fragment fragment;
     private Class<? extends Fragment> fragmentClass;
     private Bundle fragmentArgs;
     private Fragment containerFragment;
-    private int backTimes = 0;
-    //
     //
     public static int defaultContainerViewId = android.R.id.content;
     private int containerViewId = defaultContainerViewId;
-    //
-    public static Action defaultAction = Action.add;
-    private Action action = Action.none;
+    private Action action = Action.add;
     public static boolean defaultTraceable = false;
     private boolean isTraceable = defaultTraceable;
-    //
-    private String assignBackStackName = "";
     private String fragmentTag;
-    private String srcFragmentPathString = "";
     private String srcFragmentTag;
+    private String assignBackStackName = "";
     private int srcViewId = 0;
+    private String srcFragmentPathString = "";
     private long builtTimeMillis = 0;
-    //
-    // Animations
-    //
-    private
-    @Transit
-    int transition = TRANSIT_NONE;
-    private int styleRes = 0;
     // addBackStack
     private int enter = 0;
     private int exit = 0;
     // onBackPressed trigger popEnter and popExit
     private int popEnter = 0;
     private int popExit = 0;
+    //
+    private int styleRes = 0;
+    private
+    @Transit
+    int transition = TRANSIT_NONE;
     //
 
     private void setAnimations(FragmentTransaction ft) {
@@ -105,11 +85,11 @@ public class FragmentBuilder {
         ft.setTransitionStyle(styleRes);
     }
 
-    public FragmentBuilder setCustomAnimations(int enter, int exit) {
+    public FragmentTransactionBuilder2 setCustomAnimations(int enter, int exit) {
         return setCustomAnimations(enter, exit, 0, 0);
     }
 
-    public FragmentBuilder setCustomAnimations(int enter, int exit, int popEnter, int popExit) {
+    public FragmentTransactionBuilder2 setCustomAnimations(int enter, int exit, int popEnter, int popExit) {
         this.enter = enter;
         this.exit = exit;
         this.popEnter = popEnter;
@@ -117,12 +97,12 @@ public class FragmentBuilder {
         return this;
     }
 
-    public FragmentBuilder setTransition(@Transit int transition) {
+    public FragmentTransactionBuilder2 setTransition(@Transit int transition) {
         this.transition = transition;
         return this;
     }
 
-    public FragmentBuilder setTransitionStyle(int styleRes) {
+    public FragmentTransactionBuilder2 setTransitionStyle(int styleRes) {
         this.styleRes = styleRes;
         return this;
     }
@@ -131,10 +111,10 @@ public class FragmentBuilder {
         return content.getFragmentManager(containerViewId);
     }
 
-    private FragmentBuilder() {
+    private FragmentTransactionBuilder2() {
     }
 
-    private FragmentBuilder(FragmentActivity srcFragmentActivity, Fragment srcFragment, View srcView) {
+    private FragmentTransactionBuilder2(FragmentActivity srcFragmentActivity, Fragment srcFragment, View srcView) {
         this.content = new Content(srcFragmentActivity, srcFragment, srcView);
         this.srcFragmentTag = (srcFragment == null) ? "" : srcFragment.getTag();
         if (srcView != null) {
@@ -142,21 +122,21 @@ public class FragmentBuilder {
         }
     }
 
-    public static FragmentBuilder create(FragmentActivity srcFragmentActivity) {
-        return new FragmentBuilder(srcFragmentActivity, null, null);
+    public static FragmentTransactionBuilder2 create(FragmentActivity srcFragmentActivity) {
+        return new FragmentTransactionBuilder2(srcFragmentActivity, null, null);
     }
 
-    public static FragmentBuilder create(Fragment srcFragment) {
-        FragmentBuilder builder = new FragmentBuilder(null, srcFragment, null);
+    public static FragmentTransactionBuilder2 create(Fragment srcFragment) {
+        FragmentTransactionBuilder2 builder = new FragmentTransactionBuilder2(null, srcFragment, null);
         return builder;
     }
 
-    public static FragmentBuilder create(View srcView) {
-        FragmentBuilder builder = new FragmentBuilder(null, null, srcView);
+    public static FragmentTransactionBuilder2 create(View srcView) {
+        FragmentTransactionBuilder2 builder = new FragmentTransactionBuilder2(null, null, srcView);
         return builder;
     }
 
-    public FragmentBuilder addToBackStack(String name) {
+    public FragmentTransactionBuilder2 addToBackStack(String name) {
         this.assignBackStackName = (name == null) ? "" : name;
         setTraceable(true);
         return this;
@@ -166,7 +146,7 @@ public class FragmentBuilder {
         return isTraceable;
     }
 
-    public FragmentBuilder setTraceable(boolean isTraceable) {
+    public FragmentTransactionBuilder2 setTraceable(boolean isTraceable) {
         this.isTraceable = isTraceable;
         if (!isTraceable && !TextUtils.isEmpty(assignBackStackName)) {
             throw new RuntimeException("If call addToBackStack method the isTraceable will be TRUE.");
@@ -174,12 +154,12 @@ public class FragmentBuilder {
         return this;
     }
 
-    public FragmentBuilder untraceable() {
+    public FragmentTransactionBuilder2 untraceable() {
         setTraceable(false);
         return this;
     }
 
-    public FragmentBuilder traceable() {
+    public FragmentTransactionBuilder2 traceable() {
         setTraceable(true);
         return this;
     }
@@ -188,7 +168,7 @@ public class FragmentBuilder {
         return containerViewId;
     }
 
-    public FragmentBuilder setContainerViewId(int containerViewId) {
+    public FragmentTransactionBuilder2 setContainerViewId(int containerViewId) {
         this.containerViewId = containerViewId;
         return this;
     }
@@ -197,7 +177,7 @@ public class FragmentBuilder {
         return fragmentTag;
     }
 
-    public FragmentBuilder setFragment(Fragment fragment, String tag) {
+    public FragmentTransactionBuilder2 setFragment(Fragment fragment, String tag) {
         if (this.fragmentClass != null) {
             throw new RuntimeException("Don't set fragment twice.");
         }
@@ -206,11 +186,11 @@ public class FragmentBuilder {
         return this;
     }
 
-    public FragmentBuilder setFragment(Class<? extends Fragment> fragmentClass) {
+    public FragmentTransactionBuilder2 setFragment(Class<? extends Fragment> fragmentClass) {
         return setFragment(fragmentClass, null);
     }
 
-    public FragmentBuilder setFragment(Class<? extends Fragment> fragmentClass, String tag) {
+    public FragmentTransactionBuilder2 setFragment(Class<? extends Fragment> fragmentClass, String tag) {
         if (this.fragment != null) {
             throw new RuntimeException("Don't set fragment twice.");
         }
@@ -219,7 +199,7 @@ public class FragmentBuilder {
         return this;
     }
 
-    public FragmentBuilder setArgs(Bundle fragmentArgs) {
+    public FragmentTransactionBuilder2 setArgs(Bundle fragmentArgs) {
         this.fragmentArgs = fragmentArgs;
         return this;
     }
@@ -228,7 +208,7 @@ public class FragmentBuilder {
         return this.srcViewId;
     }
 
-    public FragmentBuilder setSrcViewId(int srcViewId) {
+    public FragmentTransactionBuilder2 setSrcViewId(int srcViewId) {
         if (srcViewId > 0) {
             if (content.srcFragmentActivity != null) {
                 if (content.srcFragmentActivity.findViewById(srcViewId) == null) {
@@ -248,66 +228,48 @@ public class FragmentBuilder {
         return this;
     }
 
-    public FragmentBuilder back() {
-        return back(1);
-    }
-
-    /**
-     * back
-     *
-     * @param goBackFragmentPathTimes
-     * @return
-     */
-    public FragmentBuilder back(int goBackFragmentPathTimes) {
-        this.backTimes = goBackFragmentPathTimes;
-        if (content.srcFragmentActivity != null) {
-            throw new RuntimeException("FragmentActivity couldn't back! It is Root.");
-        }
-        return this;
-    }
-
-    public FragmentBuilder reset() {
+    public FragmentTransactionBuilder2 reset() {
         this.action = Action.reset;
         return this;
     }
 
-    public FragmentBuilder reset(int containerViewId, Fragment fragment) {
+    public FragmentTransactionBuilder2 reset(int containerViewId, Fragment fragment) {
         add(containerViewId, fragment, null);
         return this;
     }
 
-    public FragmentBuilder reset(int containerViewId, Fragment fragment, String tag) {
+    public FragmentTransactionBuilder2 reset(int containerViewId, Fragment fragment, String tag) {
         setCommon(containerViewId, fragment, tag);
         reset();
         return this;
     }
 
-    public FragmentBuilder add() {
+    public FragmentTransactionBuilder2 add() {
         this.action = Action.add;
         return this;
     }
 
-    public FragmentBuilder add(int containerViewId, Fragment fragment) {
+    public FragmentTransactionBuilder2 add(int containerViewId, Fragment fragment) {
         add(containerViewId, fragment, null);
         return this;
     }
 
-    public FragmentBuilder add(int containerViewId, Fragment fragment, String tag) {
+    public FragmentTransactionBuilder2 add(int containerViewId, Fragment fragment, String tag) {
         setCommon(containerViewId, fragment, tag);
         add();
         return this;
     }
 
-    public FragmentBuilder replace() {
+    public FragmentTransactionBuilder2 replace() {
         this.action = Action.replace;
         return this;
     }
 
-    public FragmentBuilder replace(int containerViewId, Fragment fragment) {
+    public FragmentTransactionBuilder2 replace(int containerViewId, Fragment fragment) {
         return replace(containerViewId, fragment, null);
     }
 
-    public FragmentBuilder replace(int containerViewId, Fragment fragment, String tag) {
+    public FragmentTransactionBuilder2 replace(int containerViewId, Fragment fragment, String tag) {
         setCommon(containerViewId, fragment, tag);
         replace();
         return this;
@@ -318,7 +280,7 @@ public class FragmentBuilder {
         setFragment(fragment, tag);
     }
 
-    private static void doIfResetAction(FragmentBuilder builder) {
+    private static void doIfResetAction(FragmentTransactionBuilder2 builder) {
         // If do something in same containerViewId,call popBackStack() and reset new action
         if (Action.reset != builder.action) {
             return;
@@ -330,7 +292,7 @@ public class FragmentBuilder {
             lastBackStack = fragmentManager.getBackStackEntryAt(fragmentManager.getBackStackEntryCount() - 1);
         }
         if (lastBackStack != null) {
-            FragmentBuilder lastBuilder = parse(lastBackStack);
+            FragmentTransactionBuilder2 lastBuilder = parse(lastBackStack);
             if (lastBuilder.containerViewId == builder.containerViewId) {
                 fragmentManager.popBackStack();
                 //
@@ -358,7 +320,7 @@ public class FragmentBuilder {
                         if (beforeLastStackEntry == null) {
                             continue;
                         }
-                        FragmentBuilder beforeLastBuilder = parse(beforeLastStackEntry);
+                        FragmentTransactionBuilder2 beforeLastBuilder = parse(beforeLastStackEntry);
                         if (beforeLastBuilder == null) {
                             continue;
                         }
@@ -372,97 +334,11 @@ public class FragmentBuilder {
         }
     }
 
-    private static void doBack(FragmentBuilder builder) {
-        if (builder.backTimes <= 0) {
-            return;
-        }
-
-        String fragmentTag = FragmentPath.findFragmentByView(builder.content.getSrcView()).getTag();
-        FragmentBuilder thisBuilder = null;
-        BackStackEntry backStackEntry;
-        FragmentManager fm = getParentFragmentManager(builder.content);
-        for (int i = fm.getBackStackEntryCount() - 1; i > -1; i--) {
-            backStackEntry = fm.getBackStackEntryAt(i);
-            thisBuilder = parse(backStackEntry);
-            if (thisBuilder.fragmentTag.equals(fragmentTag)) {
-                break;
-            }
-            thisBuilder = null;
-        }
-        if (thisBuilder != null) {
-            fillContent(thisBuilder, builder.content.getFragmentActivity());
-            override(thisBuilder, builder);
-        } else {
-            //TODO
-        }
-    }
-
-    public static FragmentManager getParentFragmentManager(Content content) {
-        return getBackFragmentManager(content, 1);
-    }
-
-    public static FragmentManager getBackFragmentManager(Content content, int backTimes) {
-        Content backContent = getBackContent(content, backTimes);
-        FragmentManager fragmentManager;
-        if (backContent.srcFragmentActivity != null) {
-            fragmentManager = backContent.srcFragmentActivity.getSupportFragmentManager();
-        } else {
-            fragmentManager = backContent.srcFragment.getChildFragmentManager();
-        }
-        return fragmentManager;
-    }
-
-    public static Content getBackContent(Content content, int backTimes) {
-        if (backTimes <= 0) {
-            return null;
-        }
-        FragmentPath fragmentPath = FragmentPath.getFragmentPath(content);
-        Content backContent = null;
-        int size = fragmentPath.size() - backTimes;
-        if (size < 0) {
-            throw new RuntimeException("Go back too many time.");
-        } else if (size == 0) {
-            // FragmentActivity
-            backContent = new Content(content.getFragmentActivity());
-        } else {
-            // Fragment
-            Fragment fragment = FragmentPath.findFragment(content.getFragmentActivity(), fragmentPath.subList(0, size));
-            backContent = new Content(fragment);
-        }
-        return backContent;
-    }
-
-    public static void override(FragmentBuilder base, FragmentBuilder builder) {
-        builder.content = base.content;
-        builder.containerViewId = base.containerViewId;
-
-        if (builder.action == Action.none) {
-            builder.action = base.action;
-            builder.isTraceable = base.isTraceable;
-        }
-
-        if ((builder.styleRes == 0) && (builder.transition == TRANSIT_NONE) &&
-                (builder.enter == 0) && (builder.exit == 0) && (builder.popEnter == 0) && (builder.popExit == 0)
-                ) {
-            builder.styleRes = base.styleRes;
-            builder.transition = base.transition;
-            builder.enter = base.enter;
-            builder.exit = base.exit;
-            builder.popEnter = base.popEnter;
-            builder.popExit = base.popExit;
-        }
-
-    }
-
     public void buildImmediate() {
         if (content == null) {
             throw new RuntimeException("Forbid build!");
         }
-        doBack(this);
-        if (action.equals(Action.none)) {
-            action = defaultAction;
-        }
-        this.srcFragmentPathString = FragmentPath.getFragmentPathString(this);
+        FragmentPath.fillFragmentPath(this);
         FragmentManager fragmentManager = getFragmentManager();
         // Check fragment already exist
         final Fragment fragmentAlreadyExist = fragmentManager.findFragmentByTag(fragmentTag);
@@ -483,7 +359,7 @@ public class FragmentBuilder {
                 FragmentUtils.putArguments(fragment, fragmentArgs);
             }
         }
-        // Maybe execute action of reset
+        // Maybe execute  action of reset
         containerFragment = fragmentManager.findFragmentById(containerViewId);
         doIfResetAction(this);
         // Prepare transaction
@@ -523,8 +399,8 @@ public class FragmentBuilder {
         });
     }
 
-    protected enum Action {
-        add, replace, reset, none
+    public enum Action {
+        add, replace, reset
     }
 
     public static class Content {
@@ -532,27 +408,6 @@ public class FragmentBuilder {
         public final FragmentActivity srcFragmentActivity;
         public final Fragment srcFragment;
         public final View srcView;
-
-        public Content(FragmentActivity srcFragmentActivity) {
-            this(srcFragmentActivity, null, null);
-            if (srcFragmentActivity == null) {
-                throw new NullPointerException();
-            }
-        }
-
-        public Content(Fragment srcFragment) {
-            this(null, srcFragment, null);
-            if (srcFragment == null) {
-                throw new NullPointerException();
-            }
-        }
-
-        public Content(View srcView) {
-            this(null, null, srcView);
-            if (srcView == null) {
-                throw new NullPointerException();
-            }
-        }
 
         public Content(FragmentActivity srcFragmentActivity, Fragment srcFragment, View srcView) {
             this.srcFragmentActivity = srcFragmentActivity;
@@ -617,50 +472,35 @@ public class FragmentBuilder {
             }
             return fragmentManager;
         }
-
-        public View getSrcView() {
-            View view = null;
-            if (srcView != null) {
-                view = srcView;
-            } else if (srcFragment != null) {
-                view = srcFragment.getView();
-            }
-            return view;
-        }
     }
 
-    public static String generateBackStackName(FragmentBuilder builder) {
+    public static String generateBackStackName(FragmentTransactionBuilder2 builder) {
         String backStackName;
         backStackName = String.format("%s %s %s [%s][%s][%s][%s] %s %s,%s,%s,%s,%s,%s [%s]",
                 builder.containerViewId,
                 builder.action.toString(),
                 builder.isTraceable,
-                //
                 builder.fragmentTag,
                 builder.srcFragmentTag,
                 builder.srcViewId,
                 builder.assignBackStackName,
-                //
                 builder.builtTimeMillis,
-                //
                 builder.transition, builder.styleRes, builder.enter, builder.exit, builder.popEnter, builder.popExit,
-                //
                 builder.srcFragmentPathString
         );
         return backStackName;
     }
 
-    public static FragmentBuilder parse(BackStackEntry stackEntry) {
-        FragmentBuilder builder = null;
+    public static FragmentTransactionBuilder2 parse(BackStackEntry stackEntry) {
+        FragmentTransactionBuilder2 builder = null;
         Pattern p = Pattern.compile("(\\d+) (\\S+) (\\S+) \\[(.*)\\]\\[(.*)\\]\\[(.*)\\]\\[(.*)\\] (\\d+) (\\d+),(\\d+),(\\d+),(\\d+),(\\d+),(\\d+) \\[(.*)\\]");
         Matcher m = p.matcher(stackEntry.getName());
         if (m.find()) {
             int i = 1;
-            builder = new FragmentBuilder();
+            builder = new FragmentTransactionBuilder2();
             builder.containerViewId = Integer.parseInt(m.group(i++));
             builder.action = Action.valueOf(m.group(i++));
             builder.isTraceable = Boolean.parseBoolean(m.group(i++));
-            //
             builder.fragmentTag = m.group(i++);
             builder.srcFragmentTag = m.group(i++);
             builder.srcViewId = Integer.parseInt(m.group(i++));
@@ -680,25 +520,6 @@ public class FragmentBuilder {
         return builder;
     }
 
-    public static void fillContent(FragmentBuilder builder, FragmentActivity activity) {
-        Content content;
-        if (builder.srcFragmentPathString.equals("")) {
-            if (builder.srcViewId == 0) {
-                content = new Content(activity);
-            } else {
-                content = new Content(activity.findViewById(builder.srcViewId));
-            }
-        } else {
-            Fragment fragment = FragmentPath.findFragment(activity, builder.srcFragmentPathString);
-            if (builder.srcViewId == 0) {
-                content = new Content(fragment);
-            } else {
-                content = new Content(fragment.getView().findViewById(builder.srcViewId));
-            }
-        }
-        builder.content = content;
-    }
-
     public static boolean hasPopBackStack(FragmentActivity activity) {
         ArrayList<BackStackEntry> list = new ArrayList<BackStackEntry>();
         HashMap<BackStackEntry, FragmentManager> map = new HashMap<BackStackEntry, FragmentManager>();
@@ -706,7 +527,7 @@ public class FragmentBuilder {
         findLeavesBackStack(null, srcFragMap, activity.getSupportFragmentManager(), list, map);
         if (list.size() > 0) {
             BackStackEntry lastEntry = list.remove(0);
-            FragmentBuilder lastBuilder = parse(lastEntry);
+            FragmentTransactionBuilder2 lastBuilder = parse(lastEntry);
             for (BackStackEntry entry : list) {
                 if (parse(entry).builtTimeMillis > lastBuilder.builtTimeMillis) {
                     lastEntry = entry;
@@ -751,9 +572,9 @@ public class FragmentBuilder {
         private FragmentManager srcFragmentManager;
         private Fragment popFragment;
 
-        private FragmentBuilder builder;
+        private FragmentTransactionBuilder2 builder;
 
-        public NotifyPopFragment(FragmentActivity srcFragmentActivity, Fragment srcFragment, FragmentManager fragmentManager, Fragment popFragment, FragmentBuilder builder) {
+        public NotifyPopFragment(FragmentActivity srcFragmentActivity, Fragment srcFragment, FragmentManager fragmentManager, Fragment popFragment, FragmentTransactionBuilder2 builder) {
             this.srcFragmentActivity = srcFragmentActivity;
             this.srcFragment = srcFragment;
             this.srcFragmentManager = fragmentManager;
@@ -775,9 +596,7 @@ public class FragmentBuilder {
                     srcObject = srcFragmentActivity.findViewById(builder.srcViewId);
                 }
             } else {
-                if (srcFragment == null) {
-                    srcFragment = FragmentPath.findFragment(srcFragmentActivity, builder.srcFragmentPathString);
-                }
+                Fragment srcFragment = FragmentPath.findSrcFragment(srcFragmentActivity, builder.srcFragmentPathString);
                 if (builder.srcViewId == 0) {
                     srcObject = srcFragment;
                 } else {
@@ -830,88 +649,99 @@ public class FragmentBuilder {
     public static class FragmentPath extends ArrayList<Integer> {
         private final static String delimiter = ",";
 
-        public static String getFragmentPathString(FragmentBuilder builder) {
-            String fragmentPathString = getFragmentPathString(builder.content);
-            return fragmentPathString;
-        }
-
-        public static String getFragmentPathString(View srcView) {
-            return getFragmentPathString(new Content(srcView));
-        }
-
-        public static String getFragmentPathString(Content content) {
-            FragmentPath srcFragmentPath = getFragmentPath(content);
-            String srcFragmentPathString = covert(srcFragmentPath);
-            return srcFragmentPathString;
-        }
-
-        public static FragmentPath getFragmentPath(FragmentBuilder builder) {
-            FragmentPath fragmentPath = getFragmentPath(builder.content);
-            return fragmentPath;
-        }
-
-        public static FragmentPath getFragmentPath(View srcView) {
-            FragmentPath fragmentPath = getFragmentPath(new Content(srcView));
-            return fragmentPath;
-        }
-
-        public static FragmentPath getFragmentPath(Content content) {
-            FragmentPath fragmentPath = new FragmentPath();
-            View srcView = content.getSrcView();
-            if (srcView != null) {
-                FragmentActivity activity = (FragmentActivity) srcView.getContext();
-                ArrayList<Fragment> fragmentArrayList = new ArrayList<Fragment>();
-                HashMap<Fragment, Fragment> parentMap = new HashMap<Fragment, Fragment>();
-                HashMap<Fragment, Integer> fragmentIndexMap = new HashMap<Fragment, Integer>();
-                fillAllFragments(null, parentMap, activity.getSupportFragmentManager(), fragmentArrayList, fragmentIndexMap);
-                View contentView = srcView.getRootView().findViewById(android.R.id.content);
-                if (fragmentArrayList.size() > 0) {
-                    Fragment srcFragment = findFragmentByView(fragmentArrayList, srcView, contentView);
-                    if (srcFragment != null) {
-                        fillFragmentPathString(fragmentPath, parentMap, fragmentIndexMap, srcFragment);
-                    }
-                }
-            }
-            checkFragmentPath(content, fragmentPath);
-            return fragmentPath;
-        }
-
-        private static void checkFragmentPath(Content content, FragmentPath fragmentPath) {
-            // TODO 改一下
-            View srcView = content.getSrcView();
-            String fragmentPathString = covert(fragmentPath);
-            if (srcView == null && fragmentPath.size() == 0) {
-                // FragmentActivity
+        public static void fillFragmentPath(FragmentTransactionBuilder2 builder) {
+            View srcView = null;
+            if (builder.content.srcFragment != null) {
+                srcView = builder.content.srcFragment.getView();
+            } else if (builder.content.srcView != null) {
+                srcView = builder.content.srcView;
+            } else {
                 return;
             }
-            if (content.srcFragment != null) {
-                Fragment findSrcFragment = FragmentPath.findFragment(content.getFragmentActivity(), fragmentPath);
-                if (!content.srcFragment.equals(findSrcFragment)) {
-                    throw new RuntimeException(String.format("Could not match source view. You need unique id for %s.", content.srcFragment.toString()));
+            builder.srcFragmentPathString = FragmentPath.buildFragmentPathString(srcView);
+            // Check
+            if (builder.content.srcFragment != null) {
+                Fragment findSrcFragment = FragmentPath.findSrcFragment(builder.content.srcFragment.getActivity(), builder.srcFragmentPathString);
+                if (!builder.content.srcFragment.equals(findSrcFragment)) {
+                    throw new RuntimeException(String.format("Could not match source view. You need unique id for %s.", builder.content.srcFragment.toString()));
                 } else {
                     if (DEBUG) {
-                        Toast.makeText(content.srcFragment.getActivity(), String.format("FragmentTag %s\nFragmentPath: %s\n%s", content.srcFragment.getTag(), fragmentPathString, content.srcFragment), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(builder.content.srcFragment.getActivity(), String.format("FragmentTag %s\nFragmentPath: %s\n%s", builder.fragmentTag, builder.srcFragmentPathString, builder.content.srcFragment), Toast.LENGTH_SHORT).show();
                     }
                 }
-            } else if (content.srcView != null) {
-                View findSrcView = FragmentPath.findView(content.getFragmentActivity(), fragmentPath, content.srcView.getId());
+            } else if (builder.content.srcView != null) {
+                View findSrcView = FragmentPath.findSrcView((FragmentActivity) srcView.getContext(), builder.srcFragmentPathString, srcView.getId());
                 if (!findSrcView.equals(srcView)) {
                     throw new RuntimeException(String.format("Could not match source view. You need unique id for %s.", srcView.toString()));
                 } else {
                     if (DEBUG) {
-                        Toast.makeText(srcView.getContext(), String.format("SrcViewId: %s\nFragmentPath: %s\n%s", content.srcView.getId(), fragmentPathString, content.srcView), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(srcView.getContext(), String.format("SrcViewId: %s\nFragmentPath: %s\n%s", builder.srcViewId, builder.srcFragmentPathString, builder.content.srcView), Toast.LENGTH_SHORT).show();
                     }
                 }
             }
         }
 
-        private static void fillFragmentPathString(List<Integer> fragmentPath, Map<Fragment, Fragment> parentMap, Map<Fragment, Integer> fragmentIndexMap, Fragment srcFragment) {
+        public static View getContentView(View view) {
+            return view.getRootView().findViewById(android.R.id.content);
+        }
+
+        public static View findSrcView(FragmentActivity activity, String fragmentPathString, int srcViewId) {
+            return findSrcView(activity, FragmentPath.covert(fragmentPathString), srcViewId);
+        }
+
+        public static View findSrcView(FragmentActivity activity, List<Integer> fragmentPath, int srcViewId) {
+            View view = null;
+            Fragment srcFragment = findSrcFragment(activity, fragmentPath);
+            if (srcFragment == null) {
+                view = activity.findViewById(srcViewId);
+            } else {
+                view = srcFragment.getView().findViewById(srcViewId);
+            }
+            return view;
+        }
+
+        public static Fragment findSrcFragment(FragmentActivity activity, String fragmentPathString) {
+            return findSrcFragment(activity, FragmentPath.covert(fragmentPathString));
+        }
+
+        public static Fragment findSrcFragment(FragmentActivity activity, List<Integer> fragmentPath) {
+            Fragment fragment = null;
+            if (fragmentPath == null || fragmentPath.size() == 0) {
+                fragment = null;
+            } else {
+                FragmentManager fm = activity.getSupportFragmentManager();
+                for (Integer index : fragmentPath) {
+                    fragment = fm.getFragments().get(index);
+                    fm = fragment.getChildFragmentManager();
+                }
+            }
+            return fragment;
+        }
+
+        public static FragmentPath buildFragmentPath(View srcView) {
+            FragmentPath indexChainList = new FragmentPath();
+            FragmentActivity activity = (FragmentActivity) srcView.getContext();
+            ArrayList<Fragment> fragmentArrayList = new ArrayList<Fragment>();
+            HashMap<Fragment, Fragment> parentMap = new HashMap<Fragment, Fragment>();
+            HashMap<Fragment, Integer> fragmentIndexMap = new HashMap<Fragment, Integer>();
+            fillAllFragments(null, parentMap, activity.getSupportFragmentManager(), fragmentArrayList, fragmentIndexMap);
+            View contentView = getContentView(srcView);
+            if (fragmentArrayList.size() > 0) {
+                Fragment srcFragment = findFragmentByView(fragmentArrayList, srcView, contentView);
+                if (srcFragment != null) {
+                    fillFragmentPath(indexChainList, parentMap, fragmentIndexMap, srcFragment);
+                }
+            }
+            return indexChainList;
+        }
+
+        private static void fillFragmentPath(List<Integer> fragmentPath, Map<Fragment, Fragment> parentMap, Map<Fragment, Integer> fragmentIndexMap, Fragment srcFragment) {
             fragmentPath.add(0, fragmentIndexMap.get(srcFragment));
             Fragment parentFragment = parentMap.get(srcFragment);
             if (parentFragment == null) {
                 return;
             } else {
-                fillFragmentPathString(fragmentPath, parentMap, fragmentIndexMap, parentFragment);
+                fillFragmentPath(fragmentPath, parentMap, fragmentIndexMap, parentFragment);
             }
         }
 
@@ -954,51 +784,13 @@ public class FragmentBuilder {
             }
         }
 
-        public static Fragment findFragmentByView(View view) {
-            Fragment srcFragment = null;
-            FragmentActivity activity = (FragmentActivity) view.getContext();
-            ArrayList<Fragment> fragmentArrayList = new ArrayList<Fragment>();
-            HashMap<Fragment, Fragment> parentMap = new HashMap<Fragment, Fragment>();
-            HashMap<Fragment, Integer> fragmentIndexMap = new HashMap<Fragment, Integer>();
-            fillAllFragments(null, parentMap, activity.getSupportFragmentManager(), fragmentArrayList, fragmentIndexMap);
-            View contentView = view.getRootView().findViewById(android.R.id.content);
-            if (fragmentArrayList.size() > 0) {
-                srcFragment = findFragmentByView(fragmentArrayList, view, contentView);
+        public static String buildFragmentPathString(View srcView) {
+            String srcFragmentPathString = "";
+            FragmentPath srcFragmentPath = buildFragmentPath(srcView);
+            if (srcFragmentPath.size() > 0) {
+                srcFragmentPathString = TextUtils.join(delimiter, srcFragmentPath);
             }
-            return srcFragment;
-        }
-
-        public static View findView(FragmentActivity activity, String fragmentPathString, int viewId) {
-            return findView(activity, FragmentPath.covert(fragmentPathString), viewId);
-        }
-
-        public static View findView(FragmentActivity activity, List<Integer> fragmentPath, int viewId) {
-            View view = null;
-            Fragment fragment = findFragment(activity, fragmentPath);
-            if (fragment == null) {
-                view = activity.findViewById(viewId);
-            } else {
-                view = fragment.getView().findViewById(viewId);
-            }
-            return view;
-        }
-
-        public static Fragment findFragment(FragmentActivity activity, String fragmentPathString) {
-            return findFragment(activity, FragmentPath.covert(fragmentPathString));
-        }
-
-        public static Fragment findFragment(FragmentActivity activity, List<Integer> fragmentPath) {
-            Fragment fragment = null;
-            if (fragmentPath == null || fragmentPath.size() == 0) {
-                fragment = null;
-            } else {
-                FragmentManager fm = activity.getSupportFragmentManager();
-                for (Integer index : fragmentPath) {
-                    fragment = fm.getFragments().get(index);
-                    fm = fragment.getChildFragmentManager();
-                }
-            }
-            return fragment;
+            return srcFragmentPathString;
         }
 
         public static FragmentPath covert(String fragmentPathString) {
@@ -1007,14 +799,6 @@ public class FragmentBuilder {
                 fragmentPath.add(Integer.parseInt(index));
             }
             return fragmentPath;
-        }
-
-        public static String covert(FragmentPath fragmentPath) {
-            String fragmentPathString = "";
-            if (fragmentPath.size() > 0) {
-                fragmentPathString = TextUtils.join(delimiter, fragmentPath);
-            }
-            return fragmentPathString;
         }
     }
 }

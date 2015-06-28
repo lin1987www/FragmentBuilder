@@ -8,34 +8,30 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.lin1987www.fragmentbuilder.widget.ShowNameTextView;
-
 import lin1987www.com.fragmentbuilder.R;
 
 /**
  * Created by Administrator on 2015/6/26.
  */
 public class F5Fragment extends Fragment {
-    public String result;
+    public String enterNumber;
 
     TextView mTextView;
-    EditText mNumberEditText;
-    ShowNameTextView mShowNameTextView;
+    EditText mEditText;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f5, container, false);
         mTextView = (TextView) view.findViewById(R.id.textView);
-        mTextView.setText(String.format("%s id:[%s]", getTag(), getId()));
-        mNumberEditText = (EditText) view.findViewById(R.id.editText);
-        mShowNameTextView = (ShowNameTextView) view.findViewById(R.id.showNameTextView);
+        mTextView.setText(String.format("tag: %s id: %s", getTag(), getId()));
+        mEditText = (EditText) view.findViewById(R.id.editText);
         return view;
     }
 
     @Override
     public void onDestroyView() {
-        result = String.format("Name:[%s] Number:[%s]", mShowNameTextView.getText().toString(), mNumberEditText.getText().toString());
+        enterNumber = mEditText.getText().toString();
         super.onDestroyView();
     }
 }

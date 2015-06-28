@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
-            android:text="Click to test F4Fragment" />
+            android:text="Click to pop up F4Fragment" />
     </FrameLayout>
 
     <FrameLayout
@@ -48,7 +48,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
-            android:text="Click to test F5Fragment" />
+            android:text="Click to pop up F5Fragment" />
     </FrameLayout>
 
     <TextView

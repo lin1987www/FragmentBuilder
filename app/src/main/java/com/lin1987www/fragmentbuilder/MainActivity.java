@@ -3,7 +3,7 @@ package com.lin1987www.fragmentbuilder;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 
-import com.lin1987www.app.FragmentBuilder;
+import com.lin1987www.app.FragmentTransactionBuilder2;
 
 import lin1987www.com.fragmentbuilder.R;
 
@@ -16,8 +16,8 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        FragmentBuilder.defaultContainerViewId = android.R.id.content;
-        FragmentBuilder
+        FragmentTransactionBuilder2.defaultContainerViewId = android.R.id.content;
+        FragmentTransactionBuilder2
                 .create(this)
                 .setContainerViewId(R.id.container)
                 .setFragment(MainFragment.class)
@@ -28,7 +28,7 @@ public class MainActivity extends FragmentActivity {
 
     @Override
     public void onBackPressed() {
-        if (FragmentBuilder.hasPopBackStack(this)) {
+        if (FragmentTransactionBuilder2.hasPopBackStack(this)) {
             return;
         }
         super.onBackPressed();
