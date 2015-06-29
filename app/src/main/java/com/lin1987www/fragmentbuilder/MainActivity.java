@@ -16,7 +16,7 @@ public class MainActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ((View)findViewById(你Layout檔最上層View的Id).getParent().getParent()).setClickable(true);
+
         FragmentBuilder.defaultContainerViewId = android.R.id.content;
         FragmentBuilder
                 .create(this)

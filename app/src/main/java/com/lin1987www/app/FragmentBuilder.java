@@ -516,7 +516,7 @@ public class FragmentBuilder {
         if (content == null) {
             throw new RuntimeException("Forbid build!");
         }
-        content.getDecorView().post(new Runnable() {
+        content.getFragmentActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 buildImmediate();
