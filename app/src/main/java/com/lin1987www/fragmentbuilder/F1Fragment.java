@@ -38,7 +38,7 @@ public class F1Fragment extends Fragment {
                         .setContainerViewId(R.id.container_f1)
                         .setFragment(F11Fragment.class, F11Fragment.class.getSimpleName())
                         .add()
-                        .traceable()
+                        .addToBackStack("Wizard Steps Test")
                         .build();
             }
         });

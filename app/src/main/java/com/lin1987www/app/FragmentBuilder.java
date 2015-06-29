@@ -16,6 +16,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -376,7 +378,6 @@ public class FragmentBuilder {
         if (builder.backTimes <= 0) {
             return;
         }
-
         String fragmentTag = FragmentPath.findFragmentByView(builder.content.getSrcView()).getTag();
         FragmentBuilder thisBuilder = null;
         BackStackEntry backStackEntry;
@@ -699,11 +700,50 @@ public class FragmentBuilder {
         builder.content = content;
     }
 
+    public static void popBackStack(FragmentActivity activity, String name, int flags) {
+        ArrayList<BackStackEntry> list = new ArrayList<BackStackEntry>();
+        HashMap<BackStackEntry, FragmentManager> srcFmMap = new HashMap<BackStackEntry, FragmentManager>();
+        HashMap<BackStackEntry, Fragment> srcFragMap = new HashMap<BackStackEntry, Fragment>();
+
+        findAllBackStack(null, srcFragMap, activity.getSupportFragmentManager(), list, srcFmMap);
+        if (list.size() > 0) {
+            Collections.sort(list, new Comparator<BackStackEntry>() {
+                @Override
+                public int compare(BackStackEntry o1, BackStackEntry o2) {
+                    return (int) (parse(o1).builtTimeMillis - parse(o2).builtTimeMillis);
+                }
+            });
+        }
+        List<NotifyPopFragment> notifyPopFragmentList = new ArrayList<NotifyPopFragment>();
+        for (int i = list.size() - 1; i > -1; i--) {
+            BackStackEntry backStackEntry = list.get(i);
+            FragmentBuilder builder = parse(list.get(i));
+            FragmentManager srcFragmentManager = srcFmMap.get(backStackEntry);
+            Fragment srcFragment = srcFragMap.get(backStackEntry);
+            Fragment popFragment = srcFragmentManager.findFragmentByTag(builder.fragmentTag);
+            if (name != null) {
+                if (builder.assignBackStackName.equals(name)) {
+                    if (flags == FragmentManager.POP_BACK_STACK_INCLUSIVE) {
+                        notifyPopFragmentList.add(new NotifyPopFragment(activity, srcFragment, srcFragmentManager, popFragment, builder));
+                    }
+                    break;
+                } else {
+                    notifyPopFragmentList.add(new NotifyPopFragment(activity, srcFragment, srcFragmentManager, popFragment, builder));
+                }
+            } else {
+                notifyPopFragmentList.add(new NotifyPopFragment(activity, srcFragment, srcFragmentManager, popFragment, builder));
+            }
+        }
+        for (NotifyPopFragment notify : notifyPopFragmentList) {
+            notify.popBackStack();
+        }
+    }
+
     public static boolean hasPopBackStack(FragmentActivity activity) {
         ArrayList<BackStackEntry> list = new ArrayList<BackStackEntry>();
-        HashMap<BackStackEntry, FragmentManager> map = new HashMap<BackStackEntry, FragmentManager>();
+        HashMap<BackStackEntry, FragmentManager> srcFmMap = new HashMap<BackStackEntry, FragmentManager>();
         HashMap<BackStackEntry, Fragment> srcFragMap = new HashMap<BackStackEntry, Fragment>();
-        findLeavesBackStack(null, srcFragMap, activity.getSupportFragmentManager(), list, map);
+        findLeavesBackStack(null, srcFragMap, activity.getSupportFragmentManager(), list, srcFmMap);
         if (list.size() > 0) {
             BackStackEntry lastEntry = list.remove(0);
             FragmentBuilder lastBuilder = parse(lastEntry);
@@ -713,11 +753,11 @@ public class FragmentBuilder {
                     lastBuilder = parse(lastEntry);
                 }
             }
-            FragmentManager srcFragmentManager = map.get(lastEntry);
+            FragmentManager srcFragmentManager = srcFmMap.get(lastEntry);
             Fragment srcFragment = srcFragMap.get(lastEntry);
             Fragment popFragment = srcFragmentManager.findFragmentByTag(lastBuilder.fragmentTag);
-            new NotifyPopFragment(activity, srcFragment, srcFragmentManager, popFragment, lastBuilder);
-            srcFragmentManager.popBackStack();
+            new NotifyPopFragment(activity, srcFragment, srcFragmentManager, popFragment, lastBuilder).popBackStack();
+
             return true;
         }
         return false;
@@ -745,21 +785,46 @@ public class FragmentBuilder {
         }
     }
 
+    private static void findAllBackStack(Fragment srcFrag, Map<BackStackEntry, Fragment> fragMap, FragmentManager fm, List<BackStackEntry> leaves, Map<BackStackEntry, FragmentManager> map) {
+        if (fm != null) {
+            if (fm.getBackStackEntryCount() > 0) {
+                for (int i = fm.getBackStackEntryCount() - 1; i > -1; i--) {
+                    BackStackEntry backStackEntry = fm.getBackStackEntryAt(i);
+                    leaves.add(backStackEntry);
+                    map.put(backStackEntry, fm);
+                    fragMap.put(backStackEntry, srcFrag);
+                }
+            }
+            List<Fragment> fragList = fm.getFragments();
+            if (fragList != null && fragList.size() > 0) {
+                for (Fragment frag : fragList) {
+                    if (frag == null) {
+                        continue;
+                    }
+                    findAllBackStack(frag, fragMap, frag.getChildFragmentManager(), leaves, map);
+                }
+            }
+        }
+    }
+
     private static class NotifyPopFragment implements FragmentManager.OnBackStackChangedListener {
         private FragmentActivity srcFragmentActivity;
         private Fragment srcFragment;
         private FragmentManager srcFragmentManager;
         private Fragment popFragment;
-
         private FragmentBuilder builder;
 
-        public NotifyPopFragment(FragmentActivity srcFragmentActivity, Fragment srcFragment, FragmentManager fragmentManager, Fragment popFragment, FragmentBuilder builder) {
+        public NotifyPopFragment(FragmentActivity srcFragmentActivity, Fragment srcFragment, FragmentManager srcFragmentManager, Fragment popFragment, FragmentBuilder builder) {
             this.srcFragmentActivity = srcFragmentActivity;
             this.srcFragment = srcFragment;
-            this.srcFragmentManager = fragmentManager;
+            this.srcFragmentManager = srcFragmentManager;
             this.popFragment = popFragment;
             this.builder = builder;
-            fragmentManager.addOnBackStackChangedListener(this);
+            srcFragmentManager.addOnBackStackChangedListener(this);
+        }
+
+        public void popBackStack() {
+            srcFragmentManager.popBackStack();
         }
 
         @Override
