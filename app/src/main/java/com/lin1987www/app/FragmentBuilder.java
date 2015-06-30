@@ -378,21 +378,30 @@ public class FragmentBuilder {
         if (builder.backTimes <= 0) {
             return;
         }
+
         String fragmentTag = FragmentPath.findFragmentByView(builder.content.getSrcView()).getTag();
-        FragmentBuilder thisBuilder = null;
+        FragmentBuilder backBuilder = null;
         BackStackEntry backStackEntry;
         FragmentManager fm = getParentFragmentManager(builder.content);
         for (int i = fm.getBackStackEntryCount() - 1; i > -1; i--) {
             backStackEntry = fm.getBackStackEntryAt(i);
-            thisBuilder = parse(backStackEntry);
-            if (thisBuilder.fragmentTag.equals(fragmentTag)) {
+            backBuilder = parse(backStackEntry);
+            if (backBuilder.fragmentTag.equals(fragmentTag)) {
                 break;
             }
-            thisBuilder = null;
+            backBuilder = null;
         }
-        if (thisBuilder != null) {
-            fillContent(thisBuilder, builder.content.getFragmentActivity());
-            override(thisBuilder, builder);
+        if (backBuilder != null) {
+            // Fill Content Object to backBuilder
+            fillContent(backBuilder, builder.content.getFragmentActivity());
+            String originFragmentPath = FragmentPath.getFragmentPathString(builder.content);
+            Fragment originFragment = FragmentPath.findFragment(builder.content.getFragmentActivity(), originFragmentPath);
+            int originViewId = builder.srcViewId;
+            overrideBuilder(backBuilder, builder);
+            // TODO
+            builder.srcFragmentPathString = originFragmentPath;
+            builder.srcViewId = originViewId;
+            builder.srcFragmentTag = originFragment.getTag();
         } else {
             //TODO
         }
@@ -433,37 +442,38 @@ public class FragmentBuilder {
         return backContent;
     }
 
-    public static void override(FragmentBuilder base, FragmentBuilder builder) {
-        builder.content = base.content;
-        builder.containerViewId = base.containerViewId;
+    public static void overrideBuilder(FragmentBuilder defaultBuilder, FragmentBuilder builder) {
+        builder.content = defaultBuilder.content;
+        builder.containerViewId = defaultBuilder.containerViewId;
 
         if (builder.action == Action.none) {
-            builder.action = base.action;
-            builder.isTraceable = base.isTraceable;
+            builder.action = defaultBuilder.action;
+            builder.isTraceable = defaultBuilder.isTraceable;
         }
 
         if ((builder.styleRes == 0) && (builder.transition == TRANSIT_NONE) &&
                 (builder.enter == 0) && (builder.exit == 0) && (builder.popEnter == 0) && (builder.popExit == 0)
                 ) {
-            builder.styleRes = base.styleRes;
-            builder.transition = base.transition;
-            builder.enter = base.enter;
-            builder.exit = base.exit;
-            builder.popEnter = base.popEnter;
-            builder.popExit = base.popExit;
+            builder.styleRes = defaultBuilder.styleRes;
+            builder.transition = defaultBuilder.transition;
+            builder.enter = defaultBuilder.enter;
+            builder.exit = defaultBuilder.exit;
+            builder.popEnter = defaultBuilder.popEnter;
+            builder.popExit = defaultBuilder.popExit;
         }
-
     }
 
     public void buildImmediate() {
         if (content == null) {
             throw new RuntimeException("Forbid build!");
         }
-        doBack(this);
+        // doBack(this);
         if (action.equals(Action.none)) {
             action = defaultAction;
         }
+
         this.srcFragmentPathString = FragmentPath.getFragmentPathString(this);
+
         FragmentManager fragmentManager = getFragmentManager();
         // Check fragment already exist
         final Fragment fragmentAlreadyExist = fragmentManager.findFragmentByTag(fragmentTag);
@@ -516,7 +526,7 @@ public class FragmentBuilder {
         if (content == null) {
             throw new RuntimeException("Forbid build!");
         }
-        content.getFragmentActivity().runOnUiThread(new Runnable() {
+        content.getDecorView().post(new Runnable() {
             @Override
             public void run() {
                 buildImmediate();
@@ -528,11 +538,15 @@ public class FragmentBuilder {
         add, replace, reset, none
     }
 
+    /**
+     *  Provider  同時預設也是 接收 onPopFragment 的接收者，但是為了實作 Wizard Steps 可能要再想想...
+     */
     public static class Content {
         private static String noExistContainerView = "Didn't find container view.";
         public final FragmentActivity srcFragmentActivity;
         public final Fragment srcFragment;
         public final View srcView;
+        private FragmentManager fragmentManager = null;
 
         public Content(FragmentActivity srcFragmentActivity) {
             this(srcFragmentActivity, null, null);
@@ -569,8 +583,6 @@ public class FragmentBuilder {
             }
         }
 
-        private FragmentManager fragmentManager = null;
-
         public FragmentActivity getFragmentActivity() {
             if (srcFragmentActivity != null) {
                 return srcFragmentActivity;
@@ -593,28 +605,32 @@ public class FragmentBuilder {
             return rootView;
         }
 
-        public FragmentManager getFragmentManager(int containerViewId) {
-            if (fragmentManager != null) {
-                return fragmentManager;
+        public void setContainerViewId(int containerViewId) {
+            FragmentPath fragmentPath = FragmentPath.getFragmentPath(this);
+            while (fragmentPath.size() > 0) {
+                Fragment frag = FragmentPath.findFragment(getFragmentActivity(), fragmentPath);
+                if (null != frag.getView().findViewById(containerViewId)) {
+                    // TODO 保存 srcFragmentTag ? 應該不需要  因為他只是建立 Fragemnt 的Fragment  並非實際目的地的Fragment
+                    fragmentManager = frag.getChildFragmentManager();
+                    break;
+                } else {
+                    fragmentPath.back();
+                }
             }
-            if (null != srcFragment) {
-                if (null != srcFragment.getView().findViewById(containerViewId)) {
-                    fragmentManager = srcFragment.getChildFragmentManager();
-                } else if (null != srcFragment.getActivity().findViewById(containerViewId)) {
-                    fragmentManager = srcFragment.getActivity().getSupportFragmentManager();
+            if (fragmentManager == null) {
+                if (null != getFragmentActivity().findViewById(containerViewId)) {
+                    fragmentManager = getFragmentActivity().getSupportFragmentManager();
                 } else {
                     throw new RuntimeException(noExistContainerView);
                 }
-            } else if (null != srcFragmentActivity) {
-                fragmentManager = srcFragmentActivity.getSupportFragmentManager();
-                if (null == srcFragmentActivity.findViewById(containerViewId)) {
-                    throw new RuntimeException(noExistContainerView);
-                }
-            } else if (null != srcView) {
-                fragmentManager = ((FragmentActivity) srcView.getContext()).getSupportFragmentManager();
-                if (null == ((FragmentActivity) srcView.getContext()).findViewById(containerViewId)) {
-                    throw new RuntimeException(noExistContainerView);
-                }
+            }
+        }
+
+        public FragmentManager getFragmentManager(int containerViewId) {
+            if (fragmentManager != null) {
+                return fragmentManager;
+            } else {
+                setContainerViewId(containerViewId);
             }
             return fragmentManager;
         }
@@ -809,7 +825,9 @@ public class FragmentBuilder {
 
     private static class NotifyPopFragment implements FragmentManager.OnBackStackChangedListener {
         private FragmentActivity srcFragmentActivity;
+        // TODO 這應該不需要
         private Fragment srcFragment;
+        // TODO 這FragmentManager 也只是過客?
         private FragmentManager srcFragmentManager;
         private Fragment popFragment;
         private FragmentBuilder builder;
@@ -831,7 +849,7 @@ public class FragmentBuilder {
         public void onBackStackChanged() {
             srcFragmentManager.removeOnBackStackChangedListener(this);
             PopFragmentListener listener = null;
-            Object srcObject = null;
+            Object srcObject;
 
             if (TextUtils.isEmpty(builder.srcFragmentPathString)) {
                 if (builder.srcViewId == 0) {
@@ -894,6 +912,11 @@ public class FragmentBuilder {
 
     public static class FragmentPath extends ArrayList<Integer> {
         private final static String delimiter = ",";
+
+        public int back() {
+            this.remove(size() - 1);
+            return this.size();
+        }
 
         public static String getFragmentPathString(FragmentBuilder builder) {
             String fragmentPathString = getFragmentPathString(builder.content);

@@ -17,7 +17,7 @@ FragmentBuilder is designed for solving back stack behaviour with nested fragmen
         super.onBackPressed();
     }
 
-### Use FragmentBuilder instead of FragmentManager
+### FragmentManager covert to FragmentBuilder
 
 	// Use FragmentManager
 	getSupportFragmentManager()
@@ -53,6 +53,9 @@ You can implement the PopFragmentListener on **FragmentActicity**, **Fragment**,
 ## Sample
 
 ### Wizard Steps
+
+// TODO
+
 
 
 ## Architecture

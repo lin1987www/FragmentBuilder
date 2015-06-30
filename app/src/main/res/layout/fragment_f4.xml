@@ -18,4 +18,5 @@
         android:layout_height="wrap_content"
         android:hint="Enter number"
         android:inputType="numberDecimal" />
+
 </LinearLayout>
