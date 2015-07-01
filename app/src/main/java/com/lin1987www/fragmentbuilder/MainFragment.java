@@ -25,7 +25,7 @@ public class MainFragment extends Fragment implements FragmentBuilder.PopFragmen
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
 
-
+        getActivity().getSupportFragmentManager().findFragmentById(R.id.container);
 
         FragmentBuilder
                 .create(this)

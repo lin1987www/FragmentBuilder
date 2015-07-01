@@ -22,7 +22,7 @@ public class WizardStepsTextView extends TextView implements View.OnClickListene
     public void onClick(View view) {
         FragmentBuilder
                 .create(this)
-                .back()
+                .replace()
                 .setFragment(F11Fragment.class, F11Fragment.class.getSimpleName())
                 .addToBackStack("Wizard Steps Test")
                 .build();

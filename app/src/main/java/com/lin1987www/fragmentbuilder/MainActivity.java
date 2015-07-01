@@ -17,7 +17,7 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        FragmentBuilder.defaultContainerViewId = android.R.id.content;
+        FragmentBuilder.defaultContainerViewId = R.id.container;
         FragmentBuilder
                 .create(this)
                 .setContainerViewId(R.id.container)

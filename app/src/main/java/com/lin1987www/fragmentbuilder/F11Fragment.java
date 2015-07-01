@@ -18,7 +18,9 @@ import lin1987www.com.fragmentbuilder.R;
  * Created by Administrator on 2015/6/26.
  */
 public class F11Fragment extends Fragment {
+    private final static String TAG = F11Fragment.class.getSimpleName();
     public String result;
+    String f111Result = "";
 
     TextView mTextView;
     FrameLayout mContainer;
@@ -48,25 +50,26 @@ public class F11Fragment extends Fragment {
         mNextStepButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO
-//                FragmentBuilder
-//                        .create(F11Fragment.this)
-//                        .back()
-//                        .setFragment(F12Fragment.class, F12Fragment.class.getSimpleName())
-//                        .build();
+                FragmentBuilder
+                        .create(F11Fragment.this)
+                        .back()
+                        .setFragment(F12Fragment.class, F12Fragment.class.getSimpleName())
+                        .build();
             }
         });
         mNumberEditText = (EditText) view.findViewById(R.id.editText);
+
         return view;
     }
 
     @Override
     public void onDestroyView() {
-        result = String.format("Number:[%s]", mNumberEditText.getText().toString());
+        result = String.format("F11:[%s] F111:[%s]", mNumberEditText.getText().toString(), f111Result);
         super.onDestroyView();
     }
 
     public void onPopFragment(F111Fragment fragment) {
+        f111Result = fragment.result;
         mTextView.setText(String.format("->%s %s", fragment.getClass().getSimpleName(), fragment.result));
     }
 }

@@ -3,6 +3,7 @@ package com.lin1987www.fragmentbuilder;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ import lin1987www.com.fragmentbuilder.R;
  * Created by Administrator on 2015/6/26.
  */
 public class F12Fragment extends Fragment {
+    private final static String TAG = F12Fragment.class.getSimpleName();
     public String result;
     TextView mTextView;
     ShowNameTextView mShowNameTextView;
@@ -37,12 +39,13 @@ public class F12Fragment extends Fragment {
                 FragmentBuilder.popBackStack(getActivity(), "Wizard Steps Test", FragmentManager.POP_BACK_STACK_INCLUSIVE);
             }
         });
+
         return view;
     }
 
     @Override
     public void onDestroyView() {
-        result = mShowNameTextView.getText().toString();
+        result = String.format("F12:[%s]", mShowNameTextView.getText().toString());
         super.onDestroyView();
     }
 }

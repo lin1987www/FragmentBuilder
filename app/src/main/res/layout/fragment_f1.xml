@@ -44,4 +44,12 @@
         android:layout_height="wrap_content"
         android:text="Next Step F12Fragment"
         android:visibility="gone" />
+
+    <com.lin1987www.fragmentbuilder.widget.WizardStepsTextView
+        android:id="@+id/WizardStepsTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="WizardStepsTextView"
+        android:textAppearance="?android:textAppearanceLarge" />
+
 </LinearLayout>

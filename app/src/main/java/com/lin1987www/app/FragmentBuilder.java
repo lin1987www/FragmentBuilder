@@ -83,6 +83,7 @@ public class FragmentBuilder {
     private String assignBackStackName = "";
     private String fragmentTag;
     private String srcFragmentPathString = "";
+    // srcFragmentTag 用於Debug 顯示資料沒特別用處
     private String srcFragmentTag;
     private int srcViewId = 0;
     private long builtTimeMillis = 0;
@@ -393,15 +394,15 @@ public class FragmentBuilder {
         }
         if (backBuilder != null) {
             // Fill Content Object to backBuilder
-            fillContent(backBuilder, builder.content.getFragmentActivity());
+            // fillContent(backBuilder, builder.content.getFragmentActivity());
             String originFragmentPath = FragmentPath.getFragmentPathString(builder.content);
             Fragment originFragment = FragmentPath.findFragment(builder.content.getFragmentActivity(), originFragmentPath);
             int originViewId = builder.srcViewId;
             overrideBuilder(backBuilder, builder);
             // TODO
-            builder.srcFragmentPathString = originFragmentPath;
-            builder.srcViewId = originViewId;
-            builder.srcFragmentTag = originFragment.getTag();
+//            builder.srcFragmentPathString = originFragmentPath;
+//            builder.srcViewId = originViewId;
+//            builder.srcFragmentTag = originFragment.getTag();
         } else {
             //TODO
         }
@@ -443,8 +444,12 @@ public class FragmentBuilder {
     }
 
     public static void overrideBuilder(FragmentBuilder defaultBuilder, FragmentBuilder builder) {
-        builder.content = defaultBuilder.content;
+        //builder.content = defaultBuilder.content;
         builder.containerViewId = defaultBuilder.containerViewId;
+        // overrider src
+        builder.srcFragmentTag = defaultBuilder.srcFragmentTag;
+        builder.srcViewId = defaultBuilder.srcViewId;
+        builder.srcFragmentPathString = defaultBuilder.srcFragmentPathString;
 
         if (builder.action == Action.none) {
             builder.action = defaultBuilder.action;
@@ -467,13 +472,13 @@ public class FragmentBuilder {
         if (content == null) {
             throw new RuntimeException("Forbid build!");
         }
-        // doBack(this);
+        doBack(this);
         if (action.equals(Action.none)) {
             action = defaultAction;
         }
-
-        this.srcFragmentPathString = FragmentPath.getFragmentPathString(this);
-
+        if (backTimes <= 0) {
+            this.srcFragmentPathString = FragmentPath.getFragmentPathString(content);
+        }
         FragmentManager fragmentManager = getFragmentManager();
         // Check fragment already exist
         final Fragment fragmentAlreadyExist = fragmentManager.findFragmentByTag(fragmentTag);
@@ -539,7 +544,7 @@ public class FragmentBuilder {
     }
 
     /**
-     *  Provider  同時預設也是 接收 onPopFragment 的接收者，但是為了實作 Wizard Steps 可能要再想想...
+     * Provider  同時預設也是 接收 onPopFragment 的接收者，但是為了實作 Wizard Steps 可能要再想想...
      */
     public static class Content {
         private static String noExistContainerView = "Didn't find container view.";
@@ -720,7 +725,6 @@ public class FragmentBuilder {
         ArrayList<BackStackEntry> list = new ArrayList<BackStackEntry>();
         HashMap<BackStackEntry, FragmentManager> srcFmMap = new HashMap<BackStackEntry, FragmentManager>();
         HashMap<BackStackEntry, Fragment> srcFragMap = new HashMap<BackStackEntry, Fragment>();
-
         findAllBackStack(null, srcFragMap, activity.getSupportFragmentManager(), list, srcFmMap);
         if (list.size() > 0) {
             Collections.sort(list, new Comparator<BackStackEntry>() {
@@ -730,7 +734,7 @@ public class FragmentBuilder {
                 }
             });
         }
-        List<NotifyPopFragment> notifyPopFragmentList = new ArrayList<NotifyPopFragment>();
+        List<PopFragmentSender> notifyPopFragmentList = new ArrayList<PopFragmentSender>();
         for (int i = list.size() - 1; i > -1; i--) {
             BackStackEntry backStackEntry = list.get(i);
             FragmentBuilder builder = parse(list.get(i));
@@ -740,19 +744,23 @@ public class FragmentBuilder {
             if (name != null) {
                 if (builder.assignBackStackName.equals(name)) {
                     if (flags == FragmentManager.POP_BACK_STACK_INCLUSIVE) {
-                        notifyPopFragmentList.add(new NotifyPopFragment(activity, srcFragment, srcFragmentManager, popFragment, builder));
+                        notifyPopFragmentList.add(new PopFragmentSender(activity, srcFragment, srcFragmentManager, popFragment, builder));
                     }
                     break;
                 } else {
-                    notifyPopFragmentList.add(new NotifyPopFragment(activity, srcFragment, srcFragmentManager, popFragment, builder));
+                    notifyPopFragmentList.add(new PopFragmentSender(activity, srcFragment, srcFragmentManager, popFragment, builder));
                 }
             } else {
-                notifyPopFragmentList.add(new NotifyPopFragment(activity, srcFragment, srcFragmentManager, popFragment, builder));
+                notifyPopFragmentList.add(new PopFragmentSender(activity, srcFragment, srcFragmentManager, popFragment, builder));
             }
         }
-        for (NotifyPopFragment notify : notifyPopFragmentList) {
-            notify.popBackStack();
+        // 串聯的方式 popStack
+        for (int i = 0; i < (notifyPopFragmentList.size() - 1); i++) {
+            PopFragmentSender sender = notifyPopFragmentList.get(i);
+            PopFragmentSender next = notifyPopFragmentList.get(i + 1);
+            sender.nextSender = next;
         }
+        notifyPopFragmentList.get(0).popBackStack();
     }
 
     public static boolean hasPopBackStack(FragmentActivity activity) {
@@ -772,7 +780,7 @@ public class FragmentBuilder {
             FragmentManager srcFragmentManager = srcFmMap.get(lastEntry);
             Fragment srcFragment = srcFragMap.get(lastEntry);
             Fragment popFragment = srcFragmentManager.findFragmentByTag(lastBuilder.fragmentTag);
-            new NotifyPopFragment(activity, srcFragment, srcFragmentManager, popFragment, lastBuilder).popBackStack();
+            new PopFragmentSender(activity, srcFragment, srcFragmentManager, popFragment, lastBuilder).popBackStack();
 
             return true;
         }
@@ -823,34 +831,49 @@ public class FragmentBuilder {
         }
     }
 
-    private static class NotifyPopFragment implements FragmentManager.OnBackStackChangedListener {
+    private static class PopFragmentSender implements FragmentManager.OnBackStackChangedListener {
         private FragmentActivity srcFragmentActivity;
-        // TODO 這應該不需要
         private Fragment srcFragment;
-        // TODO 這FragmentManager 也只是過客?
         private FragmentManager srcFragmentManager;
         private Fragment popFragment;
         private FragmentBuilder builder;
+        private boolean isSentObj = false;
+        public PopFragmentSender nextSender;
 
-        public NotifyPopFragment(FragmentActivity srcFragmentActivity, Fragment srcFragment, FragmentManager srcFragmentManager, Fragment popFragment, FragmentBuilder builder) {
+        public PopFragmentSender(FragmentActivity srcFragmentActivity, Fragment srcFragment, FragmentManager srcFragmentManager, Fragment popFragment, FragmentBuilder builder) {
             this.srcFragmentActivity = srcFragmentActivity;
             this.srcFragment = srcFragment;
             this.srcFragmentManager = srcFragmentManager;
             this.popFragment = popFragment;
             this.builder = builder;
-            srcFragmentManager.addOnBackStackChangedListener(this);
         }
 
         public void popBackStack() {
+            srcFragmentManager.addOnBackStackChangedListener(this);
             srcFragmentManager.popBackStack();
         }
 
         @Override
         public void onBackStackChanged() {
-            srcFragmentManager.removeOnBackStackChangedListener(this);
-            PopFragmentListener listener = null;
             Object srcObject;
-
+            if (isSentObj) {
+                return;
+            }
+            // 串聯呼叫地的方式
+            if (nextSender != null) {
+                nextSender.popBackStack();
+                nextSender = null;
+            }
+            // 隨然有可能是透過FragmentActivity建立的，但是回傳的src不一樣
+            if (srcFragment == null) {
+                srcFragment = FragmentPath.findFragment(srcFragmentActivity, builder.srcFragmentPathString);
+            }
+            if ((srcFragment == null || srcFragment.isVisible()) && !popFragment.isVisible()) {
+                // Match srcFragment and popFragment
+            } else {
+                // Didn't match do nothing.
+                return;
+            }
             if (TextUtils.isEmpty(builder.srcFragmentPathString)) {
                 if (builder.srcViewId == 0) {
                     srcObject = srcFragmentActivity;
@@ -858,16 +881,22 @@ public class FragmentBuilder {
                     srcObject = srcFragmentActivity.findViewById(builder.srcViewId);
                 }
             } else {
-                if (srcFragment == null) {
-                    srcFragment = FragmentPath.findFragment(srcFragmentActivity, builder.srcFragmentPathString);
-                }
                 if (builder.srcViewId == 0) {
                     srcObject = srcFragment;
                 } else {
                     srcObject = srcFragment.getView().findViewById(builder.srcViewId);
                 }
             }
+            // Remove listener
+            srcFragmentActivity.getWindow().getDecorView().post(new Runnable() {
+                @Override
+                public void run() {
+                    // 不可以馬上移除Listener 不然會對正在觸發的onBackStackChanged 造成影響
+                    srcFragmentManager.removeOnBackStackChangedListener(PopFragmentSender.this);
+                }
+            });
             if (srcObject != null) {
+                isSentObj = true;
                 sendOnPopFragment(srcObject, popFragment);
             }
         }
@@ -918,29 +947,10 @@ public class FragmentBuilder {
             return this.size();
         }
 
-        public static String getFragmentPathString(FragmentBuilder builder) {
-            String fragmentPathString = getFragmentPathString(builder.content);
-            return fragmentPathString;
-        }
-
-        public static String getFragmentPathString(View srcView) {
-            return getFragmentPathString(new Content(srcView));
-        }
-
         public static String getFragmentPathString(Content content) {
             FragmentPath srcFragmentPath = getFragmentPath(content);
             String srcFragmentPathString = covert(srcFragmentPath);
             return srcFragmentPathString;
-        }
-
-        public static FragmentPath getFragmentPath(FragmentBuilder builder) {
-            FragmentPath fragmentPath = getFragmentPath(builder.content);
-            return fragmentPath;
-        }
-
-        public static FragmentPath getFragmentPath(View srcView) {
-            FragmentPath fragmentPath = getFragmentPath(new Content(srcView));
-            return fragmentPath;
         }
 
         public static FragmentPath getFragmentPath(Content content) {
@@ -1061,11 +1071,11 @@ public class FragmentBuilder {
         }
 
         public static View findView(FragmentActivity activity, List<Integer> fragmentPath, int viewId) {
-            View view = null;
-            Fragment fragment = findFragment(activity, fragmentPath);
-            if (fragment == null) {
+            View view;
+            if (fragmentPath.size() == 0) {
                 view = activity.findViewById(viewId);
             } else {
+                Fragment fragment = findFragment(activity, fragmentPath);
                 view = fragment.getView().findViewById(viewId);
             }
             return view;

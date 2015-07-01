@@ -1,6 +1,8 @@
 package com.lin1987www.fragmentbuilder.widget;
 
 import android.content.Context;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
@@ -20,8 +22,24 @@ public class ShowNameTextView extends TextView implements View.OnClickListener {
         setOnClickListener(this);
     }
 
+    @Override
+    public Parcelable onSaveInstanceState() {
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("state", super.onSaveInstanceState());
+        bundle.putString("text", getText().toString());
+        return bundle;
+    }
+
+    @Override
+    public void onRestoreInstanceState(Parcelable state) {
+        Bundle bundle = (Bundle) state;
+        state = bundle.getParcelable("state");
+        super.onRestoreInstanceState(state);
+        setText(bundle.getString("text"));
+    }
+
     public void onPopFragment(EnterNameFragment fragment) {
-        setText(String.format("Name: %s", fragment.enterName));
+        setText(String.format("Name:%s", fragment.enterName));
     }
 
     @Override
