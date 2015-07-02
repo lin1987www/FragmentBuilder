@@ -32,7 +32,7 @@ public class F111Fragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        result = String.format("[%s]", mShowNameTextView.getText().toString());
+        result = String.format("%s", mShowNameTextView.getEnterName());
         super.onDestroyView();
     }
 }

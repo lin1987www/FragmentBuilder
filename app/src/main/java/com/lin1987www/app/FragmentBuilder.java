@@ -56,7 +56,6 @@ import static android.support.v4.app.FragmentTransaction.TRANSIT_NONE;
  */
 public class FragmentBuilder {
     public static final String TAG = FragmentBuilder.class.getName();
-    public static boolean DEBUG = true;
 
     @IntDef({TRANSIT_NONE, TRANSIT_FRAGMENT_OPEN, TRANSIT_FRAGMENT_CLOSE})
     @Retention(RetentionPolicy.SOURCE)
@@ -69,7 +68,9 @@ public class FragmentBuilder {
     private Class<? extends Fragment> fragmentClass;
     private Bundle fragmentArgs;
     private Fragment containerFragment;
-    private int backTimes = 0;
+    private boolean isBackMode = false;
+    private boolean enableBackSrc = false;
+    private boolean enableBackContainer = false;
     //
     //
     public static int defaultContainerViewId = android.R.id.content;
@@ -82,10 +83,10 @@ public class FragmentBuilder {
     //
     private String assignBackStackName = "";
     private String fragmentTag;
-    private String srcFragmentPathString = "";
-    // srcFragmentTag 用於Debug 顯示資料沒特別用處
-    private String srcFragmentTag;
-    private int srcViewId = 0;
+    private String targetFragmentPathString = "";
+    // originFragmentTag 用於Debug 得知從何處發起
+    private String originFragmentTag;
+    private int targetViewId = 0;
     private long builtTimeMillis = 0;
     //
     // Animations
@@ -139,9 +140,9 @@ public class FragmentBuilder {
 
     private FragmentBuilder(FragmentActivity srcFragmentActivity, Fragment srcFragment, View srcView) {
         this.content = new Content(srcFragmentActivity, srcFragment, srcView);
-        this.srcFragmentTag = (srcFragment == null) ? "" : srcFragment.getTag();
+        this.originFragmentTag = (srcFragment == null) ? "" : srcFragment.getTag();
         if (srcView != null) {
-            setSrcViewId(srcView.getId());
+            setTargetViewId(srcView.getId());
         }
     }
 
@@ -227,45 +228,43 @@ public class FragmentBuilder {
         return this;
     }
 
-    public int getSrcViewId() {
-        return this.srcViewId;
+    public int getTargetViewId() {
+        return this.targetViewId;
     }
 
-    public FragmentBuilder setSrcViewId(int srcViewId) {
-        if (srcViewId > 0) {
+    public FragmentBuilder setTargetViewId(int targetViewId) {
+        if (targetViewId > 0) {
             if (content.srcFragmentActivity != null) {
-                if (content.srcFragmentActivity.findViewById(srcViewId) == null) {
+                if (content.srcFragmentActivity.findViewById(targetViewId) == null) {
                     throw new RuntimeException("Didn't find sourceContentView");
                 }
             } else if (content.srcFragment != null) {
-                if (content.srcFragment.getView().findViewById(srcViewId) == null) {
+                if (content.srcFragment.getView().findViewById(targetViewId) == null) {
                     throw new RuntimeException("Didn't find sourceContentView");
                 }
             } else {
-                if (((FragmentActivity) content.srcView.getContext()).findViewById(srcViewId) == null) {
+                if (((FragmentActivity) content.srcView.getContext()).findViewById(targetViewId) == null) {
                     throw new RuntimeException("Didn't find sourceContentView");
                 }
             }
         }
-        this.srcViewId = srcViewId;
+        this.targetViewId = targetViewId;
         return this;
     }
 
-    public FragmentBuilder back() {
-        return back(1);
-    }
-
     /**
-     * back
+     * 延伸出兩個概念  backSrc  ,  backContainer, back
      *
-     * @param goBackFragmentPathTimes
      * @return
      */
-    public FragmentBuilder back(int goBackFragmentPathTimes) {
-        this.backTimes = goBackFragmentPathTimes;
-        if (content.srcFragmentActivity != null) {
-            throw new RuntimeException("FragmentActivity couldn't back! It is Root.");
-        }
+    public FragmentBuilder back() {
+        return back(true, true);
+    }
+
+    public FragmentBuilder back(boolean useBackSrc, boolean useBackContainer) {
+        this.isBackMode = true;
+        this.enableBackSrc = useBackSrc;
+        this.enableBackContainer = useBackContainer;
         return this;
     }
 
@@ -339,15 +338,15 @@ public class FragmentBuilder {
                 //
                 builder.action = lastBuilder.action;
                 builder.isTraceable = lastBuilder.isTraceable;
-                builder.srcFragmentTag = lastBuilder.srcFragmentTag;
-                builder.srcViewId = lastBuilder.srcViewId;
+                builder.originFragmentTag = lastBuilder.originFragmentTag;
+                builder.targetViewId = lastBuilder.targetViewId;
                 //
                 builder.enter = lastBuilder.enter;
                 builder.exit = lastBuilder.exit;
                 builder.popEnter = lastBuilder.popEnter;
                 builder.popExit = lastBuilder.popExit;
                 //
-                builder.srcFragmentPathString = lastBuilder.srcFragmentPathString;
+                builder.targetFragmentPathString = lastBuilder.targetFragmentPathString;
 
                 // Find containerFragment in containerView
                 builder.containerFragment = null;
@@ -375,81 +374,54 @@ public class FragmentBuilder {
         }
     }
 
-    private static void doBack(FragmentBuilder builder) {
-        if (builder.backTimes <= 0) {
+    private static void doIfBack(FragmentBuilder builder) {
+        if (!builder.isBackMode) {
             return;
         }
-
-        String fragmentTag = FragmentPath.findFragmentByView(builder.content.getSrcView()).getTag();
         FragmentBuilder backBuilder = null;
         BackStackEntry backStackEntry;
-        FragmentManager fm = getParentFragmentManager(builder.content);
-        for (int i = fm.getBackStackEntryCount() - 1; i > -1; i--) {
-            backStackEntry = fm.getBackStackEntryAt(i);
+        FragmentPath fragmentPath = FragmentPath.getFragmentPath(builder.content);
+        Fragment hereFrag = FragmentPath.findFragment(builder.content.getFragmentActivity(), fragmentPath);
+        String hereFragTag = hereFrag.getTag();
+        // Then fragmentPath is back!!
+        fragmentPath.back();
+        String backFragmentPathString = FragmentPath.covert(fragmentPath);
+        FragmentManager backFm = FragmentPath.getFragmentManager(builder.content, fragmentPath);
+        for (int i = backFm.getBackStackEntryCount() - 1; i > -1; i--) {
+            backStackEntry = backFm.getBackStackEntryAt(i);
             backBuilder = parse(backStackEntry);
-            if (backBuilder.fragmentTag.equals(fragmentTag)) {
+            if (backBuilder.fragmentTag.equals(hereFragTag)) {
                 break;
             }
             backBuilder = null;
         }
         if (backBuilder != null) {
-            // Fill Content Object to backBuilder
-            // fillContent(backBuilder, builder.content.getFragmentActivity());
-            String originFragmentPath = FragmentPath.getFragmentPathString(builder.content);
-            Fragment originFragment = FragmentPath.findFragment(builder.content.getFragmentActivity(), originFragmentPath);
-            int originViewId = builder.srcViewId;
+            // We known backBuilder here.
             overrideBuilder(backBuilder, builder);
-            // TODO
-//            builder.srcFragmentPathString = originFragmentPath;
-//            builder.srcViewId = originViewId;
-//            builder.srcFragmentTag = originFragment.getTag();
         } else {
-            //TODO
+            if (builder.enableBackContainer) {
+                builder.containerViewId = hereFrag.getId();
+            }
+            if (builder.enableBackSrc) {
+                // TODO  需要驗證
+                builder.targetFragmentPathString = backFragmentPathString;
+                builder.targetViewId = 0;
+            } else {
+                builder.targetFragmentPathString = FragmentPath.getFragmentPathString(builder.content);
+            }
         }
-    }
-
-    public static FragmentManager getParentFragmentManager(Content content) {
-        return getBackFragmentManager(content, 1);
-    }
-
-    public static FragmentManager getBackFragmentManager(Content content, int backTimes) {
-        Content backContent = getBackContent(content, backTimes);
-        FragmentManager fragmentManager;
-        if (backContent.srcFragmentActivity != null) {
-            fragmentManager = backContent.srcFragmentActivity.getSupportFragmentManager();
-        } else {
-            fragmentManager = backContent.srcFragment.getChildFragmentManager();
-        }
-        return fragmentManager;
-    }
-
-    public static Content getBackContent(Content content, int backTimes) {
-        if (backTimes <= 0) {
-            return null;
-        }
-        FragmentPath fragmentPath = FragmentPath.getFragmentPath(content);
-        Content backContent = null;
-        int size = fragmentPath.size() - backTimes;
-        if (size < 0) {
-            throw new RuntimeException("Go back too many time.");
-        } else if (size == 0) {
-            // FragmentActivity
-            backContent = new Content(content.getFragmentActivity());
-        } else {
-            // Fragment
-            Fragment fragment = FragmentPath.findFragment(content.getFragmentActivity(), fragmentPath.subList(0, size));
-            backContent = new Content(fragment);
-        }
-        return backContent;
     }
 
     public static void overrideBuilder(FragmentBuilder defaultBuilder, FragmentBuilder builder) {
-        //builder.content = defaultBuilder.content;
-        builder.containerViewId = defaultBuilder.containerViewId;
-        // overrider src
-        builder.srcFragmentTag = defaultBuilder.srcFragmentTag;
-        builder.srcViewId = defaultBuilder.srcViewId;
-        builder.srcFragmentPathString = defaultBuilder.srcFragmentPathString;
+        if (builder.enableBackContainer) {
+            // replace containerViewId
+            builder.containerViewId = defaultBuilder.containerViewId;
+        }
+
+        if (builder.enableBackSrc) {
+            builder.targetViewId = defaultBuilder.targetViewId;
+            builder.targetFragmentPathString = defaultBuilder.targetFragmentPathString;
+        }
 
         if (builder.action == Action.none) {
             builder.action = defaultBuilder.action;
@@ -472,12 +444,14 @@ public class FragmentBuilder {
         if (content == null) {
             throw new RuntimeException("Forbid build!");
         }
-        doBack(this);
+        doIfBack(this);
         if (action.equals(Action.none)) {
             action = defaultAction;
         }
-        if (backTimes <= 0) {
-            this.srcFragmentPathString = FragmentPath.getFragmentPathString(content);
+        if (isBackMode) {
+            // Don't replace FragmentPathString
+        } else {
+            this.targetFragmentPathString = FragmentPath.getFragmentPathString(content);
         }
         FragmentManager fragmentManager = getFragmentManager();
         // Check fragment already exist
@@ -615,7 +589,7 @@ public class FragmentBuilder {
             while (fragmentPath.size() > 0) {
                 Fragment frag = FragmentPath.findFragment(getFragmentActivity(), fragmentPath);
                 if (null != frag.getView().findViewById(containerViewId)) {
-                    // TODO 保存 srcFragmentTag ? 應該不需要  因為他只是建立 Fragemnt 的Fragment  並非實際目的地的Fragment
+                    // TODO 保存 originFragmentTag ? 應該不需要  因為他只是建立 Fragemnt 的Fragment  並非實際目的地的Fragment
                     fragmentManager = frag.getChildFragmentManager();
                     break;
                 } else {
@@ -659,15 +633,15 @@ public class FragmentBuilder {
                 builder.isTraceable,
                 //
                 builder.fragmentTag,
-                builder.srcFragmentTag,
-                builder.srcViewId,
+                builder.originFragmentTag,
+                builder.targetViewId,
                 builder.assignBackStackName,
                 //
                 builder.builtTimeMillis,
                 //
                 builder.transition, builder.styleRes, builder.enter, builder.exit, builder.popEnter, builder.popExit,
                 //
-                builder.srcFragmentPathString
+                builder.targetFragmentPathString
         );
         return backStackName;
     }
@@ -684,8 +658,8 @@ public class FragmentBuilder {
             builder.isTraceable = Boolean.parseBoolean(m.group(i++));
             //
             builder.fragmentTag = m.group(i++);
-            builder.srcFragmentTag = m.group(i++);
-            builder.srcViewId = Integer.parseInt(m.group(i++));
+            builder.originFragmentTag = m.group(i++);
+            builder.targetViewId = Integer.parseInt(m.group(i++));
             builder.assignBackStackName = m.group(i++);
             //
             builder.builtTimeMillis = Long.parseLong(m.group(i++));
@@ -697,28 +671,9 @@ public class FragmentBuilder {
             builder.popEnter = Integer.parseInt(m.group(i++));
             builder.popExit = Integer.parseInt(m.group(i++));
             //
-            builder.srcFragmentPathString = m.group(i++);
+            builder.targetFragmentPathString = m.group(i++);
         }
         return builder;
-    }
-
-    public static void fillContent(FragmentBuilder builder, FragmentActivity activity) {
-        Content content;
-        if (builder.srcFragmentPathString.equals("")) {
-            if (builder.srcViewId == 0) {
-                content = new Content(activity);
-            } else {
-                content = new Content(activity.findViewById(builder.srcViewId));
-            }
-        } else {
-            Fragment fragment = FragmentPath.findFragment(activity, builder.srcFragmentPathString);
-            if (builder.srcViewId == 0) {
-                content = new Content(fragment);
-            } else {
-                content = new Content(fragment.getView().findViewById(builder.srcViewId));
-            }
-        }
-        builder.content = content;
     }
 
     public static void popBackStack(FragmentActivity activity, String name, int flags) {
@@ -781,7 +736,6 @@ public class FragmentBuilder {
             Fragment srcFragment = srcFragMap.get(lastEntry);
             Fragment popFragment = srcFragmentManager.findFragmentByTag(lastBuilder.fragmentTag);
             new PopFragmentSender(activity, srcFragment, srcFragmentManager, popFragment, lastBuilder).popBackStack();
-
             return true;
         }
         return false;
@@ -832,25 +786,27 @@ public class FragmentBuilder {
     }
 
     private static class PopFragmentSender implements FragmentManager.OnBackStackChangedListener {
-        private FragmentActivity srcFragmentActivity;
-        private Fragment srcFragment;
-        private FragmentManager srcFragmentManager;
+        private FragmentActivity fragmentActivity;
+        private Fragment hookFragment;
+        private FragmentManager hookFragmentManager;
+        private Fragment targetFragment;
         private Fragment popFragment;
         private FragmentBuilder builder;
         private boolean isSentObj = false;
         public PopFragmentSender nextSender;
 
-        public PopFragmentSender(FragmentActivity srcFragmentActivity, Fragment srcFragment, FragmentManager srcFragmentManager, Fragment popFragment, FragmentBuilder builder) {
-            this.srcFragmentActivity = srcFragmentActivity;
-            this.srcFragment = srcFragment;
-            this.srcFragmentManager = srcFragmentManager;
+        public PopFragmentSender(FragmentActivity fragmentActivity, Fragment hookFragment, FragmentManager hookFragmentManager, Fragment popFragment, FragmentBuilder builder) {
+            this.fragmentActivity = fragmentActivity;
+            this.hookFragment = hookFragment;
+            this.hookFragmentManager = hookFragmentManager;
             this.popFragment = popFragment;
             this.builder = builder;
+            this.targetFragment = FragmentPath.findFragment(fragmentActivity, builder.targetFragmentPathString);
         }
 
         public void popBackStack() {
-            srcFragmentManager.addOnBackStackChangedListener(this);
-            srcFragmentManager.popBackStack();
+            hookFragmentManager.addOnBackStackChangedListener(this);
+            hookFragmentManager.popBackStack();
         }
 
         @Override
@@ -864,40 +820,36 @@ public class FragmentBuilder {
                 nextSender.popBackStack();
                 nextSender = null;
             }
-            // 隨然有可能是透過FragmentActivity建立的，但是回傳的src不一樣
-            if (srcFragment == null) {
-                srcFragment = FragmentPath.findFragment(srcFragmentActivity, builder.srcFragmentPathString);
-            }
-            if ((srcFragment == null || srcFragment.isVisible()) && !popFragment.isVisible()) {
+            if ((targetFragment == null || targetFragment.isVisible()) && !popFragment.isVisible()) {
                 // Match srcFragment and popFragment
             } else {
                 // Didn't match do nothing.
                 return;
             }
-            if (TextUtils.isEmpty(builder.srcFragmentPathString)) {
-                if (builder.srcViewId == 0) {
-                    srcObject = srcFragmentActivity;
+            if (TextUtils.isEmpty(builder.targetFragmentPathString)) {
+                if (builder.targetViewId == 0) {
+                    srcObject = fragmentActivity;
                 } else {
-                    srcObject = srcFragmentActivity.findViewById(builder.srcViewId);
+                    srcObject = fragmentActivity.findViewById(builder.targetViewId);
                 }
             } else {
-                if (builder.srcViewId == 0) {
-                    srcObject = srcFragment;
+                if (builder.targetViewId == 0) {
+                    srcObject = targetFragment;
                 } else {
-                    srcObject = srcFragment.getView().findViewById(builder.srcViewId);
+                    srcObject = targetFragment.getView().findViewById(builder.targetViewId);
                 }
             }
-            // Remove listener
-            srcFragmentActivity.getWindow().getDecorView().post(new Runnable() {
-                @Override
-                public void run() {
-                    // 不可以馬上移除Listener 不然會對正在觸發的onBackStackChanged 造成影響
-                    srcFragmentManager.removeOnBackStackChangedListener(PopFragmentSender.this);
-                }
-            });
             if (srcObject != null) {
                 isSentObj = true;
                 sendOnPopFragment(srcObject, popFragment);
+                // Remove listener
+                fragmentActivity.getWindow().getDecorView().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        // 不可以馬上移除Listener 不然會對正在觸發的onBackStackChanged 造成影響
+                        hookFragmentManager.removeOnBackStackChangedListener(PopFragmentSender.this);
+                    }
+                });
             }
         }
 
@@ -940,11 +892,24 @@ public class FragmentBuilder {
     }
 
     public static class FragmentPath extends ArrayList<Integer> {
+        public static boolean DEBUG = false;
         private final static String delimiter = ",";
 
         public int back() {
-            this.remove(size() - 1);
+            if (size() > 0) {
+                this.remove(size() - 1);
+            }
             return this.size();
+        }
+
+        public static FragmentManager getFragmentManager(Content content, List<Integer> fragmentPath) {
+            FragmentManager fm;
+            if (fragmentPath.size() == 0) {
+                fm = content.getFragmentActivity().getSupportFragmentManager();
+            } else {
+                fm = findFragment(content.getFragmentActivity(), fragmentPath).getChildFragmentManager();
+            }
+            return fm;
         }
 
         public static String getFragmentPathString(Content content) {

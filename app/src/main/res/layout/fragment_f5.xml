@@ -12,17 +12,17 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:textAppearanceLarge" />
 
-    <EditText
-        android:id="@+id/editText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Enter number"
-        android:inputType="numberDecimal" />
-
     <com.lin1987www.fragmentbuilder.widget.ShowNameTextView
         android:id="@+id/showNameTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Enter name"
         android:textAppearance="?android:textAppearanceLarge" />
+
+    <EditText
+        android:id="@+id/editText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter number"
+        android:inputType="numberDecimal" />
 </LinearLayout>

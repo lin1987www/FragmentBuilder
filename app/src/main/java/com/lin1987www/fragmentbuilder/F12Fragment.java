@@ -45,7 +45,7 @@ public class F12Fragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        result = String.format("F12:[%s]", mShowNameTextView.getText().toString());
+        result = String.format("F12:[%s]", mShowNameTextView.getEnterName());
         super.onDestroyView();
     }
 }

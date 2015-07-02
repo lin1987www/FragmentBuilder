@@ -35,7 +35,7 @@ public class F5Fragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        result = String.format("Name:[%s] Number:[%s]", mShowNameTextView.getText().toString(), mNumberEditText.getText().toString());
+        result = String.format("Name:[%s] Number:[%s]", mShowNameTextView.getEnterName(), mNumberEditText.getText().toString());
         super.onDestroyView();
     }
 }

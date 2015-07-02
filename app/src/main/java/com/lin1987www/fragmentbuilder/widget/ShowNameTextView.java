@@ -14,6 +14,8 @@ import com.lin1987www.fragmentbuilder.EnterNameFragment;
  * Created by Administrator on 2015/6/26.
  */
 public class ShowNameTextView extends TextView implements View.OnClickListener {
+    private String enterName = "";
+
     public ShowNameTextView(Context context, AttributeSet attrs) {
         super(context, attrs);
         if (getId() == 0) {
@@ -26,7 +28,7 @@ public class ShowNameTextView extends TextView implements View.OnClickListener {
     public Parcelable onSaveInstanceState() {
         Bundle bundle = new Bundle();
         bundle.putParcelable("state", super.onSaveInstanceState());
-        bundle.putString("text", getText().toString());
+        bundle.putString("text", enterName);
         return bundle;
     }
 
@@ -35,11 +37,21 @@ public class ShowNameTextView extends TextView implements View.OnClickListener {
         Bundle bundle = (Bundle) state;
         state = bundle.getParcelable("state");
         super.onRestoreInstanceState(state);
-        setText(bundle.getString("text"));
+        enterName = bundle.getString("text");
+        show();
     }
 
     public void onPopFragment(EnterNameFragment fragment) {
-        setText(String.format("Name:%s", fragment.enterName));
+        enterName = fragment.enterName;
+        show();
+    }
+
+    private void show() {
+        setText(String.format("Name:%s", enterName));
+    }
+
+    public String getEnterName() {
+        return enterName;
     }
 
     @Override

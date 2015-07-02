@@ -31,7 +31,7 @@ public class F21Fragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        result = mShowNameTextView.getText().toString();
+        result = mShowNameTextView.getEnterName();
         super.onDestroyView();
     }
 }
