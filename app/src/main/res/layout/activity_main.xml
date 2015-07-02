@@ -23,6 +23,13 @@
                     因為 showNameTextView 已經存在這View之前的了，因此無法匹配。
                 -->
     </com.lin1987www.fragmentbuilder.widget.ShowNameTextView>
+
+    <com.lin1987www.fragmentbuilder.widget.WizardStepsTextView
+        android:id="@+id/WizardStepsTextView2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="WizardStepsTextView"
+        android:textAppearance="?android:textAppearanceLarge" />
 </LinearLayout>
 
 

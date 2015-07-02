@@ -68,7 +68,7 @@ public class FragmentBuilder {
     private Class<? extends Fragment> fragmentClass;
     private Bundle fragmentArgs;
     private Fragment containerFragment;
-    private boolean isBackMode = false;
+    private PreAction preAction = PreAction.none;
     private boolean enableBackSrc = false;
     private boolean enableBackContainer = false;
     //
@@ -262,14 +262,14 @@ public class FragmentBuilder {
     }
 
     public FragmentBuilder back(boolean useBackSrc, boolean useBackContainer) {
-        this.isBackMode = true;
+        this.preAction = PreAction.back;
         this.enableBackSrc = useBackSrc;
         this.enableBackContainer = useBackContainer;
         return this;
     }
 
     public FragmentBuilder reset() {
-        this.action = Action.reset;
+        this.preAction = PreAction.reset;
         return this;
     }
 
@@ -320,87 +320,35 @@ public class FragmentBuilder {
         setFragment(fragment, tag);
     }
 
-    private static void doIfResetAction(FragmentBuilder builder) {
+    private static void doIfReset(FragmentBuilder builder) {
         // If do something in same containerViewId,call popBackStack() and reset new action
-        if (Action.reset != builder.action) {
-            return;
-        }
-        FragmentManager fragmentManager = builder.getFragmentManager();
-
-        FragmentManager.BackStackEntry lastBackStack = null;
-        if (fragmentManager.getBackStackEntryCount() > 0) {
-            lastBackStack = fragmentManager.getBackStackEntryAt(fragmentManager.getBackStackEntryCount() - 1);
-        }
-        if (lastBackStack != null) {
-            FragmentBuilder lastBuilder = parse(lastBackStack);
-            if (lastBuilder.containerViewId == builder.containerViewId) {
-                fragmentManager.popBackStack();
-                //
-                builder.action = lastBuilder.action;
-                builder.isTraceable = lastBuilder.isTraceable;
-                builder.originFragmentTag = lastBuilder.originFragmentTag;
-                builder.targetViewId = lastBuilder.targetViewId;
-                //
-                builder.enter = lastBuilder.enter;
-                builder.exit = lastBuilder.exit;
-                builder.popEnter = lastBuilder.popEnter;
-                builder.popExit = lastBuilder.popExit;
-                //
-                builder.targetFragmentPathString = lastBuilder.targetFragmentPathString;
-
-                // Find containerFragment in containerView
-                builder.containerFragment = null;
-                FragmentManager.BackStackEntry beforeLastStackEntry = null;
-                // The before last BackStack is last action's containerFragment
-                // Start from second-last to 0
-                int index = fragmentManager.getBackStackEntryCount() - 2;
-                if (index > -1) {
-                    do {
-                        beforeLastStackEntry = fragmentManager.getBackStackEntryAt(index--);
-                        if (beforeLastStackEntry == null) {
-                            continue;
-                        }
-                        FragmentBuilder beforeLastBuilder = parse(beforeLastStackEntry);
-                        if (beforeLastBuilder == null) {
-                            continue;
-                        }
-                        if (beforeLastBuilder.containerViewId == builder.containerViewId) {
-                            builder.containerFragment = fragmentManager.findFragmentByTag(beforeLastBuilder.fragmentTag);
-                            break;
-                        }
-                    } while (index > -1);
-                }
-            }
+        FragmentBuilder backBuilder = findBackFragmentBuilder(builder.content);
+        if (backBuilder != null) {
+            FragmentPath fragmentPath = FragmentPath.getFragmentPath(builder.content);
+            fragmentPath.back();
+            FragmentManager backFm = FragmentPath.getFragmentManager(builder.content, fragmentPath);
+            // Don't trigger hasPopBackStack(), just reset!
+            backFm.popBackStack();
+            overrideBuilder(backBuilder, builder, true, true);
         }
     }
 
     private static void doIfBack(FragmentBuilder builder) {
-        if (!builder.isBackMode) {
-            return;
-        }
-        FragmentBuilder backBuilder = null;
-        BackStackEntry backStackEntry;
         FragmentPath fragmentPath = FragmentPath.getFragmentPath(builder.content);
         Fragment hereFrag = FragmentPath.findFragment(builder.content.getFragmentActivity(), fragmentPath);
-        String hereFragTag = hereFrag.getTag();
-        // Then fragmentPath is back!!
         fragmentPath.back();
         String backFragmentPathString = FragmentPath.covert(fragmentPath);
-        FragmentManager backFm = FragmentPath.getFragmentManager(builder.content, fragmentPath);
-        for (int i = backFm.getBackStackEntryCount() - 1; i > -1; i--) {
-            backStackEntry = backFm.getBackStackEntryAt(i);
-            backBuilder = parse(backStackEntry);
-            if (backBuilder.fragmentTag.equals(hereFragTag)) {
-                break;
-            }
-            backBuilder = null;
-        }
+        //
+        FragmentBuilder backBuilder = findBackFragmentBuilder(builder.content);
+        //
         if (backBuilder != null) {
             // We known backBuilder here.
-            overrideBuilder(backBuilder, builder);
+            overrideBuilder(backBuilder, builder, builder.enableBackContainer, builder.enableBackSrc);
         } else {
             if (builder.enableBackContainer) {
-                builder.containerViewId = hereFrag.getId();
+                if (null != hereFrag) {
+                    builder.containerViewId = hereFrag.getId();
+                }
             }
             if (builder.enableBackSrc) {
                 // TODO  需要驗證
@@ -412,13 +360,37 @@ public class FragmentBuilder {
         }
     }
 
-    public static void overrideBuilder(FragmentBuilder defaultBuilder, FragmentBuilder builder) {
-        if (builder.enableBackContainer) {
+    public static FragmentBuilder findBackFragmentBuilder(Content content) {
+        FragmentBuilder backBuilder = null;
+        BackStackEntry backStackEntry;
+        FragmentPath fragmentPath = FragmentPath.getFragmentPath(content);
+        Fragment hereFrag = FragmentPath.findFragment(content.getFragmentActivity(), fragmentPath);
+        if (hereFrag == null) {
+            return null;
+        }
+        String hereFragTag = hereFrag.getTag();
+        // Then fragmentPath is back!!
+        fragmentPath.back();
+        String backFragmentPathString = FragmentPath.covert(fragmentPath);
+        FragmentManager backFm = FragmentPath.getFragmentManager(content, fragmentPath);
+        for (int i = backFm.getBackStackEntryCount() - 1; i > -1; i--) {
+            backStackEntry = backFm.getBackStackEntryAt(i);
+            backBuilder = parse(backStackEntry);
+            if (backBuilder.fragmentTag.equals(hereFragTag)) {
+                break;
+            }
+            backBuilder = null;
+        }
+        return backBuilder;
+    }
+
+    public static void overrideBuilder(FragmentBuilder defaultBuilder, FragmentBuilder builder, boolean enableBackContainer, boolean enableBackSrc) {
+        if (enableBackContainer) {
             // replace containerViewId
             builder.containerViewId = defaultBuilder.containerViewId;
         }
 
-        if (builder.enableBackSrc) {
+        if (enableBackSrc) {
             builder.targetViewId = defaultBuilder.targetViewId;
             builder.targetFragmentPathString = defaultBuilder.targetFragmentPathString;
         }
@@ -444,14 +416,15 @@ public class FragmentBuilder {
         if (content == null) {
             throw new RuntimeException("Forbid build!");
         }
-        doIfBack(this);
-        if (action.equals(Action.none)) {
-            action = defaultAction;
-        }
-        if (isBackMode) {
-            // Don't replace FragmentPathString
+        if (this.preAction == PreAction.back) {
+            doIfBack(this);
+        } else if (this.preAction == PreAction.reset) {
+            doIfReset(this);
         } else {
             this.targetFragmentPathString = FragmentPath.getFragmentPathString(content);
+        }
+        if (action.equals(Action.none)) {
+            action = defaultAction;
         }
         FragmentManager fragmentManager = getFragmentManager();
         // Check fragment already exist
@@ -475,7 +448,6 @@ public class FragmentBuilder {
         }
         // Maybe execute action of reset
         containerFragment = fragmentManager.findFragmentById(containerViewId);
-        doIfResetAction(this);
         // Prepare transaction
         FragmentTransaction ft = fragmentManager.beginTransaction();
         if (isTraceable()) {
@@ -485,7 +457,7 @@ public class FragmentBuilder {
         }
         // Animation setting
         setAnimations(ft);
-        // TODO  Action.add != action
+        // TODO Action.add != action
         if (Action.replace == action) {
             // Affect containerFragment.
             if (containerFragment != null) {
@@ -514,7 +486,11 @@ public class FragmentBuilder {
     }
 
     protected enum Action {
-        add, replace, reset, none
+        add, replace, none
+    }
+
+    protected enum PreAction {
+        back, reset, none
     }
 
     /**

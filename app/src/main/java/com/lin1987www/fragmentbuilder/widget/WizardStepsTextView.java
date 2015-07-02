@@ -8,6 +8,7 @@ import android.widget.TextView;
 import com.lin1987www.app.FragmentBuilder;
 import com.lin1987www.fragmentbuilder.F11Fragment;
 import com.lin1987www.fragmentbuilder.F12Fragment;
+import com.lin1987www.fragmentbuilder.F12NewFragment;
 
 /**
  * Created by Administrator on 2015/6/30.
@@ -44,6 +45,11 @@ public class WizardStepsTextView extends TextView implements View.OnClickListene
     }
 
     public void onPopFragment(F12Fragment fragment) {
+        f12text = fragment.result;
+        refresh();
+    }
+
+    public void onPopFragment(F12NewFragment fragment) {
         f12text = fragment.result;
         refresh();
     }

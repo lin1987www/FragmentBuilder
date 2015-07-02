@@ -68,4 +68,8 @@ public class F1Fragment extends Fragment {
     public void onPopFragment(F12Fragment fragment) {
         mF12TextView.setText(String.format("->%s %s", fragment.getClass().getSimpleName(), fragment.result));
     }
+
+    public void onPopFragment(F12NewFragment fragment) {
+        mF12TextView.setText(String.format("->%s %s", fragment.getClass().getSimpleName(), fragment.result));
+    }
 }
