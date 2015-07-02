@@ -354,8 +354,6 @@ public class FragmentBuilder {
                 // TODO  需要驗證
                 builder.targetFragmentPathString = backFragmentPathString;
                 builder.targetViewId = 0;
-            } else {
-                builder.targetFragmentPathString = FragmentPath.getFragmentPathString(builder.content);
             }
         }
     }
@@ -416,13 +414,14 @@ public class FragmentBuilder {
         if (content == null) {
             throw new RuntimeException("Forbid build!");
         }
+        // targetFragmentPathString maybe be modified by PreAction.
+        this.targetFragmentPathString = FragmentPath.getFragmentPathString(content);
         if (this.preAction == PreAction.back) {
             doIfBack(this);
         } else if (this.preAction == PreAction.reset) {
             doIfReset(this);
-        } else {
-            this.targetFragmentPathString = FragmentPath.getFragmentPathString(content);
         }
+
         if (action.equals(Action.none)) {
             action = defaultAction;
         }
