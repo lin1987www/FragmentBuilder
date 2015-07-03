@@ -13,8 +13,8 @@ import com.lin1987www.fragmentbuilder.F12NewFragment;
 /**
  * Created by Administrator on 2015/7/2.
  */
-public class SwitchF12Button extends Button implements View.OnClickListener {
-    public SwitchF12Button(Context context, AttributeSet attrs) {
+public class F12SwitchButton extends Button implements View.OnClickListener {
+    public F12SwitchButton(Context context, AttributeSet attrs) {
         super(context, attrs);
         setOnClickListener(this);
     }

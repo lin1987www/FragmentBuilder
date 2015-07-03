@@ -24,7 +24,7 @@ public class F2Fragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f2, container, false);
         mTextView = (TextView) view.findViewById(R.id.textView);
-        mTextView.setText(String.format("%s id:[%s]", getTag(), getId()));
+        mTextView.setText(String.format("%s", getTag(), getId()));
         mContainer = (FrameLayout) view.findViewById(R.id.container_f2);
         mContainer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -41,6 +41,6 @@ public class F2Fragment extends Fragment {
     }
 
     public void onPopFragment(F21Fragment fragment) {
-        mTextView.setText(String.format("->%s %s", fragment.getClass().getSimpleName(), fragment.result));
+        mTextView.setText(String.format("%s\nResult: %s", fragment.getClass().getSimpleName(), fragment.result));
     }
 }

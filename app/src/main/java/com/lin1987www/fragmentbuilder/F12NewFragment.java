@@ -2,7 +2,6 @@ package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +9,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.lin1987www.app.FragmentBuilder;
-import com.lin1987www.fragmentbuilder.widget.ShowNameTextView;
+import com.lin1987www.fragmentbuilder.widget.ShowEnterTextView;
 
 import lin1987www.com.fragmentbuilder.R;
 
@@ -19,11 +18,11 @@ import lin1987www.com.fragmentbuilder.R;
  */
 public class F12NewFragment extends Fragment {
     private final static String TAG = F12NewFragment.class.getSimpleName();
+
     public String result;
     TextView mTextView;
-    ShowNameTextView mShowNameTextView;
-    Button mFinishButton;
-    Button mSwitchButton;
+    ShowEnterTextView mShowEnterTextView;
+    Button mNextStepButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -31,12 +30,16 @@ public class F12NewFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_f12, container, false);
         mTextView = (TextView) view.findViewById(R.id.textView);
         mTextView.setText(String.format("%s id:[%s]", getTag(), getId()));
-        mShowNameTextView = (ShowNameTextView) view.findViewById(R.id.showNameTextView);
-        mFinishButton = (Button) view.findViewById(R.id.finishButton);
-        mFinishButton.setOnClickListener(new View.OnClickListener() {
+        mShowEnterTextView = (ShowEnterTextView) view.findViewById(R.id.showNameTextView);
+        mNextStepButton = (Button) view.findViewById(R.id.nextStepButton);
+        mNextStepButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FragmentBuilder.popBackStack(getActivity(), "Wizard Steps Test", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                FragmentBuilder
+                        .create(F12NewFragment.this)
+                        .back()
+                        .setFragment(F13Fragment.class, F13Fragment.class.getSimpleName())
+                        .build();
             }
         });
         return view;
@@ -44,7 +47,7 @@ public class F12NewFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        result = String.format("F12 New:[%s]", mShowNameTextView.getEnterName());
+        result = String.format("F12 New:[%s]", mShowEnterTextView.getEnterName());
         super.onDestroyView();
     }
 }

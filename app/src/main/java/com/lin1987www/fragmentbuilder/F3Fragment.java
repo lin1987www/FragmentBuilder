@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.lin1987www.fragmentbuilder.widget.ShowNameTextView;
+import com.lin1987www.fragmentbuilder.widget.ShowEnterTextView;
 
 import lin1987www.com.fragmentbuilder.R;
 
@@ -16,15 +16,15 @@ import lin1987www.com.fragmentbuilder.R;
  */
 public class F3Fragment extends Fragment {
     TextView mTextView;
-    ShowNameTextView mShowNameTextView;
+    ShowEnterTextView mShowEnterTextView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f3, container, false);
         mTextView = (TextView) view.findViewById(R.id.textView);
-        mTextView.setText(String.format("%s id:[%s]", getTag(), getId()));
-        mShowNameTextView = (ShowNameTextView) view.findViewById(R.id.showNameTextView);
+        mTextView.setText(String.format("%s", getTag(), getId()));
+        mShowEnterTextView = (ShowEnterTextView) view.findViewById(R.id.showNameTextView);
         return view;
     }
 }

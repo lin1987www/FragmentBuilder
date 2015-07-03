@@ -23,6 +23,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
-            android:text="Click to test Backward path." />
+            android:text="Call FragmentBuilder from Fragment" />
     </FrameLayout>
 </LinearLayout>

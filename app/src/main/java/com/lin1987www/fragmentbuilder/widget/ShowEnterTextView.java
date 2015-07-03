@@ -8,18 +8,18 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.lin1987www.app.FragmentBuilder;
-import com.lin1987www.fragmentbuilder.EnterNameFragment;
+import com.lin1987www.fragmentbuilder.EnterTextFragment;
 
 /**
  * Created by Administrator on 2015/6/26.
  */
-public class ShowNameTextView extends TextView implements View.OnClickListener {
+public class ShowEnterTextView extends TextView implements View.OnClickListener {
     private String enterName = "";
 
-    public ShowNameTextView(Context context, AttributeSet attrs) {
+    public ShowEnterTextView(Context context, AttributeSet attrs) {
         super(context, attrs);
         if (getId() == 0) {
-            throw new RuntimeException("Didn't assign a id to ShowNameTextView");
+            throw new RuntimeException("Didn't assign a id to ShowEnterTextView");
         }
         setOnClickListener(this);
     }
@@ -41,13 +41,13 @@ public class ShowNameTextView extends TextView implements View.OnClickListener {
         show();
     }
 
-    public void onPopFragment(EnterNameFragment fragment) {
+    public void onPopFragment(EnterTextFragment fragment) {
         enterName = fragment.enterName;
         show();
     }
 
     private void show() {
-        setText(String.format("Name:%s", enterName));
+        setText(String.format("Enter:%s", enterName));
     }
 
     public String getEnterName() {
@@ -58,7 +58,7 @@ public class ShowNameTextView extends TextView implements View.OnClickListener {
     public void onClick(View view) {
         FragmentBuilder
                 .create(this)
-                .setFragment(EnterNameFragment.class, getClass().getName() + " " + getId())
+                .setFragment(EnterTextFragment.class, getClass().getName() + " " + getId())
                 .replace()
                 .traceable()
                 .build();

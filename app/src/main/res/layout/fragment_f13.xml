@@ -20,14 +20,9 @@
         android:textAppearance="?android:textAppearanceLarge" />
 
     <Button
-        android:id="@+id/nextStepButton"
+        android:id="@+id/finishButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Next" />
+        android:text="Finish" />
 
-    <com.lin1987www.fragmentbuilder.widget.F12SwitchButton
-        android:id="@+id/switchStepButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Switch Step" />
 </LinearLayout>

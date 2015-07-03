@@ -44,15 +44,13 @@ import static android.support.v4.app.FragmentTransaction.TRANSIT_NONE;
  * onBuildFragmentListener( add ) ->  fragment add notify src
  * back() -> back  from FragmentPath
  * <p/>
- * 1. Wizard Step
+ * 1. Wizard Steps
+ * 2. Switch
  * 2. Fragment -> Fragment ( Outside )
  * 2. View -> Fragment ( Outside )
  * 3. FragmentActivity -> Fragment ( Inside * Only way )
  * 3. Fragment -> Fragment (Inside)
  * 4. View -> Fragment ( Inside ) * 應該不會用到
- * TODO 超級可能性
- * 當因為 onBackStack 發生時，FragmentActivity 處理 onBackStack時，觸發FragmentTransactionBuilder2.popBackStack()   Stong Ref 到那個Fragment ，然後監聽 onBackStackChanged() 時，再將Fragment 丟回去。
- * 當 onBackPressed 去呼叫特定 FragmentManager 去執行 popBackStack，但執行前，透過預先儲存在 BackEntry中Name屬性的相關資料，得知這Fragment是"誰"呼叫，然後使用addOnBackStackChangedListener當 Fragment 被移除的時候，丟回去原本呼叫的地方(FragmentActivity, Fragment, View)。
  */
 public class FragmentBuilder {
     public static final String TAG = FragmentBuilder.class.getName();
@@ -69,9 +67,9 @@ public class FragmentBuilder {
     private Bundle fragmentArgs;
     private Fragment containerFragment;
     private PreAction preAction = PreAction.none;
-    private boolean enableBackSrc = false;
-    private boolean enableBackContainer = false;
-    //
+    // isKeepTarget, isKeepContainer are for PreAction:back.
+    private boolean isKeepTarget = false;
+    private boolean isKeepContainer = false;
     //
     public static int defaultContainerViewId = android.R.id.content;
     private int containerViewId = defaultContainerViewId;
@@ -236,15 +234,15 @@ public class FragmentBuilder {
         if (targetViewId > 0) {
             if (content.srcFragmentActivity != null) {
                 if (content.srcFragmentActivity.findViewById(targetViewId) == null) {
-                    throw new RuntimeException("Didn't find sourceContentView");
+                    throw new RuntimeException("Didn't find targetViewId");
                 }
             } else if (content.srcFragment != null) {
                 if (content.srcFragment.getView().findViewById(targetViewId) == null) {
-                    throw new RuntimeException("Didn't find sourceContentView");
+                    throw new RuntimeException("Didn't find targetViewId");
                 }
             } else {
                 if (((FragmentActivity) content.srcView.getContext()).findViewById(targetViewId) == null) {
-                    throw new RuntimeException("Didn't find sourceContentView");
+                    throw new RuntimeException("Didn't find targetViewId");
                 }
             }
         }
@@ -252,29 +250,35 @@ public class FragmentBuilder {
         return this;
     }
 
-    /**
-     * 延伸出兩個概念  backSrc  ,  backContainer, back
-     *
-     * @return
-     */
     public FragmentBuilder back() {
         return back(true, true);
     }
 
-    public FragmentBuilder back(boolean useBackSrc, boolean useBackContainer) {
+    public FragmentBuilder backContainer() {
+        return back(true, false);
+    }
+
+    public FragmentBuilder backTarget() {
+        return back(false, true);
+    }
+
+    public FragmentBuilder back(boolean isKeepContainer, boolean isKeepTarget) {
         this.preAction = PreAction.back;
-        this.enableBackSrc = useBackSrc;
-        this.enableBackContainer = useBackContainer;
+        this.isKeepTarget = isKeepTarget;
+        this.isKeepContainer = isKeepContainer;
         return this;
     }
 
+
     public FragmentBuilder reset() {
         this.preAction = PreAction.reset;
+        this.isKeepTarget = true;
+        this.isKeepContainer = true;
         return this;
     }
 
     public FragmentBuilder reset(int containerViewId, Fragment fragment) {
-        add(containerViewId, fragment, null);
+        reset(containerViewId, fragment, null);
         return this;
     }
 
@@ -320,37 +324,32 @@ public class FragmentBuilder {
         setFragment(fragment, tag);
     }
 
-    private static void doIfReset(FragmentBuilder builder) {
-        // If do something in same containerViewId,call popBackStack() and reset new action
-        FragmentBuilder backBuilder = findBackFragmentBuilder(builder.content);
-        if (backBuilder != null) {
-            FragmentPath fragmentPath = FragmentPath.getFragmentPath(builder.content);
-            fragmentPath.back();
-            FragmentManager backFm = FragmentPath.getFragmentManager(builder.content, fragmentPath);
-            // Don't trigger hasPopBackStack(), just reset!
-            backFm.popBackStack();
-            overrideBuilder(backBuilder, builder, true, true);
+    private static void doPreAction(FragmentBuilder builder) {
+        if (builder.preAction.equals(PreAction.none)) {
+            return;
         }
-    }
-
-    private static void doIfBack(FragmentBuilder builder) {
         FragmentPath fragmentPath = FragmentPath.getFragmentPath(builder.content);
         Fragment hereFrag = FragmentPath.findFragment(builder.content.getFragmentActivity(), fragmentPath);
         fragmentPath.back();
         String backFragmentPathString = FragmentPath.covert(fragmentPath);
+        FragmentManager backFm = FragmentPath.getFragmentManager(builder.content, fragmentPath);
         //
         FragmentBuilder backBuilder = findBackFragmentBuilder(builder.content);
         //
         if (backBuilder != null) {
-            // We known backBuilder here.
-            overrideBuilder(backBuilder, builder, builder.enableBackContainer, builder.enableBackSrc);
+            if (builder.preAction.equals(PreAction.reset)) {
+                backFm.popBackStack();
+                overrideBuilder(backBuilder, builder, true, true);
+            } else if (builder.preAction.equals(PreAction.back)) {
+                overrideBuilder(backBuilder, builder, builder.isKeepContainer, builder.isKeepTarget);
+            }
         } else {
-            if (builder.enableBackContainer) {
+            if (builder.isKeepContainer) {
                 if (null != hereFrag) {
                     builder.containerViewId = hereFrag.getId();
                 }
             }
-            if (builder.enableBackSrc) {
+            if (builder.isKeepTarget) {
                 // TODO  需要驗證
                 builder.targetFragmentPathString = backFragmentPathString;
                 builder.targetViewId = 0;
@@ -369,7 +368,6 @@ public class FragmentBuilder {
         String hereFragTag = hereFrag.getTag();
         // Then fragmentPath is back!!
         fragmentPath.back();
-        String backFragmentPathString = FragmentPath.covert(fragmentPath);
         FragmentManager backFm = FragmentPath.getFragmentManager(content, fragmentPath);
         for (int i = backFm.getBackStackEntryCount() - 1; i > -1; i--) {
             backStackEntry = backFm.getBackStackEntryAt(i);
@@ -382,13 +380,13 @@ public class FragmentBuilder {
         return backBuilder;
     }
 
-    public static void overrideBuilder(FragmentBuilder defaultBuilder, FragmentBuilder builder, boolean enableBackContainer, boolean enableBackSrc) {
-        if (enableBackContainer) {
+    public static void overrideBuilder(FragmentBuilder defaultBuilder, FragmentBuilder builder, boolean isKeepContainer, boolean isKeepTarget) {
+        if (isKeepContainer) {
             // replace containerViewId
             builder.containerViewId = defaultBuilder.containerViewId;
         }
 
-        if (enableBackSrc) {
+        if (isKeepTarget) {
             builder.targetViewId = defaultBuilder.targetViewId;
             builder.targetFragmentPathString = defaultBuilder.targetFragmentPathString;
         }
@@ -416,12 +414,7 @@ public class FragmentBuilder {
         }
         // targetFragmentPathString maybe be modified by PreAction.
         this.targetFragmentPathString = FragmentPath.getFragmentPathString(content);
-        if (this.preAction == PreAction.back) {
-            doIfBack(this);
-        } else if (this.preAction == PreAction.reset) {
-            doIfReset(this);
-        }
-
+        doPreAction(this);
         if (action.equals(Action.none)) {
             action = defaultAction;
         }
@@ -456,7 +449,6 @@ public class FragmentBuilder {
         }
         // Animation setting
         setAnimations(ft);
-        // TODO Action.add != action
         if (Action.replace == action) {
             // Affect containerFragment.
             if (containerFragment != null) {
@@ -493,7 +485,7 @@ public class FragmentBuilder {
     }
 
     /**
-     * Provider  同時預設也是 接收 onPopFragment 的接收者，但是為了實作 Wizard Steps 可能要再想想...
+     * Provider
      */
     public static class Content {
         private static String noExistContainerView = "Didn't find container view.";
@@ -780,8 +772,14 @@ public class FragmentBuilder {
         }
 
         public void popBackStack() {
-            hookFragmentManager.addOnBackStackChangedListener(this);
-            hookFragmentManager.popBackStack();
+            fragmentActivity.getWindow().getDecorView().post(new Runnable() {
+                @Override
+                public void run() {
+                    // 不可以馬上移除Listener 不然會對正在觸發的onBackStackChanged 造成影響
+                    hookFragmentManager.addOnBackStackChangedListener(PopFragmentSender.this);
+                    hookFragmentManager.popBackStack();
+                }
+            });
         }
 
         @Override

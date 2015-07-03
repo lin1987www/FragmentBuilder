@@ -15,7 +15,7 @@ import lin1987www.com.fragmentbuilder.R;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainFragment extends Fragment implements FragmentBuilder.PopFragmentListener {
+public class MainFragment extends Fragment {
     FrameLayout mContainerMain4;
     FrameLayout mContainerMain5;
     TextView mTextView;
@@ -83,16 +83,11 @@ public class MainFragment extends Fragment implements FragmentBuilder.PopFragmen
         return view;
     }
 
-    @Override
-    public void onPopFragment(Fragment fragment) {
-        mTextView.setText(String.format("%s", fragment.getClass().getSimpleName()));
-    }
-
     public void onPopFragment(F4Fragment fragment) {
-        mTextView.setText(String.format("->%s %s", fragment.getClass().getSimpleName(), fragment.result));
+        mTextView.setText(String.format("%s\n%s %s", getClass().getSimpleName(), fragment.getClass().getSimpleName(), fragment.result));
     }
 
     public void onPopFragment(F5Fragment fragment) {
-        mTextView.setText(String.format("->%s %s", fragment.getClass().getSimpleName(), fragment.result));
+        mTextView.setText(String.format("%s\n%s %s", getClass().getSimpleName(), fragment.getClass().getSimpleName(), fragment.result));
     }
 }

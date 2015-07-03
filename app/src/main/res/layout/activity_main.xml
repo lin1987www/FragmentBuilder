@@ -10,11 +10,11 @@
         android:layout_height="wrap_content"
         android:layout_weight="1" />
 
-    <com.lin1987www.fragmentbuilder.widget.ShowNameTextView
-        android:id="@+id/showNameTextView2"
+    <com.lin1987www.fragmentbuilder.widget.ShowEnterTextView
+        android:id="@+id/showEnterTextView2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Test Activity To enter name"
+        android:hint="Show enter text"
         android:textAppearance="?android:textAppearanceLarge">
         <!--
                     If  this id is @+id/showNameTextView  , it will crash!
@@ -22,7 +22,7 @@
                     如果這id設定成 showNameTextView，將會發生當機!
                     因為 showNameTextView 已經存在這View之前的了，因此無法匹配。
                 -->
-    </com.lin1987www.fragmentbuilder.widget.ShowNameTextView>
+    </com.lin1987www.fragmentbuilder.widget.ShowEnterTextView>
 
     <com.lin1987www.fragmentbuilder.widget.WizardStepsTextView
         android:id="@+id/WizardStepsTextView2"
@@ -30,6 +30,12 @@
         android:layout_height="wrap_content"
         android:hint="WizardStepsTextView"
         android:textAppearance="?android:textAppearanceLarge" />
+
+    <com.lin1987www.fragmentbuilder.widget.WizardStepsBackButton
+        android:id="@+id/wizardStepsBackButton"
+        android:text="Wizard Steps Button ( Back to FragmentActivity )"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 </LinearLayout>
 
 

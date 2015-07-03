@@ -12,11 +12,11 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:textAppearanceLarge" />
 
-    <com.lin1987www.fragmentbuilder.widget.ShowNameTextView
+    <com.lin1987www.fragmentbuilder.widget.ShowEnterTextView
         android:id="@+id/showNameTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter name"
+        android:hint="Enter text"
         android:textAppearance="?android:textAppearanceLarge" />
 
     <EditText

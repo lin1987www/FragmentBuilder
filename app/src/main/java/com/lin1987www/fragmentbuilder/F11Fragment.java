@@ -18,21 +18,23 @@ import lin1987www.com.fragmentbuilder.R;
  * Created by Administrator on 2015/6/26.
  */
 public class F11Fragment extends Fragment {
+    public final static String BACK_STACK_NAME = F11Fragment.class.getSimpleName();
     private final static String TAG = F11Fragment.class.getSimpleName();
     public String result;
     String f111Result = "";
 
     TextView mTextView;
     FrameLayout mContainer;
+    EditText mEditText;
     Button mNextStepButton;
-    EditText mNumberEditText;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f11, container, false);
         mTextView = (TextView) view.findViewById(R.id.textView);
-        mTextView.setText(String.format("%s id:[%s]", getTag(), getId()));
+        mTextView.setText(String.format("%s", getTag(), getId()));
         mContainer = (FrameLayout) view.findViewById(R.id.container_f11);
         mContainer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -57,19 +59,18 @@ public class F11Fragment extends Fragment {
                         .build();
             }
         });
-        mNumberEditText = (EditText) view.findViewById(R.id.editText);
+        mEditText = (EditText) view.findViewById(R.id.editText);
 
         return view;
     }
 
     @Override
     public void onDestroyView() {
-        result = String.format("F11:[%s] F111:[%s]", mNumberEditText.getText().toString(), f111Result);
+        result = String.format("F11:[%s] F111:[%s]", mEditText.getText().toString(), f111Result);
         super.onDestroyView();
     }
 
     public void onPopFragment(F111Fragment fragment) {
         f111Result = fragment.result;
-        mTextView.setText(String.format("->%s %s", fragment.getClass().getSimpleName(), fragment.result));
     }
 }

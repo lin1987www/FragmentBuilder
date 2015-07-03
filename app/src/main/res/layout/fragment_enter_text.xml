@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:gravity="center"
-        android:hint="Enter your name here"
+        android:hint="Enter your text here"
         android:textAppearance="?android:textAppearanceLarge" />
 
 </RelativeLayout>

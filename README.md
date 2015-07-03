@@ -39,7 +39,7 @@ You can implement the PopFragmentListener on **FragmentActicity**, **Fragment**,
         // Access any you want from Fragment
     }
 	
-	// Or exactly CLASS
+	// Or exactly class
 	public void onPopFragment(SelectDateFragment fragment) {
         // Access any you want from Fragment
     }
@@ -50,25 +50,29 @@ You can implement the PopFragmentListener on **FragmentActicity**, **Fragment**,
 	    public void onPopFragment(**);
 	}
 
-## Sample
+## Simple
 
-### Wizard Steps
-
+### Wizard Steps - back()
+// TODO
+### Switch Fragment - reset()
 // TODO
 
+## FragmentPath Architecture Simple
 
-
-## Architecture
+FragmentPath is this whole library core. We use it to find all Fragment from FragmentActivity.
 
 ![](/images/FragmentViewArchitecture.png)
 
-### FragmentPath is used to find the fragment that use FragmentBuilder.
+We put all information to FragmentTransaction's addStackName method, and parse information by RegEx.
 
-When backward path, always use FragmentPath to find the source.
+Before popBackState(), We parse BackStackEntry's name(naming by addStackName method), then create PopFragmentSender to trigger onPopFragment method.  
 
-When foreward path, didn't use FragmentPath to find the source, just use FragmentManager to get the source Fragment.
+Fragment.getId() equals containerViewId.
+
+### FragmentPath is used to find the fragment.
+
+Wherever you call FragmentBuilder, it will find FragmentPath. ( FragmentActivity, Fragment, View )
 
 
 ## Wizard Steps Test
-
 ![](/images/WizardStepsTest.gif)

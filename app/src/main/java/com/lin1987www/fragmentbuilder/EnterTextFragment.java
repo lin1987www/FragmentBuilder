@@ -12,7 +12,7 @@ import lin1987www.com.fragmentbuilder.R;
 /**
  * Created by Administrator on 2015/6/26.
  */
-public class EnterNameFragment extends Fragment {
+public class EnterTextFragment extends Fragment {
     public String enterName;
 
     EditText mEditText;
@@ -20,7 +20,7 @@ public class EnterNameFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_enter_name, container, false);
+        View view = inflater.inflate(R.layout.fragment_enter_text, container, false);
         mEditText = (EditText) view.findViewById(R.id.editText);
         this.onDestroyView();
         return view;
