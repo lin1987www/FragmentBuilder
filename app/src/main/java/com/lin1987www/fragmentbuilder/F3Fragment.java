@@ -23,7 +23,7 @@ public class F3Fragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f3, container, false);
         mTextView = (TextView) view.findViewById(R.id.textView);
-        mTextView.setText(String.format("%s", getTag(), getId()));
+        mTextView.setText(String.format("%s", getTag()));
         mShowEnterTextView = (ShowEnterTextView) view.findViewById(R.id.showNameTextView);
         return view;
     }

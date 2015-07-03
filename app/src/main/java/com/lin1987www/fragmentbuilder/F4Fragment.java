@@ -24,7 +24,7 @@ public class F4Fragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f4, container, false);
         mTextView = (TextView) view.findViewById(R.id.textView);
-        mTextView.setText(String.format("%s", getTag(), getId()));
+        mTextView.setText(String.format("%s", getTag()));
         mNumberEditText = (EditText) view.findViewById(R.id.editText);
         return view;
     }

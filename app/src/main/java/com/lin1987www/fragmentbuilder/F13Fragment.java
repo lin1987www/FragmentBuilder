@@ -30,7 +30,7 @@ public class F13Fragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f13, container, false);
         mTextView = (TextView) view.findViewById(R.id.textView);
-        mTextView.setText(String.format("%s", getTag(), getId()));
+        mTextView.setText(String.format("%s", getTag()));
         mShowEnterTextView = (ShowEnterTextView) view.findViewById(R.id.showNameTextView);
         mFinishButton = (Button) view.findViewById(R.id.finishButton);
         mFinishButton.setOnClickListener(new View.OnClickListener() {

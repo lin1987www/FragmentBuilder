@@ -759,7 +759,7 @@ public class FragmentBuilder {
         private Fragment targetFragment;
         private Fragment popFragment;
         private FragmentBuilder builder;
-        private boolean isSentObj = false;
+        private boolean isSent = false;
         public PopFragmentSender nextSender;
 
         public PopFragmentSender(FragmentActivity fragmentActivity, Fragment hookFragment, FragmentManager hookFragmentManager, Fragment popFragment, FragmentBuilder builder) {
@@ -782,10 +782,21 @@ public class FragmentBuilder {
             });
         }
 
+        private void removeListener() {
+            // Remove listener
+            fragmentActivity.getWindow().getDecorView().post(new Runnable() {
+                @Override
+                public void run() {
+                    // 不可以馬上移除Listener 不然會對正在觸發的onBackStackChanged 造成影響
+                    hookFragmentManager.removeOnBackStackChangedListener(PopFragmentSender.this);
+                }
+            });
+        }
+
         @Override
         public void onBackStackChanged() {
-            Object srcObject;
-            if (isSentObj) {
+            Object targetObject;
+            if (isSent) {
                 return;
             }
             // 串聯呼叫地的方式
@@ -801,46 +812,41 @@ public class FragmentBuilder {
             }
             if (TextUtils.isEmpty(builder.targetFragmentPathString)) {
                 if (builder.targetViewId == 0) {
-                    srcObject = fragmentActivity;
+                    targetObject = fragmentActivity;
                 } else {
-                    srcObject = fragmentActivity.findViewById(builder.targetViewId);
+                    targetObject = fragmentActivity.findViewById(builder.targetViewId);
                 }
             } else {
                 if (builder.targetViewId == 0) {
-                    srcObject = targetFragment;
+                    targetObject = targetFragment;
                 } else {
-                    srcObject = targetFragment.getView().findViewById(builder.targetViewId);
+                    targetObject = targetFragment.getView().findViewById(builder.targetViewId);
                 }
             }
-            if (srcObject != null) {
-                isSentObj = true;
-                sendOnPopFragment(srcObject, popFragment);
-                // Remove listener
-                fragmentActivity.getWindow().getDecorView().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        // 不可以馬上移除Listener 不然會對正在觸發的onBackStackChanged 造成影響
-                        hookFragmentManager.removeOnBackStackChangedListener(PopFragmentSender.this);
-                    }
-                });
+            if (targetObject != null) {
+                isSent = true;
+                sendOnPopFragment(targetObject, popFragment);
+                removeListener();
+            } else {
+                throw new RuntimeException(String.format("Didn't find target Object. %s", builder));
             }
         }
 
-        private static void sendOnPopFragment(Object src, Fragment fragment) {
-            if (src == null) {
+        private static void sendOnPopFragment(Object targetObject, Fragment fragment) {
+            if (targetObject == null) {
                 return;
             }
-            Class<?> srcClass = src.getClass();
+            Class<?> srcClass = targetObject.getClass();
             try {
                 Method method = srcClass.getDeclaredMethod("onPopFragment", fragment.getClass());
                 if (method != null) {
-                    method.invoke(src, fragment);
+                    method.invoke(targetObject, fragment);
                     return;
                 }
             } catch (Throwable ex) {
             }
-            if (src instanceof PopFragmentListener) {
-                ((PopFragmentListener) src).onPopFragment(fragment);
+            if (targetObject instanceof PopFragmentListener) {
+                ((PopFragmentListener) targetObject).onPopFragment(fragment);
             }
         }
     }

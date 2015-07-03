@@ -19,15 +19,19 @@
         android:hint="Enter text"
         android:textAppearance="?android:textAppearanceLarge" />
 
-    <Button
-        android:id="@+id/nextStepButton"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Next" />
-
-    <com.lin1987www.fragmentbuilder.widget.F12SwitchButton
-        android:id="@+id/switchStepButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Switch Step" />
+        android:orientation="horizontal">
+        <com.lin1987www.fragmentbuilder.widget.F12SwitchButton
+            android:id="@+id/switchStepButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Switch Step" />
+        <Button
+            android:id="@+id/nextStepButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Next" />
+    </LinearLayout>
 </LinearLayout>

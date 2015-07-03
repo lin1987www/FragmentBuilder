@@ -34,7 +34,7 @@ public class F11Fragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f11, container, false);
         mTextView = (TextView) view.findViewById(R.id.textView);
-        mTextView.setText(String.format("%s", getTag(), getId()));
+        mTextView.setText(String.format("%s", getTag()));
         mContainer = (FrameLayout) view.findViewById(R.id.container_f11);
         mContainer.setOnClickListener(new View.OnClickListener() {
             @Override

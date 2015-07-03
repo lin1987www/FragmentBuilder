@@ -25,7 +25,7 @@ public class F21Fragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_f21, container, false);
         mTextView = (TextView) view.findViewById(R.id.textView);
         mShowEnterTextView = (ShowEnterTextView) view.findViewById(R.id.showNameTextView);
-        mTextView.setText(String.format("%s", getTag(), getId()));
+        mTextView.setText(String.format("%s", getTag()));
         return view;
     }
 
