@@ -52,10 +52,48 @@ You can implement the PopFragmentListener on **FragmentActicity**, **Fragment**,
 
 ## Simple
 
-### Wizard Steps - back()
-// TODO
-### Switch Fragment - reset()
-// TODO
+### PreAction
+
+FragmentBuilder has two Actions can be used. It is same to FragmentTransaction add() and replace().
+
+BUT there are two PreActions back() and reset() can use.
+
+#### PreAction back()
+
+back() PreAction is used to transfer TargetObject and ContainerViewId even Action according back **FragmentPath**
+
+back() is useful to implement wizard steps!
+
+##### Normal Case:
+
+A -> B -> C
+
+then onBackPressed C is popped out from FragmentManager's back stack. B will receive C by onPopFragment().
+
+A -> B<-(C)
+
+then onBackPressed B is popped out from FragmentManager's back stack. A will receive B by onPopFragment().
+
+A <-(B)
+
+##### When C use back() case:
+
+A <-(C) <-(B) 
+
+C refer B's setting and pass to A
+
+
+#### PreAction reset()
+
+reset() PreAction is used to replace Fragment and follow old FragmentBuilder setting. Like below:
+
+A -> B -> C  
+( When C reset to D )
+A -> B -> D
+
+You did not to setting everything you do to C.
+
+
 
 ## FragmentPath Architecture Simple
 

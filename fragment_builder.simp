@@ -5,21 +5,33 @@
     <authors> </authors>
     <description />
   </meta>
-  <counters models="1">
+  <counters models="2">
     <entity-names>
       <counter>
         <item-type stereotype="" type="UmlClass" />
-        <value>5</value>
+        <value>8</value>
       </counter>
       <counter>
         <item-type stereotype="" type="UmlObject" />
         <value>4</value>
       </counter>
+      <counter>
+        <item-type stereotype="" type="UmlLifeline" />
+        <value>2</value>
+      </counter>
+      <counter>
+        <item-type stereotype="" type="UmlSequenceAction" />
+        <value>1</value>
+      </counter>
+      <counter>
+        <item-type stereotype="" type="UmlActivationBar" />
+        <value>2</value>
+      </counter>
     </entity-names>
     <entity-ids>
       <counter>
         <item-type stereotype="" type="UmlClass" />
-        <value>6</value>
+        <value>9</value>
       </counter>
       <counter>
         <item-type stereotype="" type="AbstractShapeItem" />
@@ -27,7 +39,7 @@
       </counter>
       <counter>
         <item-type stereotype="" type="UmlAssociation" />
-        <value>39</value>
+        <value>41</value>
       </counter>
       <counter>
         <item-type stereotype="" type="UmlObject" />
@@ -39,31 +51,47 @@
       </counter>
       <counter>
         <item-type stereotype="" type="UmlComment" />
-        <value>8</value>
+        <value>10</value>
       </counter>
       <counter>
         <item-type stereotype="" type="UmlCommentConnector" />
-        <value>6</value>
+        <value>8</value>
       </counter>
       <counter>
         <item-type stereotype="" type="AbstractElementGroup" />
-        <value>116</value>
+        <value>78</value>
+      </counter>
+      <counter>
+        <item-type stereotype="" type="UmlLifeline" />
+        <value>3</value>
+      </counter>
+      <counter>
+        <item-type stereotype="" type="UmlSequenceAction" />
+        <value>2</value>
+      </counter>
+      <counter>
+        <item-type stereotype="" type="UmlActivationBar" />
+        <value>3</value>
       </counter>
     </entity-ids>
     <diagrams>
       <counter>
         <type>SoftwareIdeasModeler.Core.Diagrams.UmlDiagrams.UmlClassDiagram</type>
-        <value>2</value>
+        <value>3</value>
       </counter>
       <counter>
         <type>SoftwareIdeasModeler.Core.Diagrams.UmlDiagrams.UmlObjectDiagram</type>
+        <value>1</value>
+      </counter>
+      <counter>
+        <type>SoftwareIdeasModeler.Core.Diagrams.UmlDiagrams.UmlSequenceDiagram</type>
         <value>1</value>
       </counter>
     </diagrams>
     <fields>
       <counter>
         <type>SoftwareIdeasModeler.Core.DiagramItems.Fields.OperationField</type>
-        <value>6</value>
+        <value>10</value>
       </counter>
       <counter>
         <type>SoftwareIdeasModeler.Core.DiagramItems.Fields.AttributeField</type>
@@ -294,7 +322,7 @@ F5Fragment "3" </comment>
       </cooperation>
       <associated-diagrams />
       <owned-items />
-      <style style-name="CommentStyle" shadow-type="smooth" shadow-offset="1,1" shadow-visible="true" shadow-color="#3C000000" gloss-effect="true" wrap-name-text="true" wrap-other-text="true" padding="1" margin="1" glow-color="#FFFFFFFF" accuracy="0.9" name-use-defaults="false" name-color="#FF000000" name-font="Verdana;10;B" name-horizontal-alignment="left" name-vertical-alignment="top" part-header-use-defaults="false" part-header-color="#FF1E1E1E" part-header-font="Verdana;9;I" part-header-horizontal-alignment="center" part-header-vertical-alignment="center" text-use-defaults="false" text-color="#FF000000" text-font="Verdana;9;" text-horizontal-alignment="left" text-vertical-alignment="top" tagged-value-use-defaults="false" tagged-value-color="#FF1E1E1E" tagged-value-font="Verdana;9;I" tagged-value-horizontal-alignment="left" tagged-value-vertical-alignment="top" stereotype-use-defaults="false" stereotype-color="#FF1E1E1E" stereotype-font="Verdana;9;I" stereotype-horizontal-alignment="left" stereotype-vertical-alignment="top">
+      <style style-name="Custom Style" shadow-type="smooth" shadow-offset="1,1" shadow-visible="true" shadow-color="#3C000000" gloss-effect="true" wrap-name-text="true" wrap-other-text="true" padding="1" margin="1" glow-color="#FFFFFFFF" accuracy="0.9" name-use-defaults="false" name-color="#FF000000" name-font="Verdana;10;B" name-horizontal-alignment="left" name-vertical-alignment="top" part-header-use-defaults="false" part-header-color="#FF1E1E1E" part-header-font="Verdana;9;I" part-header-horizontal-alignment="center" part-header-vertical-alignment="center" text-use-defaults="false" text-color="#FF000000" text-font="Verdana;9;" text-horizontal-alignment="left" text-vertical-alignment="top" tagged-value-use-defaults="false" tagged-value-color="#FF1E1E1E" tagged-value-font="Verdana;9;I" tagged-value-horizontal-alignment="left" tagged-value-vertical-alignment="top" stereotype-use-defaults="false" stereotype-color="#FF1E1E1E" stereotype-font="Verdana;9;I" stereotype-horizontal-alignment="left" stereotype-vertical-alignment="top">
         <background type="forward-diagonal" color="#FFFFFFFF" color2="#FFFFFFFF" />
         <border color="#FFFFA500" width="1" dash-style="Solid" />
         <label-connector color="#80000000" width="1" dash-style="Dash" />
@@ -311,6 +339,108 @@ equals
 getWindow().findViewById(id);</comment>
     </item>
     <item id="di506163704238085237" cid="CN005" type="comment-connector" name="" style-class="" is-abstract="false" is-root="false" is-leaf="false" is-active="false" visibility="package" creation-date="07/03/2015 05:23:05">
+      <stereotypes />
+      <associated-diagrams />
+      <owned-items />
+      <style class="default" />
+    </item>
+    <item id="di495110432613178575" cid="CMT008" type="comment" name="Comment" style-class="" is-abstract="false" is-root="false" is-leaf="false" is-active="false" visibility="package" creation-date="07/04/2015 17:16:39">
+      <stereotypes />
+      <documentation>
+        <text>
+          <styles>
+            <style name="S1" font-name="Verdana" font-size="12" font-bold="false" font-italic="false" font-underline="false" font-strikeout="false">
+              <text>
+                <solid-brush color="#FF000000" />
+              </text>
+            </style>
+          </styles>
+          <content>
+            <paragraph>
+              <p s="S1">
+                <t />
+              </p>
+            </paragraph>
+          </content>
+        </text>
+      </documentation>
+      <cooperation>
+        <participants />
+        <comments />
+      </cooperation>
+      <associated-diagrams />
+      <owned-items />
+      <style style-name="Custom" shadow-type="smooth" shadow-offset="1,1" shadow-visible="true" shadow-color="#3C000000" gloss-effect="true" wrap-name-text="true" wrap-other-text="true" padding="1" margin="1" glow-color="#FFFFFFFF" accuracy="0.9" name-use-defaults="false" name-color="#FF000000" name-font="Verdana;10;B" name-horizontal-alignment="left" name-vertical-alignment="top" part-header-use-defaults="false" part-header-color="#FF1E1E1E" part-header-font="Verdana;9;I" part-header-horizontal-alignment="center" part-header-vertical-alignment="center" text-use-defaults="false" text-color="#FF000000" text-font="Verdana;9;" text-horizontal-alignment="left" text-vertical-alignment="top" tagged-value-use-defaults="false" tagged-value-color="#FF1E1E1E" tagged-value-font="Verdana;9;I" tagged-value-horizontal-alignment="left" tagged-value-vertical-alignment="top" stereotype-use-defaults="false" stereotype-color="#FF1E1E1E" stereotype-font="Verdana;9;I" stereotype-horizontal-alignment="left" stereotype-vertical-alignment="top">
+        <background type="vertical-linear" color="#FFD3D3D3" color2="#FFFFFFFF" />
+        <border color="#FF000000" width="1" dash-style="Solid" />
+        <label-connector color="#80000000" width="1" dash-style="Dash" />
+        <alternate-styles>
+          <alternate-style style-name="Alternate" shadow-type="smooth" shadow-offset="1,1" shadow-color="#3C000000" gloss-effect="true" wrap-name-text="true" wrap-other-text="true" padding="1" margin="1" glow-color="#FFFFFFFF" accuracy="0.9" name-use-defaults="false" name-color="#FF000000" name-font="Verdana;10;B" name-horizontal-alignment="center" name-vertical-alignment="center" part-header-use-defaults="false" part-header-color="#FF1E1E1E" part-header-font="Verdana;9;I" part-header-horizontal-alignment="center" part-header-vertical-alignment="center" text-use-defaults="false" text-color="#FF000000" text-font="Verdana;9;" text-horizontal-alignment="left" text-vertical-alignment="center" tagged-value-use-defaults="false" tagged-value-color="#FF1E1E1E" tagged-value-font="Verdana;9;I" tagged-value-horizontal-alignment="center" tagged-value-vertical-alignment="center" stereotype-use-defaults="false" stereotype-color="#FF1E1E1E" stereotype-font="Verdana;9;I" stereotype-horizontal-alignment="center" stereotype-vertical-alignment="center">
+            <background type="vertical-linear" color="#FF1E90FF" color2="#FF87CEFA" />
+            <border color="#FF00008B" width="1" dash-style="Solid" />
+            <label-connector color="#FF000000" width="1" dash-style="Solid" />
+          </alternate-style>
+        </alternate-styles>
+      </style>
+      <comment>FragmentBuilder
+    .create(F1Fragment.this)
+    .setContainerViewId(R.id.container_f1)
+    .setFragment(F11Fragment.class, F11Fragment.class.getSimpleName())
+    .add()
+    .addToBackStack(F11Fragment.BACK_STACK_NAME)
+    .build();</comment>
+    </item>
+    <item id="di568564385844850781" cid="CN006" type="comment-connector" name="" style-class="" is-abstract="false" is-root="false" is-leaf="false" is-active="false" visibility="package" creation-date="07/04/2015 17:16:39">
+      <stereotypes />
+      <associated-diagrams />
+      <owned-items />
+      <style class="default" />
+    </item>
+    <item id="di573544513677689694" cid="CMT009" type="comment" name="Comment" style-class="" is-abstract="false" is-root="false" is-leaf="false" is-active="false" visibility="package" creation-date="07/04/2015 17:20:03">
+      <stereotypes />
+      <documentation>
+        <text>
+          <styles>
+            <style name="S1" font-name="Verdana" font-size="12" font-bold="false" font-italic="false" font-underline="false" font-strikeout="false">
+              <text>
+                <solid-brush color="#FF000000" />
+              </text>
+            </style>
+          </styles>
+          <content>
+            <paragraph>
+              <p s="S1">
+                <t />
+              </p>
+            </paragraph>
+          </content>
+        </text>
+      </documentation>
+      <cooperation>
+        <participants />
+        <comments />
+      </cooperation>
+      <associated-diagrams />
+      <owned-items />
+      <style style-name="Custom" shadow-type="smooth" shadow-offset="1,1" shadow-visible="true" shadow-color="#3C000000" gloss-effect="true" wrap-name-text="true" wrap-other-text="true" padding="1" margin="1" glow-color="#FFFFFFFF" accuracy="0.9" name-use-defaults="false" name-color="#FF000000" name-font="Verdana;10;B" name-horizontal-alignment="left" name-vertical-alignment="top" part-header-use-defaults="false" part-header-color="#FF1E1E1E" part-header-font="Verdana;9;I" part-header-horizontal-alignment="center" part-header-vertical-alignment="center" text-use-defaults="false" text-color="#FF000000" text-font="Verdana;9;" text-horizontal-alignment="left" text-vertical-alignment="top" tagged-value-use-defaults="false" tagged-value-color="#FF1E1E1E" tagged-value-font="Verdana;9;I" tagged-value-horizontal-alignment="left" tagged-value-vertical-alignment="top" stereotype-use-defaults="false" stereotype-color="#FF1E1E1E" stereotype-font="Verdana;9;I" stereotype-horizontal-alignment="left" stereotype-vertical-alignment="top">
+        <background type="vertical-linear" color="#FFD3D3D3" color2="#FFFFFFFF" />
+        <border color="#FF000000" width="1" dash-style="Solid" />
+        <label-connector color="#80000000" width="1" dash-style="Dash" />
+        <alternate-styles>
+          <alternate-style style-name="Alternate" shadow-type="smooth" shadow-offset="1,1" shadow-color="#3C000000" gloss-effect="true" wrap-name-text="true" wrap-other-text="true" padding="1" margin="1" glow-color="#FFFFFFFF" accuracy="0.9" name-use-defaults="false" name-color="#FF000000" name-font="Verdana;10;B" name-horizontal-alignment="center" name-vertical-alignment="center" part-header-use-defaults="false" part-header-color="#FF1E1E1E" part-header-font="Verdana;9;I" part-header-horizontal-alignment="center" part-header-vertical-alignment="center" text-use-defaults="false" text-color="#FF000000" text-font="Verdana;9;" text-horizontal-alignment="left" text-vertical-alignment="center" tagged-value-use-defaults="false" tagged-value-color="#FF1E1E1E" tagged-value-font="Verdana;9;I" tagged-value-horizontal-alignment="center" tagged-value-vertical-alignment="center" stereotype-use-defaults="false" stereotype-color="#FF1E1E1E" stereotype-font="Verdana;9;I" stereotype-horizontal-alignment="center" stereotype-vertical-alignment="center">
+            <background type="vertical-linear" color="#FF1E90FF" color2="#FF87CEFA" />
+            <border color="#FF00008B" width="1" dash-style="Solid" />
+            <label-connector color="#FF000000" width="1" dash-style="Solid" />
+          </alternate-style>
+        </alternate-styles>
+      </style>
+      <comment>FragmentBuilder
+  .create(F11Fragment.this)
+  .back()
+  .setFragment(F12Fragment.class, F12Fragment.class.getSimpleName())
+  .build();</comment>
+    </item>
+    <item id="di568185123357346093" cid="CN007" type="comment-connector" name="" style-class="" is-abstract="false" is-root="false" is-leaf="false" is-active="false" visibility="package" creation-date="07/04/2015 17:20:03">
       <stereotypes />
       <associated-diagrams />
       <owned-items />
@@ -1763,7 +1893,7 @@ MainFragment      "0"
           </item>
         </layer>
       </diagram>
-      <diagram type="uml-class" id="p495777663692242371" name="FragmentBuilder" order-index="3" overview-order-index="1" expanded="true" show-id="false" show-name="true" show-parent-name="false" show-stereotypes="true" show-tagged-values="false" show-template-parameters="true" show-fields="true" show-empty-compartments="true" show-attributes="true" show-attribute-visibility="true" show-operations="true" show-operation-parameters="true" show-operation-visibility="true" show-nullability="true" show-sequence-number="false" show-extension-points="false" show-relationship-texts="true" show-description="false" show-field-description="false" auto-routed-paths="false">
+      <diagram type="uml-class" id="p495777663692242371" name="FragmentBuilder" order-index="3" overview-order-index="1" show-id="false" show-name="true" show-parent-name="false" show-stereotypes="true" show-tagged-values="false" show-template-parameters="true" show-fields="true" show-empty-compartments="true" show-attributes="true" show-attribute-visibility="true" show-operations="true" show-operation-parameters="true" show-operation-visibility="true" show-nullability="true" show-sequence-number="false" show-extension-points="false" show-relationship-texts="true" show-description="false" show-field-description="false" auto-routed-paths="false">
         <style>
           <background-color index="1" color="#FFFFFFFF" />
           <background-color index="2" color="#FFFFFFFF" />

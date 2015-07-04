@@ -32,25 +32,6 @@ import static android.support.v4.app.FragmentTransaction.TRANSIT_NONE;
 
 /**
  * Created by lin on 2015/6/25.
- * 主要功能是負責 將 Fragment顯示出來 !
- * 1. add
- * 2. replace
- * 3. reset
- * <p/>
- * Class BackStackRecord implements interface of FragmentTransaction.
- * TODO 策畫所以常用Use Case
- * 0. popStackName(   name of a previous back state )
- * onPushFragmentListener(  ) -> fragment detach notify src
- * onBuildFragmentListener( add ) ->  fragment add notify src
- * back() -> back  from FragmentPath
- * <p/>
- * 1. Wizard Steps
- * 2. Switch
- * 2. Fragment -> Fragment ( Outside )
- * 2. View -> Fragment ( Outside )
- * 3. FragmentActivity -> Fragment ( Inside * Only way )
- * 3. Fragment -> Fragment (Inside)
- * 4. View -> Fragment ( Inside ) * 應該不會用到
  */
 public class FragmentBuilder {
     public static final String TAG = FragmentBuilder.class.getName();
@@ -350,7 +331,6 @@ public class FragmentBuilder {
                 }
             }
             if (builder.isKeepTarget) {
-                // TODO  需要驗證
                 builder.targetFragmentPathString = backFragmentPathString;
                 builder.targetViewId = 0;
             }
@@ -423,7 +403,7 @@ public class FragmentBuilder {
         final Fragment fragmentAlreadyExist = fragmentManager.findFragmentByTag(fragmentTag);
         if (fragmentAlreadyExist != null) {
             Log.w(TAG, String.format("Fragment is exist in fragmentManager. tag: %s", fragmentTag));
-            // TODO 更新參數後
+            // TODO Refresh Fragment
             return;
         }
         // Setting FragmentArgs
@@ -556,7 +536,6 @@ public class FragmentBuilder {
             while (fragmentPath.size() > 0) {
                 Fragment frag = FragmentPath.findFragment(getFragmentActivity(), fragmentPath);
                 if (null != frag.getView().findViewById(containerViewId)) {
-                    // TODO 保存 originFragmentTag ? 應該不需要  因為他只是建立 Fragemnt 的Fragment  並非實際目的地的Fragment
                     fragmentManager = frag.getChildFragmentManager();
                     break;
                 } else {
@@ -775,7 +754,6 @@ public class FragmentBuilder {
             fragmentActivity.getWindow().getDecorView().post(new Runnable() {
                 @Override
                 public void run() {
-                    // 不可以馬上移除Listener 不然會對正在觸發的onBackStackChanged 造成影響
                     hookFragmentManager.addOnBackStackChangedListener(PopFragmentSender.this);
                     hookFragmentManager.popBackStack();
                 }
@@ -787,7 +765,6 @@ public class FragmentBuilder {
             fragmentActivity.getWindow().getDecorView().post(new Runnable() {
                 @Override
                 public void run() {
-                    // 不可以馬上移除Listener 不然會對正在觸發的onBackStackChanged 造成影響
                     hookFragmentManager.removeOnBackStackChangedListener(PopFragmentSender.this);
                 }
             });
@@ -799,7 +776,7 @@ public class FragmentBuilder {
             if (isSent) {
                 return;
             }
-            // 串聯呼叫地的方式
+            // pop next
             if (nextSender != null) {
                 nextSender.popBackStack();
                 nextSender = null;
@@ -919,7 +896,6 @@ public class FragmentBuilder {
         }
 
         private static void checkFragmentPath(Content content, FragmentPath fragmentPath) {
-            // TODO 改一下
             View srcView = content.getSrcView();
             String fragmentPathString = covert(fragmentPath);
             if (srcView == null && fragmentPath.size() == 0) {

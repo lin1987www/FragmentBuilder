@@ -5,21 +5,33 @@
     <authors> </authors>
     <description />
   </meta>
-  <counters models="1">
+  <counters models="2">
     <entity-names>
       <counter>
         <item-type stereotype="" type="UmlClass" />
-        <value>5</value>
+        <value>7</value>
       </counter>
       <counter>
         <item-type stereotype="" type="UmlObject" />
         <value>4</value>
       </counter>
+      <counter>
+        <item-type stereotype="" type="UmlLifeline" />
+        <value>2</value>
+      </counter>
+      <counter>
+        <item-type stereotype="" type="UmlSequenceAction" />
+        <value>1</value>
+      </counter>
+      <counter>
+        <item-type stereotype="" type="UmlActivationBar" />
+        <value>2</value>
+      </counter>
     </entity-names>
     <entity-ids>
       <counter>
         <item-type stereotype="" type="UmlClass" />
-        <value>6</value>
+        <value>8</value>
       </counter>
       <counter>
         <item-type stereotype="" type="AbstractShapeItem" />
@@ -27,7 +39,7 @@
       </counter>
       <counter>
         <item-type stereotype="" type="UmlAssociation" />
-        <value>39</value>
+        <value>40</value>
       </counter>
       <counter>
         <item-type stereotype="" type="UmlObject" />
@@ -39,31 +51,47 @@
       </counter>
       <counter>
         <item-type stereotype="" type="UmlComment" />
-        <value>8</value>
+        <value>9</value>
       </counter>
       <counter>
         <item-type stereotype="" type="UmlCommentConnector" />
-        <value>6</value>
+        <value>7</value>
       </counter>
       <counter>
         <item-type stereotype="" type="AbstractElementGroup" />
-        <value>116</value>
+        <value>53</value>
+      </counter>
+      <counter>
+        <item-type stereotype="" type="UmlLifeline" />
+        <value>3</value>
+      </counter>
+      <counter>
+        <item-type stereotype="" type="UmlSequenceAction" />
+        <value>2</value>
+      </counter>
+      <counter>
+        <item-type stereotype="" type="UmlActivationBar" />
+        <value>3</value>
       </counter>
     </entity-ids>
     <diagrams>
       <counter>
         <type>SoftwareIdeasModeler.Core.Diagrams.UmlDiagrams.UmlClassDiagram</type>
-        <value>2</value>
+        <value>3</value>
       </counter>
       <counter>
         <type>SoftwareIdeasModeler.Core.Diagrams.UmlDiagrams.UmlObjectDiagram</type>
+        <value>1</value>
+      </counter>
+      <counter>
+        <type>SoftwareIdeasModeler.Core.Diagrams.UmlDiagrams.UmlSequenceDiagram</type>
         <value>1</value>
       </counter>
     </diagrams>
     <fields>
       <counter>
         <type>SoftwareIdeasModeler.Core.DiagramItems.Fields.OperationField</type>
-        <value>6</value>
+        <value>10</value>
       </counter>
       <counter>
         <type>SoftwareIdeasModeler.Core.DiagramItems.Fields.AttributeField</type>
@@ -294,7 +322,7 @@ F5Fragment "3" </comment>
       </cooperation>
       <associated-diagrams />
       <owned-items />
-      <style style-name="CommentStyle" shadow-type="smooth" shadow-offset="1,1" shadow-visible="true" shadow-color="#3C000000" gloss-effect="true" wrap-name-text="true" wrap-other-text="true" padding="1" margin="1" glow-color="#FFFFFFFF" accuracy="0.9" name-use-defaults="false" name-color="#FF000000" name-font="Verdana;10;B" name-horizontal-alignment="left" name-vertical-alignment="top" part-header-use-defaults="false" part-header-color="#FF1E1E1E" part-header-font="Verdana;9;I" part-header-horizontal-alignment="center" part-header-vertical-alignment="center" text-use-defaults="false" text-color="#FF000000" text-font="Verdana;9;" text-horizontal-alignment="left" text-vertical-alignment="top" tagged-value-use-defaults="false" tagged-value-color="#FF1E1E1E" tagged-value-font="Verdana;9;I" tagged-value-horizontal-alignment="left" tagged-value-vertical-alignment="top" stereotype-use-defaults="false" stereotype-color="#FF1E1E1E" stereotype-font="Verdana;9;I" stereotype-horizontal-alignment="left" stereotype-vertical-alignment="top">
+      <style style-name="Custom Style" shadow-type="smooth" shadow-offset="1,1" shadow-visible="true" shadow-color="#3C000000" gloss-effect="true" wrap-name-text="true" wrap-other-text="true" padding="1" margin="1" glow-color="#FFFFFFFF" accuracy="0.9" name-use-defaults="false" name-color="#FF000000" name-font="Verdana;10;B" name-horizontal-alignment="left" name-vertical-alignment="top" part-header-use-defaults="false" part-header-color="#FF1E1E1E" part-header-font="Verdana;9;I" part-header-horizontal-alignment="center" part-header-vertical-alignment="center" text-use-defaults="false" text-color="#FF000000" text-font="Verdana;9;" text-horizontal-alignment="left" text-vertical-alignment="top" tagged-value-use-defaults="false" tagged-value-color="#FF1E1E1E" tagged-value-font="Verdana;9;I" tagged-value-horizontal-alignment="left" tagged-value-vertical-alignment="top" stereotype-use-defaults="false" stereotype-color="#FF1E1E1E" stereotype-font="Verdana;9;I" stereotype-horizontal-alignment="left" stereotype-vertical-alignment="top">
         <background type="forward-diagonal" color="#FFFFFFFF" color2="#FFFFFFFF" />
         <border color="#FFFFA500" width="1" dash-style="Solid" />
         <label-connector color="#80000000" width="1" dash-style="Dash" />
@@ -311,6 +339,58 @@ equals
 getWindow().findViewById(id);</comment>
     </item>
     <item id="di506163704238085237" cid="CN005" type="comment-connector" name="" style-class="" is-abstract="false" is-root="false" is-leaf="false" is-active="false" visibility="package" creation-date="07/03/2015 05:23:05">
+      <stereotypes />
+      <associated-diagrams />
+      <owned-items />
+      <style class="default" />
+    </item>
+    <item id="di495110432613178575" cid="CMT008" type="comment" name="Comment" style-class="" is-abstract="false" is-root="false" is-leaf="false" is-active="false" visibility="package" creation-date="07/04/2015 17:16:39">
+      <stereotypes />
+      <documentation>
+        <text>
+          <styles>
+            <style name="S1" font-name="Verdana" font-size="12" font-bold="false" font-italic="false" font-underline="false" font-strikeout="false">
+              <text>
+                <solid-brush color="#FF000000" />
+              </text>
+            </style>
+          </styles>
+          <content>
+            <paragraph>
+              <p s="S1">
+                <t />
+              </p>
+            </paragraph>
+          </content>
+        </text>
+      </documentation>
+      <cooperation>
+        <participants />
+        <comments />
+      </cooperation>
+      <associated-diagrams />
+      <owned-items />
+      <style style-name="Custom" shadow-type="smooth" shadow-offset="1,1" shadow-visible="true" shadow-color="#3C000000" gloss-effect="true" wrap-name-text="true" wrap-other-text="true" padding="1" margin="1" glow-color="#FFFFFFFF" accuracy="0.9" name-use-defaults="false" name-color="#FF000000" name-font="Verdana;10;B" name-horizontal-alignment="left" name-vertical-alignment="top" part-header-use-defaults="false" part-header-color="#FF1E1E1E" part-header-font="Verdana;9;I" part-header-horizontal-alignment="center" part-header-vertical-alignment="center" text-use-defaults="false" text-color="#FF000000" text-font="Verdana;9;" text-horizontal-alignment="left" text-vertical-alignment="top" tagged-value-use-defaults="false" tagged-value-color="#FF1E1E1E" tagged-value-font="Verdana;9;I" tagged-value-horizontal-alignment="left" tagged-value-vertical-alignment="top" stereotype-use-defaults="false" stereotype-color="#FF1E1E1E" stereotype-font="Verdana;9;I" stereotype-horizontal-alignment="left" stereotype-vertical-alignment="top">
+        <background type="vertical-linear" color="#FFD3D3D3" color2="#FFFFFFFF" />
+        <border color="#FF000000" width="1" dash-style="Solid" />
+        <label-connector color="#80000000" width="1" dash-style="Dash" />
+        <alternate-styles>
+          <alternate-style style-name="Alternate" shadow-type="smooth" shadow-offset="1,1" shadow-color="#3C000000" gloss-effect="true" wrap-name-text="true" wrap-other-text="true" padding="1" margin="1" glow-color="#FFFFFFFF" accuracy="0.9" name-use-defaults="false" name-color="#FF000000" name-font="Verdana;10;B" name-horizontal-alignment="center" name-vertical-alignment="center" part-header-use-defaults="false" part-header-color="#FF1E1E1E" part-header-font="Verdana;9;I" part-header-horizontal-alignment="center" part-header-vertical-alignment="center" text-use-defaults="false" text-color="#FF000000" text-font="Verdana;9;" text-horizontal-alignment="left" text-vertical-alignment="center" tagged-value-use-defaults="false" tagged-value-color="#FF1E1E1E" tagged-value-font="Verdana;9;I" tagged-value-horizontal-alignment="center" tagged-value-vertical-alignment="center" stereotype-use-defaults="false" stereotype-color="#FF1E1E1E" stereotype-font="Verdana;9;I" stereotype-horizontal-alignment="center" stereotype-vertical-alignment="center">
+            <background type="vertical-linear" color="#FF1E90FF" color2="#FF87CEFA" />
+            <border color="#FF00008B" width="1" dash-style="Solid" />
+            <label-connector color="#FF000000" width="1" dash-style="Solid" />
+          </alternate-style>
+        </alternate-styles>
+      </style>
+      <comment>            FragmentBuilder
+                        .create(F1Fragment.this)
+                        .setContainerViewId(R.id.container_f1)
+                        .setFragment(F11Fragment.class, F11Fragment.class.getSimpleName())
+                        .add()
+                        .addToBackStack(F11Fragment.BACK_STACK_NAME)
+                        .build();</comment>
+    </item>
+    <item id="di568564385844850781" cid="CN006" type="comment-connector" name="" style-class="" is-abstract="false" is-root="false" is-leaf="false" is-active="false" visibility="package" creation-date="07/04/2015 17:16:39">
       <stereotypes />
       <associated-diagrams />
       <owned-items />
@@ -1763,7 +1843,7 @@ MainFragment      "0"
           </item>
         </layer>
       </diagram>
-      <diagram type="uml-class" id="p495777663692242371" name="FragmentBuilder" order-index="3" overview-order-index="1" expanded="true" show-id="false" show-name="true" show-parent-name="false" show-stereotypes="true" show-tagged-values="false" show-template-parameters="true" show-fields="true" show-empty-compartments="true" show-attributes="true" show-attribute-visibility="true" show-operations="true" show-operation-parameters="true" show-operation-visibility="true" show-nullability="true" show-sequence-number="false" show-extension-points="false" show-relationship-texts="true" show-description="false" show-field-description="false" auto-routed-paths="false">
+      <diagram type="uml-class" id="p495777663692242371" name="FragmentBuilder" order-index="3" overview-order-index="1" show-id="false" show-name="true" show-parent-name="false" show-stereotypes="true" show-tagged-values="false" show-template-parameters="true" show-fields="true" show-empty-compartments="true" show-attributes="true" show-attribute-visibility="true" show-operations="true" show-operation-parameters="true" show-operation-visibility="true" show-nullability="true" show-sequence-number="false" show-extension-points="false" show-relationship-texts="true" show-description="false" show-field-description="false" auto-routed-paths="false">
         <style>
           <background-color index="1" color="#FFFFFFFF" />
           <background-color index="2" color="#FFFFFFFF" />
@@ -1850,6 +1930,150 @@ MainFragment      "0"
           <item id="di980856185360990625" iid="fb5b4866771f404dae95fe52e5b7de79" creation-date="06/28/2015 15:23:39" order-index="0" type="entity">
             <layout ax="333" ay="98" awidth="288" aheight="153" x="333" y="98" width="288" height="153" angle="0" />
             <class />
+          </item>
+        </layer>
+      </diagram>
+      <diagram type="uml-class" id="p227320236616963658" name="ClassDiagram3" order-index="4" overview-order-index="2" show-id="false" show-name="true" show-parent-name="false" show-stereotypes="true" show-tagged-values="false" show-template-parameters="true" show-fields="true" show-empty-compartments="true" show-attributes="true" show-attribute-visibility="true" show-operations="true" show-operation-parameters="true" show-operation-visibility="true" show-nullability="true" show-sequence-number="false" show-extension-points="false" show-relationship-texts="true" show-description="false" show-field-description="false" auto-routed-paths="false">
+        <style>
+          <background-color index="1" color="#FFFFFFFF" />
+          <background-color index="2" color="#FFFFFFFF" />
+          <background-type type="solid" />
+        </style>
+        <meta>
+          <authors>
+            <author> </author>
+          </authors>
+          <description />
+          <creation-date>07/04/2015 17:07:18</creation-date>
+          <change-date>07/04/2015 17:16:39</change-date>
+          <revision-count>0</revision-count>
+          <version />
+        </meta>
+        <abstract-items>
+          <item id="di475172496693019326" cid="C006" type="class" name="F1Fragment" style-class="" is-abstract="false" is-root="false" is-leaf="false" is-active="false" visibility="package" creation-date="07/04/2015 17:07:21">
+            <stereotypes />
+            <documentation>
+              <text>
+                <styles>
+                  <style name="S1" font-name="Verdana" font-size="12" font-bold="false" font-italic="false" font-underline="false" font-strikeout="false">
+                    <text>
+                      <solid-brush color="#FF000000" />
+                    </text>
+                  </style>
+                </styles>
+                <content>
+                  <paragraph>
+                    <p s="S1">
+                      <t />
+                    </p>
+                  </paragraph>
+                </content>
+              </text>
+            </documentation>
+            <cooperation>
+              <participants />
+              <comments />
+            </cooperation>
+            <associated-diagrams />
+            <owned-items />
+            <style class="default" />
+            <attributes />
+            <operations>
+              <operation id="o3d161e50e1d743809a4f06f0b043e2e9892" cid="OP006" name="onPopFragment" type="" type-id="" visibility="public">
+                <style class="default" />
+                <parameters>
+                  <parameter id="pb42a09cbe6d84980a3db9ffcfc1b61c9" name="F11Fragment" type="" type-id="" />
+                </parameters>
+                <source-codes>
+                  <source-code language="ActionScript" />
+                </source-codes>
+              </operation>
+              <operation id="o23ca9fdc986043f38a69484df1e159a4431" cid="OP007" name="onPopFragment" type="" type-id="" visibility="public">
+                <style class="default" />
+                <parameters>
+                  <parameter id="pab02badebbd641afb0b764749a190e94" name="F12Fragment" type="" type-id="" />
+                </parameters>
+                <source-codes>
+                  <source-code language="ActionScript" />
+                </source-codes>
+              </operation>
+              <operation id="of240cf7dfea64795a3d47c825a5147e1416" cid="OP008" name="onPopFragment" type="" type-id="" visibility="public">
+                <style class="default" />
+                <parameters>
+                  <parameter id="p08d973232b5741148ebb2fd38b8f931c" name="F12NewFragment" type="" type-id="" />
+                </parameters>
+                <source-codes>
+                  <source-code language="ActionScript" />
+                </source-codes>
+              </operation>
+              <operation id="occ818140aa8a4903be19141c4dea8c8a926" cid="OP009" name="onPopFragment" type="" type-id="" visibility="public">
+                <style class="default" />
+                <parameters>
+                  <parameter id="p9b86fc82216a4bbf8497b140e2a0f550" name="F13Fragment" type="" type-id="" />
+                </parameters>
+                <source-codes>
+                  <source-code language="ActionScript" />
+                </source-codes>
+              </operation>
+            </operations>
+            <template-parameters>
+              <source-codes>
+                <source-code language="ActionScript" />
+              </source-codes>
+            </template-parameters>
+          </item>
+          <item id="di703633370215295245" cid="C007" type="class" name="F11Fragment" style-class="" is-abstract="false" is-root="false" is-leaf="false" is-active="false" visibility="package" creation-date="07/04/2015 17:11:19">
+            <stereotypes />
+            <associated-diagrams />
+            <owned-items />
+            <style class="default" />
+            <attributes />
+            <operations />
+            <template-parameters>
+              <source-codes />
+            </template-parameters>
+          </item>
+          <item id="di114947162302404823" cid="REL039" type="relationship" name="" style-class="" is-abstract="false" is-root="false" is-leaf="false" is-active="false" visibility="package" creation-date="07/04/2015 17:16:32">
+            <stereotypes />
+            <associated-diagrams />
+            <owned-items />
+            <style class="default" />
+            <relation from="di703633370215295245" to="di475172496693019326">
+              <start-role id="" name="" navigability="" association-type="association" visibility="private" />
+              <end-role id="" name="" navigability="" association-type="association" visibility="private" />
+            </relation>
+          </item>
+        </abstract-items>
+        <layer name="Default" visible="true" enabled="true" locked="false">
+          <item id="di475172496693019326" iid="fcaa752aa77845f1b6761a285c118832" creation-date="07/04/2015 17:07:21" order-index="0" type="entity">
+            <layout ax="45" ay="194" awidth="248" aheight="119" x="45" y="194" width="248" height="119" angle="0" />
+            <class />
+          </item>
+          <item id="di703633370215295245" iid="9db65e06b3034c0890095be4ac6bca76" creation-date="07/04/2015 17:11:19" order-index="1" type="entity">
+            <layout ax="485" ay="194" awidth="215" aheight="119" x="485" y="194" width="215" height="119" angle="0" />
+            <class />
+          </item>
+          <item id="di114947162302404823" iid="1878898723fd4fa7aeae03fe870fef93" creation-date="07/04/2015 17:16:32" order-index="2" type="relation">
+            <layout line-style="oblique" lock-start-point="true" lock-end-point="true" lock-to-fields="true" name-position="10,-10" auto-path="" x1="485" y1="254" x2="293" y2="256" start-border-pos="0.873949579831933" end-border-pos="0.379201680672269">
+              <points>
+                <point x="485" y="254" />
+                <point x="293" y="256" />
+              </points>
+            </layout>
+            <relation from="di703633370215295245" from-iid="9db65e06b3034c0890095be4ac6bca76" to="di475172496693019326" to-iid="fcaa752aa77845f1b6761a285c118832" to-field="o23ca9fdc986043f38a69484df1e159a4431" />
+            <role-positions start-role="25,15" end-role="25,-15" start-multiplicity="25,-15" end-multiplicity="25,15" />
+          </item>
+          <item id="di495110432613178575" iid="c9158ae7103245deaa5faf6933cac7e3" creation-date="07/04/2015 17:16:39" order-index="3" type="entity">
+            <layout ax="45" ay="43.5668" awidth="655" aheight="179" x="45" y="43.5668" width="655" height="179" angle="0" />
+          </item>
+          <item id="di568564385844850781" iid="8350a7f55fc74ac6988df921a945e343" creation-date="07/04/2015 17:16:39" order-index="4" type="comment-connector">
+            <layout line-style="oblique" lock-start-point="false" lock-end-point="false" lock-to-fields="false" name-position="10,-10" auto-path="" x1="385" y1="223" x2="372" y2="255" start-border-pos="0.620219700937053" end-border-pos="0.58854166639075">
+              <points>
+                <point x="385" y="223" />
+                <point x="372" y="255" />
+              </points>
+            </layout>
+            <relation from="di495110432613178575" from-iid="c9158ae7103245deaa5faf6933cac7e3" to="di114947162302404823" to-iid="1878898723fd4fa7aeae03fe870fef93" />
           </item>
         </layer>
       </diagram>
