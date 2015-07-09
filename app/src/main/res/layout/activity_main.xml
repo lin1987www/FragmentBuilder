@@ -36,6 +36,11 @@
         android:text="Wizard Steps Button ( Back to FragmentActivity )"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/button"
+        android:text="Switch Mode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 </LinearLayout>
 
 

@@ -40,7 +40,7 @@ public class F1Fragment extends Fragment {
                         .create(F1Fragment.this)
                         .setContainerViewId(R.id.container_f1)
                         .setFragment(F11Fragment.class, F11Fragment.class.getSimpleName())
-                        .add()
+                        .replace()
                         .addToBackStack(F11Fragment.BACK_STACK_NAME)
                         .build();
             }

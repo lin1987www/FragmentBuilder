@@ -1,31 +1,34 @@
 package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.lin1987www.app.FragmentBuilder;
+import android.support.v4.app.FragmentFix;
 
 import lin1987www.com.fragmentbuilder.R;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainFragment extends Fragment {
+public class MainFragment extends FragmentFix {
+    private final static String TAG = MainFragment.class.getSimpleName();
     FrameLayout mContainerMain4;
     FrameLayout mContainerMain5;
     TextView mTextView;
+    Button mTestCodeButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
-
-        getActivity().getSupportFragmentManager().findFragmentById(R.id.container);
 
         FragmentBuilder
                 .create(this)
@@ -80,7 +83,25 @@ public class MainFragment extends Fragment {
         });
 
         mTextView = (TextView) view.findViewById(R.id.textView);
+        mTestCodeButton = (Button) view.findViewById(R.id.testCodeButton);
+        mTestCodeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // TODO   remove test code
+                FragmentManager.BackStackEntry backStackEntry =
+                        FragmentBuilder.findBackStackEntry(MainFragment.this);
+
+                Log.e(TAG, String.format("BackStackEntry: %s", backStackEntry));
+            }
+        });
+
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.e(TAG, String.format("Main onResume. %s", isHidden()));
     }
 
     public void onPopFragment(F4Fragment fragment) {

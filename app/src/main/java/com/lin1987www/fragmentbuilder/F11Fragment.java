@@ -2,6 +2,7 @@ package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,6 +63,12 @@ public class F11Fragment extends Fragment {
         mEditText = (EditText) view.findViewById(R.id.editText);
 
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.e(TAG, String.format("F11 onResume. %s",  isHidden()));
     }
 
     @Override
