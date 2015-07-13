@@ -2,6 +2,7 @@ package com.lin1987www.fragmentbuilder.widget;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
@@ -29,6 +30,7 @@ public class WizardStepsBackButton extends Button implements View.OnClickListene
                 .traceable()
                 .setFragment(WizardStepsFragment.class)
                 .setArgs(args)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                 .build();
     }
 }

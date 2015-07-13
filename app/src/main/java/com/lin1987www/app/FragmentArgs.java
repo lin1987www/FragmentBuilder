@@ -12,8 +12,9 @@ public class FragmentArgs {
         return String.format("%s_%s", name, suffix);
     }
 
-    public final static String key_isSkipPerformResume = key("key_isSkipPerformResume");
-    public final static String key_isSkipReAttach = key("key_isSkipReAttach");
+    private final static String key_isSkipPopOnResume = key("key_isSkipPopOnResume");
+    private final static String key_isSkipRestoreOnResume = key("key_isSkipRestoreOnResume");
+    private final static String key_isDeferAnimOnResume = key("key_isDeferAnimOnResume");
 
     //
     public final Bundle bundle;
@@ -27,30 +28,48 @@ public class FragmentArgs {
         this.bundle = bundle;
     }
 
-    public boolean consumeOnResume() {
-        boolean isSkipPerformResume = bundle.getBoolean(key_isSkipPerformResume, false);
-        if (bundle.containsKey(key_isSkipPerformResume)) {
-            bundle.remove(key_isSkipPerformResume);
+    public boolean consumePopOnResume() {
+        boolean isConsumed = bundle.getBoolean(key_isSkipPopOnResume, false);
+        if (bundle.containsKey(key_isSkipPopOnResume)) {
+            bundle.remove(key_isSkipPopOnResume);
         }
-        return isSkipPerformResume;
+        return isConsumed;
     }
 
     /**
      * Use Case: When  popBackState  all  detach Fragment will attach again, we ignore it onResume.
      */
-    public void skipOnResume() {
-        bundle.putBoolean(key_isSkipPerformResume, true);
+    public void skipPopOnResume() {
+        bundle.putBoolean(key_isSkipPopOnResume, true);
     }
 
-    public boolean consumeReAttach() {
-        boolean isSkipReAttach = bundle.getBoolean(key_isSkipReAttach, false);
-        if (bundle.containsKey(key_isSkipReAttach)) {
-            bundle.remove(key_isSkipReAttach);
+    public boolean consumeRestoreOnResume() {
+        boolean isConsumed = bundle.getBoolean(key_isSkipRestoreOnResume, false);
+        if (bundle.containsKey(key_isSkipRestoreOnResume)) {
+            bundle.remove(key_isSkipRestoreOnResume);
         }
-        return isSkipReAttach;
+        return isConsumed;
     }
 
-    public void skipReAttach() {
-        bundle.putBoolean(key_isSkipReAttach, true);
+    public void skipRestoreOnResume() {
+        bundle.putBoolean(key_isSkipRestoreOnResume, true);
+    }
+
+    public boolean consumeOnResume() {
+        boolean restoreOnResume = consumeRestoreOnResume();
+        boolean popOnResume = consumePopOnResume();
+        return (restoreOnResume || popOnResume);
+    }
+
+    public void deferAnimOnResume() {
+        bundle.putBoolean(key_isDeferAnimOnResume, true);
+    }
+
+    public boolean consumeAnimOnResume() {
+        boolean isConsumed = bundle.getBoolean(key_isDeferAnimOnResume, false);
+        if (bundle.containsKey(key_isDeferAnimOnResume)) {
+            bundle.remove(key_isDeferAnimOnResume);
+        }
+        return isConsumed;
     }
 }

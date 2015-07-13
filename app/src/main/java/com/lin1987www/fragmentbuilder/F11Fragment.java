@@ -2,6 +2,7 @@ package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentFix;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +12,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.lin1987www.app.FragmentArgs;
 import com.lin1987www.app.FragmentBuilder;
 
 import lin1987www.com.fragmentbuilder.R;
@@ -18,7 +20,7 @@ import lin1987www.com.fragmentbuilder.R;
 /**
  * Created by Administrator on 2015/6/26.
  */
-public class F11Fragment extends Fragment {
+public class F11Fragment extends FragmentFix {
     public final static String BACK_STACK_NAME = F11Fragment.class.getSimpleName();
     private final static String TAG = F11Fragment.class.getSimpleName();
     public String result;
@@ -68,7 +70,7 @@ public class F11Fragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        Log.e(TAG, String.format("F11 onResume. %s",  isHidden()));
+        Log.e(TAG, String.format("F11 onResume. %s", isHidden()));
     }
 
     @Override

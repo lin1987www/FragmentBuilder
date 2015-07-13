@@ -26,18 +26,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_CLOSE;
+import static android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE;
 import static android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN;
 import static android.support.v4.app.FragmentTransaction.TRANSIT_NONE;
 
 /**
  * Created by lin on 2015/6/25.
- * <p/>
- * TODO  default FragmentArgs 用來附上  如果是執行 popBackStack 的指令，以區別是否為使用者觸發 onBackPress
  */
 public class FragmentBuilder {
     public static final String TAG = FragmentBuilder.class.getName();
 
-    @IntDef({TRANSIT_NONE, TRANSIT_FRAGMENT_OPEN, TRANSIT_FRAGMENT_CLOSE})
+    @IntDef({TRANSIT_NONE, TRANSIT_FRAGMENT_OPEN, TRANSIT_FRAGMENT_CLOSE, TRANSIT_FRAGMENT_FADE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Transit {
     }
@@ -68,6 +67,8 @@ public class FragmentBuilder {
     private Action action = Action.none;
     public static boolean defaultTraceable = false;
     private boolean isTraceable = defaultTraceable;
+    public static ExistPolicy defaultExistPolicy = ExistPolicy.doNothing;
+    private ExistPolicy ifExistPolicy = defaultExistPolicy;
     //
     private String assignBackStackName = "";
     private String fragmentTag;
@@ -96,6 +97,10 @@ public class FragmentBuilder {
         ft.setCustomAnimations(enter, exit, popEnter, popExit);
         ft.setTransition(transition);
         ft.setTransitionStyle(styleRes);
+        if (enter > 0 || exit > 0 || popExit > 0 || popExit > 0 || transition > 0) {
+            FragmentArgs fragArgs = new FragmentArgs(fragmentArgs);
+            fragArgs.deferAnimOnResume();
+        }
     }
 
     public FragmentBuilder setCustomAnimations(int enter, int exit) {
@@ -177,6 +182,16 @@ public class FragmentBuilder {
         return this;
     }
 
+    public FragmentBuilder ifExistDoNothing() {
+        this.ifExistPolicy = ExistPolicy.doNothing;
+        return this;
+    }
+
+    public FragmentBuilder ifExistReAttach() {
+        this.ifExistPolicy = ExistPolicy.reAttach;
+        return this;
+    }
+
     public int getContainerViewId() {
         return containerViewId;
     }
@@ -222,7 +237,6 @@ public class FragmentBuilder {
     }
 
     public FragmentBuilder setTargetViewId(int targetViewId) {
-        // TODO 似乎不用檢查  反正都會找到的樣子...
         if (targetViewId > 0) {
             if (content.srcFragmentActivity != null) {
                 if (content.srcFragmentActivity.findViewById(targetViewId) == null) {
@@ -387,6 +401,7 @@ public class FragmentBuilder {
         if (builder.action == Action.none) {
             builder.action = defaultBuilder.action;
             builder.isTraceable = defaultBuilder.isTraceable;
+            builder.ifExistPolicy = defaultBuilder.ifExistPolicy;
         }
 
         if ((builder.styleRes == 0) && (builder.transition == TRANSIT_NONE) &&
@@ -417,23 +432,31 @@ public class FragmentBuilder {
         final Fragment fragmentAlreadyExist = fragmentManager.findFragmentByTag(fragmentTag);
         if (fragmentAlreadyExist != null) {
             Log.w(TAG, String.format("Fragment is exist in fragmentManager. tag: %s", fragmentTag));
-            // IfExist(Attach), IfExist(Skip)
-            // TODO
-            if (true) return;
-            FragmentUtils.putArguments(fragmentAlreadyExist, fragmentArgs);
-            if (fragmentAlreadyExist.isVisible()) {
-                // If Fragment isVisible Re-attach
-                fragmentManager
-                        .beginTransaction()
-                        .detach(fragmentAlreadyExist)
-                        .attach(fragmentAlreadyExist)
-                        .commit();
-            } else {
-                BackStackEntry entry = findBackStackEntry(fragmentAlreadyExist);
-                if (entry != null) {
-                    // If exist backStackEntry popStackEntry util that Fragment exist.
-                    popBackStack(content.getFragmentActivity(), new PredicateBackStackEntry(entry), 0);
+            if (ifExistPolicy.equals(ExistPolicy.doNothing)) {
+                return;
+            } else if (ifExistPolicy.equals(ExistPolicy.reAttach)) {
+                FragmentArgs fragArgs = new FragmentArgs(fragmentAlreadyExist.getArguments());
+                if (fragArgs.consumeRestoreOnResume()) {
+                    Log.w(TAG, String.format("Skip reAttach %s.", fragmentAlreadyExist));
+                    return;
                 }
+                // Do reAttach Update
+                FragmentUtils.putArguments(fragmentAlreadyExist, fragmentArgs);
+                if (fragmentAlreadyExist.isVisible()) {
+                    // If Fragment isVisible Re-attach
+                    fragmentManager
+                            .beginTransaction()
+                            .detach(fragmentAlreadyExist)
+                            .attach(fragmentAlreadyExist)
+                            .commit();
+                } else {
+                    BackStackEntry entry = findBackStackEntry(fragmentAlreadyExist);
+                    if (entry != null) {
+                        // If exist backStackEntry popStackEntry util that Fragment exist.
+                        popBackStack(content.getFragmentActivity(), new PredicateBackStackEntry(entry), 0, false);
+                    }
+                }
+                return;
             }
             return;
         }
@@ -449,7 +472,6 @@ public class FragmentBuilder {
                 FragmentUtils.putArguments(fragment, fragmentArgs);
             }
         }
-
         if (needToFindContainerFragment) {
             // If needToFindContainerFragment is false, containerFragment must be written by PreAction of reset
             containerFragment = fragmentManager.findFragmentById(containerViewId);
@@ -490,12 +512,16 @@ public class FragmentBuilder {
         });
     }
 
-    protected enum Action {
+    public enum Action {
         add, replace, none
     }
 
     protected enum PreAction {
         back, reset, none
+    }
+
+    public enum ExistPolicy {
+        doNothing, reAttach
     }
 
     /**
@@ -607,10 +633,11 @@ public class FragmentBuilder {
 
     public static String generateBackStackName(FragmentBuilder builder) {
         String backStackName;
-        backStackName = String.format("%s %s %s [%s][%s][%s][%s] %s %s,%s,%s,%s,%s,%s [%s][%s]",
+        backStackName = String.format("%s %s %s %s [%s][%s][%s][%s] %s %s,%s,%s,%s,%s,%s [%s][%s]",
                 builder.containerViewId,
                 builder.action.toString(),
                 builder.isTraceable,
+                builder.ifExistPolicy.toString(),
                 //
                 builder.fragmentTag,
                 builder.originFragmentTag,
@@ -625,6 +652,38 @@ public class FragmentBuilder {
                 builder.srcFragmentPathString
         );
         return backStackName;
+    }
+
+    public static FragmentBuilder parse(BackStackEntry stackEntry) {
+        FragmentBuilder builder = null;
+        Pattern p = Pattern.compile("(\\d+) (\\S+) (\\S+) (\\S+) \\[(.*)\\]\\[(.*)\\]\\[(.*)\\]\\[(.*)\\] (\\d+) (\\d+),(\\d+),(\\d+),(\\d+),(\\d+),(\\d+) \\[(.*)\\]\\[(.*)\\]");
+        Matcher m = p.matcher(stackEntry.getName());
+        if (m.find()) {
+            int i = 1;
+            builder = new FragmentBuilder();
+            builder.containerViewId = Integer.parseInt(m.group(i++));
+            builder.action = Action.valueOf(m.group(i++));
+            builder.isTraceable = Boolean.parseBoolean(m.group(i++));
+            builder.ifExistPolicy = ExistPolicy.valueOf(m.group(i++));
+            //
+            builder.fragmentTag = m.group(i++);
+            builder.originFragmentTag = m.group(i++);
+            builder.targetViewId = Integer.parseInt(m.group(i++));
+            builder.assignBackStackName = m.group(i++);
+            //
+            builder.builtTimeMillis = Long.parseLong(m.group(i++));
+            //
+            builder.transition = covertToTransit(Integer.parseInt(m.group(i++)));
+            builder.styleRes = Integer.parseInt(m.group(i++));
+            builder.enter = Integer.parseInt(m.group(i++));
+            builder.exit = Integer.parseInt(m.group(i++));
+            builder.popEnter = Integer.parseInt(m.group(i++));
+            builder.popExit = Integer.parseInt(m.group(i++));
+            //
+            builder.targetFragmentPathString = m.group(i++);
+            builder.srcFragmentPathString = m.group(i++);
+        }
+        return builder;
     }
 
     public static BackStackEntry findBackStackEntry(Fragment fragment) {
@@ -652,48 +711,18 @@ public class FragmentBuilder {
         return fm;
     }
 
-    public static FragmentBuilder parse(BackStackEntry stackEntry) {
-        FragmentBuilder builder = null;
-        Pattern p = Pattern.compile("(\\d+) (\\S+) (\\S+) \\[(.*)\\]\\[(.*)\\]\\[(.*)\\]\\[(.*)\\] (\\d+) (\\d+),(\\d+),(\\d+),(\\d+),(\\d+),(\\d+) \\[(.*)\\]\\[(.*)\\]");
-        Matcher m = p.matcher(stackEntry.getName());
-        if (m.find()) {
-            int i = 1;
-            builder = new FragmentBuilder();
-            builder.containerViewId = Integer.parseInt(m.group(i++));
-            builder.action = Action.valueOf(m.group(i++));
-            builder.isTraceable = Boolean.parseBoolean(m.group(i++));
-            //
-            builder.fragmentTag = m.group(i++);
-            builder.originFragmentTag = m.group(i++);
-            builder.targetViewId = Integer.parseInt(m.group(i++));
-            builder.assignBackStackName = m.group(i++);
-            //
-            builder.builtTimeMillis = Long.parseLong(m.group(i++));
-            //
-            builder.transition = covertToTransit(Integer.parseInt(m.group(i++)));
-            builder.styleRes = Integer.parseInt(m.group(i++));
-            builder.enter = Integer.parseInt(m.group(i++));
-            builder.exit = Integer.parseInt(m.group(i++));
-            builder.popEnter = Integer.parseInt(m.group(i++));
-            builder.popExit = Integer.parseInt(m.group(i++));
-            //
-            builder.targetFragmentPathString = m.group(i++);
-            builder.srcFragmentPathString = m.group(i++);
-        }
-        return builder;
-    }
-
     /**
      * @param activity
      * @param name
      * @param flags
      * @return popBackStack count
      */
-    public static int popBackStack(FragmentActivity activity, String name, @PopFlag int flags) {
-        return popBackStack(activity, new PredicateBackStackName(name), flags);
+    public static int popBackStack(FragmentActivity activity, String name, @PopFlag int flags, boolean skipOnResume) {
+        return popBackStack(activity, new PredicateBackStackName(name), flags, skipOnResume)
+                ;
     }
 
-    public static int popBackStack(FragmentActivity activity, Predicate predicate, @PopFlag int flags) {
+    public static int popBackStack(FragmentActivity activity, Predicate predicate, @PopFlag int flags, boolean skipOnResume) {
         ArrayList<BackStackEntry> list = new ArrayList<BackStackEntry>();
         HashMap<BackStackEntry, FragmentManager> hookFmMap = new HashMap<BackStackEntry, FragmentManager>();
         HashMap<BackStackEntry, Fragment> hookFragMap = new HashMap<BackStackEntry, Fragment>();
@@ -712,13 +741,25 @@ public class FragmentBuilder {
             FragmentBuilder builder = parse(list.get(i));
             FragmentManager hookFragmentManager = hookFmMap.get(backStackEntry);
             Fragment hookFragment = hookFragMap.get(backStackEntry);
+            Fragment willAttachFragment = FragmentPath.findFragment(activity, builder.srcFragmentPathString);
+            FragmentArgs willAttachFragmentArgs = null;
+            if (willAttachFragment != null && skipOnResume) {
+                willAttachFragmentArgs = new FragmentArgs(willAttachFragment.getArguments());
+            }
             Fragment popFragment = hookFragmentManager.findFragmentByTag(builder.fragmentTag);
+
             if (predicate.apply(backStackEntry, builder)) {
                 if (flags == FragmentManager.POP_BACK_STACK_INCLUSIVE) {
+                    if (willAttachFragmentArgs != null) {
+                        willAttachFragmentArgs.skipPopOnResume();
+                    }
                     notifyPopFragmentList.add(new PopFragmentSender(activity, hookFragment, hookFragmentManager, popFragment, builder));
                 }
                 break;
             } else {
+                if (willAttachFragmentArgs != null) {
+                    willAttachFragmentArgs.skipPopOnResume();
+                }
                 notifyPopFragmentList.add(new PopFragmentSender(activity, hookFragment, hookFragmentManager, popFragment, builder));
             }
         }

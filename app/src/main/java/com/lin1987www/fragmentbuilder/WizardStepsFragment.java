@@ -2,6 +2,7 @@ package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentFix;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +15,7 @@ import lin1987www.com.fragmentbuilder.R;
 /**
  * Created by Administrator on 2015/7/3.
  */
-public class WizardStepsFragment extends Fragment {
+public class WizardStepsFragment extends FragmentFix {
     private final static String TAG = WizardStepsFragment.class.getSimpleName();
     public boolean isFinish = false;
     public String result = "";

@@ -1,7 +1,7 @@
 package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentFix;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.lin1987www.app.FragmentArgs;
 import com.lin1987www.app.FragmentBuilder;
 import com.lin1987www.fragmentbuilder.widget.ShowEnterTextView;
 
@@ -17,7 +18,7 @@ import lin1987www.com.fragmentbuilder.R;
 /**
  * Created by Administrator on 2015/6/26.
  */
-public class F12Fragment extends Fragment {
+public class F12Fragment extends FragmentFix {
     private final static String TAG = F12Fragment.class.getSimpleName();
 
     public String result;
@@ -50,7 +51,11 @@ public class F12Fragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        Log.e(TAG, String.format("F12 onResume. %s",  isHidden()));
+        FragmentArgs args = new FragmentArgs(getArguments());
+        if (args.consumeOnResume()) {
+            return;
+        }
+        Log.e(TAG, String.format("F12 onResume. %s", isHidden()));
     }
 
     @Override
