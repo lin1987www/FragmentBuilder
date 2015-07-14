@@ -3,6 +3,7 @@ package com.lin1987www.app;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentFix;
 
 import java.util.List;
 import java.util.concurrent.AbstractExecutorService;
@@ -88,9 +89,10 @@ public class TakeoutBuilder implements TakeCancelListener {
 
     private Object target;
     private Take<?> take;
+    private FragmentFix fragment;
     private ExecutorService onService = nonBlockExecutor;
     private ExecutorService toService = getMainThreadExecutor();
-    private Takeout<?> takeout;
+    private FragmentTakeout<?> takeout;
 
     private TakeoutBuilder() {
     }
@@ -126,24 +128,26 @@ public class TakeoutBuilder implements TakeCancelListener {
     }
 
     public void build() {
-        takeout = new Takeout<>(target, take, onService, toService);
+        takeout = new FragmentTakeout<>(target, take, onService, toService, fragment);
         nonBlockExecutor.submit(takeout);
     }
 
-    public static TakeoutBuilder create(Object target, Take<?> take) {
+    public static TakeoutBuilder create(Object target, Take<?> take, FragmentFix fragment) {
         TakeoutBuilder builder = new TakeoutBuilder();
         builder.target = target;
         builder.take = take;
+        builder.fragment = fragment;
         take.addTakeCancelListener(builder);
         return builder;
     }
 
     @Override
     public void takeCancel() {
-        target = null;
-        take = null;
-        onService = null;
-        toService = null;
-        takeout = null;
+        this.target = null;
+        this.take = null;
+        this.onService = null;
+        this.toService = null;
+        this.takeout = null;
+        this.fragment = null;
     }
 }

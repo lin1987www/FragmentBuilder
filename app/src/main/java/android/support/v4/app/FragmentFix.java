@@ -3,25 +3,68 @@ package android.support.v4.app;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
 import com.lin1987www.app.FragmentArgs;
+import com.lin1987www.app.TakeoutBuilder;
+
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import fix.java.util.concurrent.Take;
+import fix.java.util.concurrent.Takeout;
+
 
 /**
  * Created by Administrator on 2015/7/8.
  */
 public class FragmentFix extends Fragment {
     public final static String TAG = FragmentFix.class.getSimpleName();
-    FragmentArgs fragmentArgs;
-    Animation.AnimationListener fragmentAnimListener;
 
+    protected ArrayList<Take<?>> mTakeList = new ArrayList<>();
+    protected ArrayList<Takeout.OutTaker> mTakeoutList = new ArrayList<>();
+    protected final AtomicBoolean mIsAnim = new AtomicBoolean();
+
+    protected FragmentArgs mFragmentArgs;
+    Animation.AnimationListener mFragmentAnimListener;
+
+    public boolean afterAnimTakeout(Takeout.OutTaker outTaker) {
+        if (mIsAnim.get()) {
+            synchronized (this) {
+                mTakeoutList.add(outTaker);
+            }
+            return true;
+        } else {
+            if (getParentFragment() instanceof FragmentFix) {
+                return ((FragmentFix) getParentFragment()).afterAnimTakeout(outTaker);
+            }
+            return false;
+        }
+    }
+
+    protected void prepareAnim() {
+        mIsAnim.set(true);
+    }
+
+    protected void endAnim() {
+        mIsAnim.set(false);
+        if (mTakeoutList.size() > 0) {
+            synchronized (this) {
+                for (Takeout.OutTaker outTaker : mTakeoutList) {
+                    outTaker.run();
+                }
+                mTakeoutList.clear();
+            }
+        }
+    }
 
     public FragmentArgs getFragmentArgs() {
-        if (fragmentArgs == null) {
-            fragmentArgs = new FragmentArgs(getArguments());
+        if (mFragmentArgs == null) {
+            mFragmentArgs = new FragmentArgs(getArguments());
         }
-        return fragmentArgs;
+        return mFragmentArgs;
     }
 
     @Override
@@ -52,17 +95,26 @@ public class FragmentFix extends Fragment {
                             anim = FragmentManagerImpl.makeOpenCloseAnimation(mActivity, 1.0f, 1.075f, 1, 0);
                             break;
                         case FragmentManagerImpl.ANIM_STYLE_FADE_ENTER:
-                            anim = FragmentManagerImpl.makeFadeAnimation(mActivity, 0, 1);
+                            //anim = FragmentManagerImpl.makeFadeAnimation(mActivity, 0, 1);
+                            // TODO 效果進行測試
+                            anim = new AlphaAnimation(0, 1);
+                            anim.setInterpolator(FragmentManagerImpl.DECELERATE_CUBIC);
+                            anim.setDuration(3000);
                             break;
                         case FragmentManagerImpl.ANIM_STYLE_FADE_EXIT:
-                            anim = FragmentManagerImpl.makeFadeAnimation(mActivity, 1, 0);
+                            //anim = FragmentManagerImpl.makeFadeAnimation(mActivity, 1, 0);
+                            // TODO 效果進行測試
+                            anim = new AlphaAnimation(1, 0);
+                            anim.setInterpolator(FragmentManagerImpl.DECELERATE_CUBIC);
+                            anim.setDuration(3000);
                             break;
                     }
                 }
             }
         }
         if (anim != null && enter) {
-            fragmentAnimListener = new Animation.AnimationListener() {
+            prepareAnim();
+            mFragmentAnimListener = new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
 
@@ -70,8 +122,8 @@ public class FragmentFix extends Fragment {
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
-                    doResume();
-                    fragmentAnimListener = null;
+                    endAnim();
+                    mFragmentAnimListener = null;
                 }
 
                 @Override
@@ -79,7 +131,7 @@ public class FragmentFix extends Fragment {
 
                 }
             };
-            anim.setAnimationListener(fragmentAnimListener);
+            anim.setAnimationListener(mFragmentAnimListener);
         }
         return anim;
     }
@@ -92,8 +144,21 @@ public class FragmentFix extends Fragment {
         if (savedInstanceState != null) {
             getFragmentArgs().skipRestoreOnResume();
         }
-
     }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mTakeList.size() > 0) {
+            // Cancel all take
+            for (Take<?> take : mTakeList) {
+                take.cancel();
+            }
+            mTakeList.clear();
+            Log.e(TAG, "clear Take.");
+        }
+    }
+
 
     void doResume() {
         mCalled = false;
@@ -115,16 +180,17 @@ public class FragmentFix extends Fragment {
         } else if (getFragmentArgs().consumeRestoreOnResume()) {
             Log.w(TAG, String.format("Consume reAttach. %s", this));
         } else {
-            //  動畫執行結束後，在執行 onResume
-            if (fragmentArgs.consumeAnimOnResume()) {
-                // Defer onResume
-            } else {
-                doResume();
-            }
+            doResume();
         }
         if (mChildFragmentManager != null) {
             mChildFragmentManager.dispatchResume();
             mChildFragmentManager.execPendingActions();
         }
+    }
+
+    public TakeoutBuilder take(Take<?> take) {
+        TakeoutBuilder builder = TakeoutBuilder.create(this, take, this);
+        mTakeList.add(take);
+        return builder;
     }
 }

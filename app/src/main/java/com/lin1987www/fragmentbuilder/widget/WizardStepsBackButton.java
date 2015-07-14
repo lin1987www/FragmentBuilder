@@ -30,7 +30,6 @@ public class WizardStepsBackButton extends Button implements View.OnClickListene
                 .traceable()
                 .setFragment(WizardStepsFragment.class)
                 .setArgs(args)
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                 .build();
     }
 }

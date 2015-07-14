@@ -6,29 +6,29 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by Administrator on 2015/3/12.
  */
-public class TakeBuilder<T extends Take<?>> implements Callable<T> {
+public class TakeWrap<T extends Take<?>> implements Callable<T> {
     public final T task;
-    private Callable<T> wrapper;
+    private Callable<T> wrap;
 
     public T getTask() {
         return task;
     }
 
-    public TakeBuilder(T task) {
+    public TakeWrap(T task) {
         if (task == null) {
             throw new NullPointerException();
         }
         this.task = task;
-        this.wrapper = (Callable<T>) task;
+        this.wrap = (Callable<T>) task;
     }
 
-    public TakeBuilder<T> retry(int maxTimes) {
-        this.wrapper = new RetryCallable<T>(this.wrapper, maxTimes);
+    public TakeWrap<T> retry(int maxTimes) {
+        this.wrap = new RetryCallable<T>(this.wrap, maxTimes);
         return this;
     }
 
-    public TakeBuilder<T> timeout(long timeout, TimeUnit unit) {
-        this.wrapper = new TimeoutCallable<T>(this.wrapper, timeout, unit);
+    public TakeWrap<T> timeout(long timeout, TimeUnit unit) {
+        this.wrap = new TimeoutCallable<T>(this.wrap, timeout, unit);
         return this;
     }
 
@@ -36,7 +36,7 @@ public class TakeBuilder<T extends Take<?>> implements Callable<T> {
     public T call() throws Exception {
         try {
             task.startTimeMillis = System.currentTimeMillis();
-            wrapper.call();
+            wrap.call();
         } catch (Throwable ex) {
             task.setThrowable(ex);
         } finally {

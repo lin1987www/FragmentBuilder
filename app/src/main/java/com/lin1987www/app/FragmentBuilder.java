@@ -34,7 +34,7 @@ import static android.support.v4.app.FragmentTransaction.TRANSIT_NONE;
  * Created by lin on 2015/6/25.
  */
 public class FragmentBuilder {
-    public static final String TAG = FragmentBuilder.class.getName();
+    public static final String TAG = FragmentBuilder.class.getSimpleName();
 
     @IntDef({TRANSIT_NONE, TRANSIT_FRAGMENT_OPEN, TRANSIT_FRAGMENT_CLOSE, TRANSIT_FRAGMENT_FADE})
     @Retention(RetentionPolicy.SOURCE)
@@ -97,10 +97,6 @@ public class FragmentBuilder {
         ft.setCustomAnimations(enter, exit, popEnter, popExit);
         ft.setTransition(transition);
         ft.setTransitionStyle(styleRes);
-        if (enter > 0 || exit > 0 || popExit > 0 || popExit > 0 || transition > 0) {
-            FragmentArgs fragArgs = new FragmentArgs(fragmentArgs);
-            fragArgs.deferAnimOnResume();
-        }
     }
 
     public FragmentBuilder setCustomAnimations(int enter, int exit) {
@@ -430,8 +426,9 @@ public class FragmentBuilder {
         FragmentManager fragmentManager = getFragmentManager();
         // Check fragment already exist
         final Fragment fragmentAlreadyExist = fragmentManager.findFragmentByTag(fragmentTag);
-        if (fragmentAlreadyExist != null) {
-            Log.w(TAG, String.format("Fragment is exist in fragmentManager. tag: %s", fragmentTag));
+        if (fragmentAlreadyExist != null && !fragmentAlreadyExist.isRemoving()) {
+            // If isRemoving() is true, the fragment maybe be popped out during animation.
+            Log.w(TAG, String.format("Fragment is exist in fragmentManager. tag: %s %s", fragmentTag, fragmentAlreadyExist.isRemoving()));
             if (ifExistPolicy.equals(ExistPolicy.doNothing)) {
                 return;
             } else if (ifExistPolicy.equals(ExistPolicy.reAttach)) {

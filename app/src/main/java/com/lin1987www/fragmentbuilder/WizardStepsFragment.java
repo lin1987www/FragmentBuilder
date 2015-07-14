@@ -1,8 +1,8 @@
 package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentFix;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,6 +33,7 @@ public class WizardStepsFragment extends FragmentFix {
                     .create(this)
                     .backContainer()
                     .setFragment(F11Fragment.class, F11Fragment.class.getSimpleName())
+                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                     .addToBackStack(F11Fragment.BACK_STACK_NAME)
                     .build();
         }
@@ -42,7 +43,7 @@ public class WizardStepsFragment extends FragmentFix {
     @Override
     public void onResume() {
         super.onResume();
-        Log.e(TAG, String.format("WizardStepsFragment onResume. %s",  isHidden()));
+        Log.e(TAG, String.format("WizardStepsFragment onResume. %s", isHidden()));
     }
 
     @Override

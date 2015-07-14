@@ -1,7 +1,6 @@
 package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentFix;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,9 +10,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.lin1987www.app.FragmentArgs;
 import com.lin1987www.app.FragmentBuilder;
+import com.lin1987www.fragmentbuilder.api.GetUser;
 
 import lin1987www.com.fragmentbuilder.R;
 
@@ -71,6 +71,8 @@ public class F11Fragment extends FragmentFix {
     public void onResume() {
         super.onResume();
         Log.e(TAG, String.format("F11 onResume. %s", isHidden()));
+
+        take(new GetUser()).onNonBlockThread().toMainThread().build();
     }
 
     @Override
@@ -81,5 +83,9 @@ public class F11Fragment extends FragmentFix {
 
     public void onPopFragment(F111Fragment fragment) {
         f111Result = fragment.result;
+    }
+
+    public void onTake(GetUser task) {
+        Toast.makeText(getActivity(), String.format("UserName: %s", task.userName), Toast.LENGTH_SHORT).show();
     }
 }

@@ -44,6 +44,7 @@ public abstract class Take<T> implements Callable<Take<T>>, IHandleException {
     }
 
     public void cancel() {
+        mCancelled.set(true);
         for (TakeCancelListener listener : takeCancelListeners) {
             listener.takeCancel();
         }
@@ -78,7 +79,8 @@ public abstract class Take<T> implements Callable<Take<T>>, IHandleException {
     }
 
     /**
-     *   Don't use take() directly. Using takeSafe() instead of take().
+     * Don't use take() directly. Using takeSafe() instead of take().
+     *
      * @return
      * @throws Throwable
      */

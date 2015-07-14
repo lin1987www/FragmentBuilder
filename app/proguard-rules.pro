@@ -18,3 +18,7 @@
 -keepclassmembers class ** {
     public void onPopFragment(**);
 }
+
+-keepclassmembers class ** {
+    public void onTake(**);
+}

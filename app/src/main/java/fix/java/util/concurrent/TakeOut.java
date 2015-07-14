@@ -10,6 +10,7 @@ import java.util.concurrent.Future;
  * Created by Administrator on 2015/7/9.
  */
 public class Takeout<T> implements Callable<Takeout<T>> {
+    public static boolean DEBUG = true;
     public final Take<T> take;
     public final ExecutorService onService;
     public final ExecutorService toService;
@@ -26,8 +27,12 @@ public class Takeout<T> implements Callable<Takeout<T>> {
     public Takeout call() throws Exception {
         Future<Take<T>> future = onService.submit(take);
         future.get();
-        if (!take.isCancelled()) {
-            OutTaker outTaker = new OutTaker<T>(take, targetWeak);
+        if (take.isCancelled()) {
+            if (DEBUG) {
+                System.err.println(String.format("Calling OutTaker is canceled. %s", take));
+            }
+        } else {
+            OutTaker<T> outTaker = new OutTaker<>(take, targetWeak);
             toService.submit(outTaker);
         }
         return this;
@@ -44,8 +49,18 @@ public class Takeout<T> implements Callable<Takeout<T>> {
 
         @Override
         public void run() {
+            Throwable throwable = null;
             Object targetObject = targetWeak.get();
             if (targetObject == null) {
+                if (DEBUG) {
+                    System.err.println(String.format("Miss target. %s", take));
+                }
+                return;
+            }
+            if (take.isCancelled()) {
+                if (DEBUG) {
+                    System.err.println(String.format("Take is canceled. %s", take));
+                }
                 return;
             }
             Class<?> targetClass = targetObject.getClass();
@@ -56,11 +71,12 @@ public class Takeout<T> implements Callable<Takeout<T>> {
                     return;
                 }
             } catch (Throwable ex) {
+                throwable = ex;
             }
             if (targetObject instanceof TakeoutListener) {
                 ((TakeoutListener) targetObject).onTake(take);
             } else {
-                System.err.println(String.format("Miss onTake(%s) on %s", take, targetObject));
+                System.err.println(String.format("Miss onTake(%s) on %s throwable:\n%s", take, targetObject, ExceptionHelper.getPrintStackTraceString(throwable)));
             }
         }
     }

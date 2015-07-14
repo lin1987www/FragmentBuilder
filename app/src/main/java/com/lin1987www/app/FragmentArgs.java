@@ -14,7 +14,6 @@ public class FragmentArgs {
 
     private final static String key_isSkipPopOnResume = key("key_isSkipPopOnResume");
     private final static String key_isSkipRestoreOnResume = key("key_isSkipRestoreOnResume");
-    private final static String key_isDeferAnimOnResume = key("key_isDeferAnimOnResume");
 
     //
     public final Bundle bundle;
@@ -59,17 +58,5 @@ public class FragmentArgs {
         boolean restoreOnResume = consumeRestoreOnResume();
         boolean popOnResume = consumePopOnResume();
         return (restoreOnResume || popOnResume);
-    }
-
-    public void deferAnimOnResume() {
-        bundle.putBoolean(key_isDeferAnimOnResume, true);
-    }
-
-    public boolean consumeAnimOnResume() {
-        boolean isConsumed = bundle.getBoolean(key_isDeferAnimOnResume, false);
-        if (bundle.containsKey(key_isDeferAnimOnResume)) {
-            bundle.remove(key_isDeferAnimOnResume);
-        }
-        return isConsumed;
     }
 }
