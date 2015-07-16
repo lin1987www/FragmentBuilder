@@ -201,7 +201,7 @@ public class FragmentActivityFix extends FragmentActivity {
             return;
         }
 
-        if (enableDoubleBackPressed) {
+        if (isTaskRoot() && enableDoubleBackPressed) {
             if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
                 if (System.currentTimeMillis() > (mLastBackPressedTime + 5 * 1000)) {
                     Toast.makeText(getBaseContext(), "再按返回以退出",
