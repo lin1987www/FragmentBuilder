@@ -114,3 +114,7 @@ Wherever you call FragmentBuilder, it will find FragmentPath. ( FragmentActivity
 
 ## Wizard Steps Test
 ![](/images/WizardStepsTest.gif)
+
+
+## FragmentActivity Lifecycle
+![](/images/FragmentActivityLifecycle.png)

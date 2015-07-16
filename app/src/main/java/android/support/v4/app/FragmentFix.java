@@ -1,8 +1,12 @@
 package android.support.v4.app;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -21,7 +25,9 @@ import fix.java.util.concurrent.Takeout;
  * Created by Administrator on 2015/7/8.
  */
 public class FragmentFix extends Fragment {
+    public static boolean DEBUG = true;
     public final static String TAG = FragmentFix.class.getSimpleName();
+    protected final String ID = String.format("%s", toString());
 
     protected ArrayList<Take<?>> mTakeList = new ArrayList<>();
     protected ArrayList<Takeout.OutTaker> mTakeoutList = new ArrayList<>();
@@ -137,7 +143,26 @@ public class FragmentFix extends Fragment {
     }
 
     @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        if (DEBUG) {
+            Log.e(TAG, "onCreate " + ID);
+        }
+        return null;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (DEBUG) {
+            Log.e(TAG, "onActivityResult " + ID);
+        }
+    }
+
+    @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        if (DEBUG && null != savedInstanceState) {
+            Log.e(TAG, "onViewStateRestored " + ID);
+        }
         super.onViewStateRestored(savedInstanceState);
         // 如果是回復狀態  就略過一次 Fragment 的建立
         // TODO 有點不需要的功能
@@ -147,7 +172,26 @@ public class FragmentFix extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        if (DEBUG) {
+            Log.e(TAG, "onStart " + ID);
+        }
+        super.onStart();
+    }
+
+    @Override
+    public void onResume() {
+        if (DEBUG) {
+            Log.e(TAG, "onResume " + ID);
+        }
+        super.onResume();
+    }
+
+    @Override
     public void onPause() {
+        if (DEBUG) {
+            Log.e(TAG, "onPause " + ID);
+        }
         super.onPause();
         if (mTakeList.size() > 0) {
             // Cancel all take
@@ -158,7 +202,6 @@ public class FragmentFix extends Fragment {
             Log.e(TAG, "clear Take.");
         }
     }
-
 
     void doResume() {
         mCalled = false;

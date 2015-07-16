@@ -18,4 +18,10 @@
         android:layout_height="wrap_content"
         android:hint="Enter text"
         android:textAppearance="?android:textAppearanceLarge" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start Activity Result"
+        android:id="@+id/startActivityResultButton" />
 </LinearLayout>

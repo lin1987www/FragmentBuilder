@@ -101,7 +101,6 @@ public class MainFragment extends FragmentFix {
     @Override
     public void onResume() {
         super.onResume();
-        Log.e(TAG, String.format("Main onResume. %s", isHidden()));
     }
 
     public void onPopFragment(F4Fragment fragment) {

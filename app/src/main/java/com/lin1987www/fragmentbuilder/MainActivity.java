@@ -3,6 +3,7 @@ package com.lin1987www.fragmentbuilder;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentActivityFix;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -11,7 +12,7 @@ import com.lin1987www.app.FragmentBuilder;
 
 import lin1987www.com.fragmentbuilder.R;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends FragmentActivityFix {
     Button mButton;
 
     @Override
@@ -60,13 +61,5 @@ public class MainActivity extends FragmentActivity {
         if (fragment.isFinish) {
             Toast.makeText(this, fragment.result, Toast.LENGTH_SHORT).show();
         }
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (FragmentBuilder.hasPopBackStack(this)) {
-            return;
-        }
-        super.onBackPressed();
     }
 }
