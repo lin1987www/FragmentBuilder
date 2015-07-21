@@ -27,6 +27,7 @@ public class FragmentTakeout<T> extends Takeout<T> {
         Future<Take<T>> future = onService.submit(take);
         future.get();
         if (take.isCancelled()) {
+            fragment = null;
             if (DEBUG) {
                 System.err.println(String.format("Calling OutTaker is canceled. %s", take));
             }
@@ -34,6 +35,7 @@ public class FragmentTakeout<T> extends Takeout<T> {
             FragmentOutTaker<T> outTaker = new FragmentOutTaker<>(take, targetWeak, fragment);
             toService.submit(outTaker);
         }
+
         return this;
     }
 

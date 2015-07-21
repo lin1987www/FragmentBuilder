@@ -432,11 +432,6 @@ public class FragmentBuilder {
             if (ifExistPolicy.equals(ExistPolicy.doNothing)) {
                 return;
             } else if (ifExistPolicy.equals(ExistPolicy.reAttach)) {
-                FragmentArgs fragArgs = new FragmentArgs(fragmentAlreadyExist.getArguments());
-                if (fragArgs.consumeRestoreOnResume()) {
-                    Log.w(TAG, String.format("Skip reAttach %s.", fragmentAlreadyExist));
-                    return;
-                }
                 // Do reAttach Update
                 FragmentUtils.putArguments(fragmentAlreadyExist, fragmentArgs);
                 if (fragmentAlreadyExist.isVisible()) {

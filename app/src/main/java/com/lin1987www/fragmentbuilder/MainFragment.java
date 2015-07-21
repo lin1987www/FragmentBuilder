@@ -87,7 +87,6 @@ public class MainFragment extends FragmentFix {
         mTestCodeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO   remove test code
                 FragmentManager.BackStackEntry backStackEntry =
                         FragmentBuilder.findBackStackEntry(MainFragment.this);
 

@@ -12,6 +12,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
 import com.lin1987www.app.FragmentArgs;
+import com.lin1987www.app.FragmentBuilder;
 import com.lin1987www.app.TakeoutBuilder;
 
 import java.util.ArrayList;
@@ -148,6 +149,7 @@ public class FragmentFix extends Fragment {
         if (DEBUG) {
             Log.e(TAG, "onCreate " + ID);
         }
+
         return null;
     }
 
@@ -164,11 +166,6 @@ public class FragmentFix extends Fragment {
             Log.e(TAG, "onViewStateRestored " + ID);
         }
         super.onViewStateRestored(savedInstanceState);
-        // 如果是回復狀態  就略過一次 Fragment 的建立
-        // TODO 有點不需要的功能
-        if (savedInstanceState != null) {
-            getFragmentArgs().skipRestoreOnResume();
-        }
     }
 
     @Override
@@ -185,6 +182,7 @@ public class FragmentFix extends Fragment {
             Log.e(TAG, "onResume " + ID);
         }
         super.onResume();
+        // 更新畫面的一切行為
     }
 
     @Override
@@ -192,7 +190,6 @@ public class FragmentFix extends Fragment {
         if (DEBUG) {
             Log.e(TAG, "onPause " + ID);
         }
-        super.onPause();
         if (mTakeList.size() > 0) {
             // Cancel all take
             for (Take<?> take : mTakeList) {
@@ -201,6 +198,7 @@ public class FragmentFix extends Fragment {
             mTakeList.clear();
             Log.e(TAG, "clear Take.");
         }
+        super.onPause();
     }
 
     void doResume() {
@@ -220,8 +218,6 @@ public class FragmentFix extends Fragment {
         }
         if (getFragmentArgs().consumePopOnResume()) {
             Log.w(TAG, String.format("Consume OnResume. %s", this));
-        } else if (getFragmentArgs().consumeRestoreOnResume()) {
-            Log.w(TAG, String.format("Consume reAttach. %s", this));
         } else {
             doResume();
         }
@@ -235,5 +231,10 @@ public class FragmentFix extends Fragment {
         TakeoutBuilder builder = TakeoutBuilder.create(this, take, this);
         mTakeList.add(take);
         return builder;
+    }
+
+    public static TakeoutBuilder take(Take<?> take, View view) {
+        FragmentFix fragmentFix = (FragmentFix) FragmentBuilder.FragmentPath.findFragmentByView(view);
+        return fragmentFix.take(take);
     }
 }

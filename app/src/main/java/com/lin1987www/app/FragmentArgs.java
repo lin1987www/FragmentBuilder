@@ -42,21 +42,8 @@ public class FragmentArgs {
         bundle.putBoolean(key_isSkipPopOnResume, true);
     }
 
-    public boolean consumeRestoreOnResume() {
-        boolean isConsumed = bundle.getBoolean(key_isSkipRestoreOnResume, false);
-        if (bundle.containsKey(key_isSkipRestoreOnResume)) {
-            bundle.remove(key_isSkipRestoreOnResume);
-        }
-        return isConsumed;
-    }
-
-    public void skipRestoreOnResume() {
-        bundle.putBoolean(key_isSkipRestoreOnResume, true);
-    }
-
     public boolean consumeOnResume() {
-        boolean restoreOnResume = consumeRestoreOnResume();
         boolean popOnResume = consumePopOnResume();
-        return (restoreOnResume || popOnResume);
+        return (popOnResume);
     }
 }
