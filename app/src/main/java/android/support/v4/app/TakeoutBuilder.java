@@ -1,9 +1,8 @@
-package com.lin1987www.app;
+package android.support.v4.app;
 
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
-import android.support.v4.app.FragmentFix;
 
 import java.util.List;
 import java.util.concurrent.AbstractExecutorService;
@@ -17,7 +16,6 @@ import fix.java.util.concurrent.CatchThreadFactory;
 import fix.java.util.concurrent.ScheduledExecutorFix;
 import fix.java.util.concurrent.Take;
 import fix.java.util.concurrent.TakeCancelListener;
-import fix.java.util.concurrent.Takeout;
 
 /**
  * Created by Administrator on 2015/7/13.

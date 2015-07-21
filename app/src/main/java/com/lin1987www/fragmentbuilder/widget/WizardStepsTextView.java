@@ -5,7 +5,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
 
-import com.lin1987www.app.FragmentBuilder;
+import android.support.v4.app.FragmentBuilder;
 import com.lin1987www.fragmentbuilder.F11Fragment;
 import com.lin1987www.fragmentbuilder.F12Fragment;
 import com.lin1987www.fragmentbuilder.F12NewFragment;

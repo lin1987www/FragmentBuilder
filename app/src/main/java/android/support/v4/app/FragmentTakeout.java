@@ -1,6 +1,5 @@
-package com.lin1987www.app;
+package android.support.v4.app;
 
-import android.support.v4.app.FragmentFix;
 import android.util.Log;
 
 import java.lang.ref.WeakReference;

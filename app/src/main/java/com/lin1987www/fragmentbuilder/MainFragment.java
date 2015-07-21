@@ -10,7 +10,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import com.lin1987www.app.FragmentBuilder;
+import android.support.v4.app.FragmentBuilder;
 import android.support.v4.app.FragmentFix;
 
 import lin1987www.com.fragmentbuilder.R;

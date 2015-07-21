@@ -11,10 +11,6 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
-import com.lin1987www.app.FragmentArgs;
-import com.lin1987www.app.FragmentBuilder;
-import com.lin1987www.app.TakeoutBuilder;
-
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 

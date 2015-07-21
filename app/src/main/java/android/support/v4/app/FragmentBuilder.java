@@ -1,13 +1,8 @@
-package com.lin1987www.app;
+package android.support.v4.app;
 
 import android.os.Bundle;
 import android.support.annotation.IntDef;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentManager.BackStackEntry;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.FragmentUtils;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
