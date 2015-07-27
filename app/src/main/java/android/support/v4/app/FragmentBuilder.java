@@ -800,7 +800,7 @@ public class FragmentBuilder {
         }
     }
 
-    public static boolean hasPopBackStack(FragmentActivity activity) {
+    public static boolean hasPopBackStack(final FragmentActivity activity) {
         ArrayList<BackStackEntry> list = new ArrayList<BackStackEntry>();
         HashMap<BackStackEntry, FragmentManager> hookFmMap = new HashMap<BackStackEntry, FragmentManager>();
         HashMap<BackStackEntry, Fragment> hookFragMap = new HashMap<BackStackEntry, Fragment>();
@@ -821,6 +821,15 @@ public class FragmentBuilder {
             return true;
         }
         return false;
+    }
+
+    public static void postPopBackStack(final FragmentActivity activity) {
+        activity.getWindow().getDecorView().post(new Runnable() {
+            @Override
+            public void run() {
+                hasPopBackStack(activity);
+            }
+        });
     }
 
     public static void popFragment(final FragmentActivity activity) {

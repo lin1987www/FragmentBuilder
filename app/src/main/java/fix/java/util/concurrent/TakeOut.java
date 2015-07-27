@@ -9,15 +9,17 @@ import java.util.concurrent.Future;
 /**
  * Created by Administrator on 2015/7/9.
  */
-public class Takeout<T> implements Callable<Takeout<T>> {
+public class Takeout<T extends Take<?>> implements Callable<Takeout<T>> {
     public static boolean DEBUG = true;
-    public final Take<T> take;
+    public final TakeWrap<T> takeWrap;
+    public final T take;
     public final ExecutorService onService;
     public final ExecutorService toService;
     public final WeakReference<Object> targetWeak;
 
-    public Takeout(Object target, Take<T> take, ExecutorService onService, ExecutorService toService) {
-        this.take = take;
+    public Takeout(Object target, TakeWrap<T> takeWrap, ExecutorService onService, ExecutorService toService) {
+        this.takeWrap = takeWrap;
+        this.take = takeWrap.getTask();
         this.onService = onService;
         this.toService = toService;
         this.targetWeak = new WeakReference<>(target);
@@ -25,7 +27,7 @@ public class Takeout<T> implements Callable<Takeout<T>> {
 
     @Override
     public Takeout call() throws Exception {
-        Future<Take<T>> future = onService.submit(take);
+        Future<T> future = onService.submit(takeWrap);
         future.get();
         if (take.isCancelled()) {
             if (DEBUG) {
@@ -38,11 +40,11 @@ public class Takeout<T> implements Callable<Takeout<T>> {
         return this;
     }
 
-    public class OutTaker<T> implements Runnable {
-        public final Take<T> take;
+    public class OutTaker<T extends Take<?>> implements Runnable {
+        public final T take;
         public final WeakReference<Object> targetWeak;
 
-        public OutTaker(Take<T> take, WeakReference<Object> targetWeak) {
+        public OutTaker(T take, WeakReference<Object> targetWeak) {
             this.take = take;
             this.targetWeak = targetWeak;
         }

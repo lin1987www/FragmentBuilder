@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import fix.java.util.concurrent.Take;
+import fix.java.util.concurrent.TakeWrap;
 import fix.java.util.concurrent.Takeout;
 
 
@@ -224,13 +225,23 @@ public class FragmentFix extends Fragment {
     }
 
     public TakeoutBuilder take(Take<?> take) {
-        TakeoutBuilder builder = TakeoutBuilder.create(this, take, this);
-        mTakeList.add(take);
+        return take(new TakeWrap<Take<?>>(take));
+    }
+
+    public TakeoutBuilder take(TakeWrap<Take<?>> takeWrap) {
+        TakeoutBuilder builder = TakeoutBuilder.create(this, takeWrap, this);
+        mTakeList.add(takeWrap.getTask());
         return builder;
     }
 
     public static TakeoutBuilder take(Take<?> take, View view) {
+        return take(new TakeWrap<Take<?>>(take), view);
+    }
+
+    public static TakeoutBuilder take(TakeWrap<Take<?>> takeWrap, View view) {
         FragmentFix fragmentFix = (FragmentFix) FragmentBuilder.FragmentPath.findFragmentByView(view);
-        return fragmentFix.take(take);
+        TakeoutBuilder builder = TakeoutBuilder.create(view, takeWrap, fragmentFix);
+        fragmentFix.mTakeList.add(takeWrap.getTask());
+        return builder;
     }
 }

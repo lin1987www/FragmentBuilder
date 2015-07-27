@@ -7,23 +7,24 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import fix.java.util.concurrent.Take;
+import fix.java.util.concurrent.TakeWrap;
 import fix.java.util.concurrent.Takeout;
 
 /**
  * Created by Administrator on 2015/7/14.
  */
-public class FragmentTakeout<T> extends Takeout<T> {
+public class FragmentTakeout<T extends Take<?>> extends Takeout<T> {
     public final static String TAG = FragmentTakeout.class.getSimpleName();
     protected FragmentFix fragment;
 
-    public FragmentTakeout(Object target, Take<T> take, ExecutorService onService, ExecutorService toService, FragmentFix fragment) {
-        super(target, take, onService, toService);
+    public FragmentTakeout(Object target, TakeWrap<T> takeWrap, ExecutorService onService, ExecutorService toService, FragmentFix fragment) {
+        super(target, takeWrap, onService, toService);
         this.fragment = fragment;
     }
 
     @Override
     public Takeout call() throws Exception {
-        Future<Take<T>> future = onService.submit(take);
+        Future<T> future = onService.submit(takeWrap);
         future.get();
         if (take.isCancelled()) {
             fragment = null;
@@ -38,10 +39,10 @@ public class FragmentTakeout<T> extends Takeout<T> {
         return this;
     }
 
-    public class FragmentOutTaker<T> extends OutTaker<T> {
+    public class FragmentOutTaker<T extends Take<?>> extends OutTaker<T> {
         protected FragmentFix fragment;
 
-        public FragmentOutTaker(Take<T> take, WeakReference<Object> targetWeak, FragmentFix fragment) {
+        public FragmentOutTaker(T take, WeakReference<Object> targetWeak, FragmentFix fragment) {
             super(take, targetWeak);
             this.fragment = fragment;
         }
