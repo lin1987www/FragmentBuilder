@@ -11,9 +11,11 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import fix.java.util.concurrent.ExceptionHelper;
 import fix.java.util.concurrent.Take;
 import fix.java.util.concurrent.TakeWrap;
 import fix.java.util.concurrent.Takeout;
@@ -25,12 +27,14 @@ import fix.java.util.concurrent.Takeout;
 public class FragmentFix extends Fragment {
     public static boolean DEBUG = true;
     public final static String TAG = FragmentFix.class.getSimpleName();
+    public final static String key_startActivityFromViewId = "key_startActivityFromViewId";
     protected final String ID = String.format("%s", toString());
 
     protected ArrayList<Take<?>> mTakeList = new ArrayList<>();
     protected ArrayList<Takeout.OutTaker> mTakeoutList = new ArrayList<>();
     protected final AtomicBoolean mIsAnim = new AtomicBoolean();
 
+    protected int mStartActivityFromViewId = 0;
     protected FragmentArgs mFragmentArgs;
     Animation.AnimationListener mFragmentAnimListener;
 
@@ -155,6 +159,11 @@ public class FragmentFix extends Fragment {
         if (DEBUG) {
             Log.e(TAG, "onActivityResult " + ID);
         }
+        if (0 != mStartActivityFromViewId) {
+            View view = getView().findViewById(mStartActivityFromViewId);
+            dispatchViewOnActivityResult(view, requestCode, resultCode, data);
+            mStartActivityFromViewId = 0;
+        }
     }
 
     @Override
@@ -163,6 +172,9 @@ public class FragmentFix extends Fragment {
             Log.e(TAG, "onViewStateRestored " + ID);
         }
         super.onViewStateRestored(savedInstanceState);
+        if (null != savedInstanceState) {
+            mStartActivityFromViewId = savedInstanceState.getInt(key_startActivityFromViewId);
+        }
     }
 
     @Override
@@ -196,6 +208,17 @@ public class FragmentFix extends Fragment {
             Log.e(TAG, "clear Take.");
         }
         super.onPause();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if (DEBUG) {
+            Log.e(TAG, "onSaveInstanceState " + ID);
+        }
+        super.onSaveInstanceState(outState);
+        if (0 != mStartActivityFromViewId) {
+            outState.putInt(key_startActivityFromViewId, mStartActivityFromViewId);
+        }
     }
 
     void doResume() {
@@ -243,5 +266,37 @@ public class FragmentFix extends Fragment {
         TakeoutBuilder builder = TakeoutBuilder.create(view, takeWrap, fragmentFix);
         fragmentFix.mTakeList.add(takeWrap.getTask());
         return builder;
+    }
+
+    public void startActivityFromFragment(View view, Intent intent,
+                                          int requestCode) {
+        if (view.getId() == 0) {
+            String msg = String.format("%s's id must being set!", view);
+            Log.e(TAG, msg);
+            throw new RuntimeException(msg);
+        }
+        mStartActivityFromViewId = view.getId();
+        startActivityForResult(intent, requestCode);
+    }
+
+    public interface onActivityResultListener {
+        void onActivityResult(int requestCode, int resultCode, Intent data);
+    }
+
+    private void dispatchViewOnActivityResult(View view, int requestCode, int resultCode, Intent data) {
+        if (view instanceof onActivityResultListener) {
+            ((onActivityResultListener) view).onActivityResult(requestCode, resultCode, data);
+        } else {
+            Class<?> targetClass = view.getClass();
+            try {
+                Method method = targetClass.getDeclaredMethod("onActivityResult", int.class, int.class, Intent.class);
+                if (method != null) {
+                    method.invoke(view, requestCode, resultCode, data);
+                    return;
+                }
+            } catch (Throwable ex) {
+                System.err.println(String.format("Miss onActivityResult() on %s throwable:\n%s", view, ExceptionHelper.getPrintStackTraceString(ex)));
+            }
+        }
     }
 }

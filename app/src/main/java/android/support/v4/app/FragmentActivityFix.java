@@ -96,6 +96,9 @@ public class FragmentActivityFix extends FragmentActivity {
             Log.e(TAG, "onRestoreInstanceState " + ID);
         }
         super.onRestoreInstanceState(savedInstanceState);
+        if (null != savedInstanceState) {
+            mStartActivityFromFragmentPath = savedInstanceState.getString(key_startActivityFromFragmentPath);
+        }
     }
 
     @Override
