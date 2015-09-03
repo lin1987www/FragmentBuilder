@@ -1144,6 +1144,9 @@ public class FragmentBuilder {
             ArrayList<Fragment> fragmentArrayList = new ArrayList<Fragment>();
             fillAllFragments(activity.getSupportFragmentManager(), fragmentArrayList);
             View contentView = view.getRootView().findViewById(android.R.id.content);
+            if (contentView == null) {
+                return null;
+            }
             if (fragmentArrayList.size() > 0) {
                 srcFragment = findFragmentByView(fragmentArrayList, view, contentView);
             }
