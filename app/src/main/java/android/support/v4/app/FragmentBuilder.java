@@ -1139,11 +1139,18 @@ public class FragmentBuilder {
         }
 
         public static Fragment findFragmentByView(View view) {
+            if (view == null) {
+                return null;
+            }
             Fragment srcFragment = null;
             FragmentActivity activity = (FragmentActivity) view.getContext();
             ArrayList<Fragment> fragmentArrayList = new ArrayList<Fragment>();
             fillAllFragments(activity.getSupportFragmentManager(), fragmentArrayList);
-            View contentView = view.getRootView().findViewById(android.R.id.content);
+            View rootView = view.getRootView();
+            if (rootView == null) {
+                return null;
+            }
+            View contentView = rootView.findViewById(android.R.id.content);
             if (contentView == null) {
                 return null;
             }

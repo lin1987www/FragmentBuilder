@@ -221,6 +221,11 @@ public class FragmentFix extends Fragment {
         }
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+    }
+
     void doResume() {
         mCalled = false;
         onResume();
@@ -228,6 +233,14 @@ public class FragmentFix extends Fragment {
             throw new SuperNotCalledException("Fragment " + this
                     + " did not call through to super.onResume()");
         }
+    }
+
+    @Override
+    void performActivityCreated(Bundle savedInstanceState) {
+        if (FragmentUtils.getFragmentManagerActivity(mChildFragmentManager) == null) {
+            FragmentUtils.setChildFragmentManager(this, null);
+        }
+        super.performActivityCreated(savedInstanceState);
     }
 
     @Override
@@ -299,4 +312,5 @@ public class FragmentFix extends Fragment {
             }
         }
     }
+
 }

@@ -1,10 +1,10 @@
 package android.support.v4.app;
 
 import android.os.Bundle;
-import android.support.annotation.IntDef;
+import android.util.Log;
+import android.view.View;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.Field;
 
 /**
  * Created by Administrator on 2015/7/5.
@@ -23,6 +23,35 @@ import java.lang.annotation.RetentionPolicy;
  */
 
 public class FragmentUtils {
+    private static final String TAG = FragmentUtils.class.getName();
+    private static final Field sChildFragmentManagerField;
+    static {
+        /**
+         * BUG : causing a java.IllegalStateException error, No Activity, only
+         * when navigating to Fragment for the SECOND time
+         * http://stackoverflow.com /questions/15207305/getting-the-error-java-lang-illegalstateexception-activity-has-been-destroyed
+         * http://stackoverflow.com/questions/14929907/causing-a-java-illegalstateexception-error-no-activity-only-when-navigating-to
+         */
+        Field f = null;
+        try {
+            f = Fragment.class.getDeclaredField("mChildFragmentManager");
+            f.setAccessible(true);
+        } catch (NoSuchFieldException e) {
+            Log.e(TAG, "Error getting mChildFragmentManager field", e);
+        }
+        sChildFragmentManagerField = f;
+    }
+
+    public static void setChildFragmentManager(Fragment fragment, FragmentManager fragmentManager) {
+        if (sChildFragmentManagerField != null) {
+            try {
+                sChildFragmentManagerField.set(fragment, fragmentManager);
+            } catch (Exception e) {
+                Log.e(TAG, "Error setting mChildFragmentManager field", e);
+            }
+        }
+    }
+
     public static void setArguments(Fragment fragment, Bundle args) {
         fragment.mArguments = args;
     }
@@ -37,4 +66,40 @@ public class FragmentUtils {
         }
     }
 
+    public static boolean getUserVisibleHintAllParent(Fragment f) {
+        // 如果 Parent 無法被使用者看到，那childFragment就視為不會被看到
+        if (f.getUserVisibleHint()) {
+            if (f.getParentFragment() == null) {
+                return true;
+            } else {
+                return getUserVisibleHintAllParent(f.getParentFragment());
+            }
+        } else {
+            return false;
+        }
+    }
+
+    public static FragmentActivity getFragmentManagerActivity(FragmentManager fragmentManager) {
+        FragmentManagerImpl fm = (FragmentManagerImpl) fragmentManager;
+        return fm.mActivity;
+    }
+
+    public static boolean isFragmentAvailable(View view) {
+        Fragment fragment = FragmentBuilder.FragmentPath.findFragmentByView(view);
+        return isFragmentAvailable(fragment);
+    }
+
+    public static boolean isFragmentAvailable(Fragment fragment) {
+        boolean isAvailable = true;
+        if (fragment == null) {
+            isAvailable = false;
+        } else {
+            if (fragment.isRemoving() || fragment.isDetached() || fragment.getActivity() == null) {
+                isAvailable = false;
+            } else if (getFragmentManagerActivity(fragment.getChildFragmentManager()) == null) {
+                isAvailable = false;
+            }
+        }
+        return isAvailable;
+    }
 }
