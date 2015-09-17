@@ -38,7 +38,7 @@ public class FragmentFix extends Fragment {
     protected FragmentArgs mFragmentArgs;
     Animation.AnimationListener mFragmentAnimListener;
 
-    private boolean mWillBeVisibleToUser = false;
+    private boolean mPrepareResume = false;
 
     boolean afterAnimTakeout(Takeout.OutTaker outTaker) {
         if (mIsAnim.get()) {
@@ -84,13 +84,27 @@ public class FragmentFix extends Fragment {
 
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
-        mWillBeVisibleToUser = isVisibleToUser;
-        if (isVisibleToUser) {
-            if (!getUserVisibleHint()) {
-                performResume();
+        if (DEBUG) {
+            Log.e(TAG, String.format("setUserVisibleHint %s %s -> %s", ID, getUserVisibleHint(), isVisibleToUser));
+        }
+        boolean lastUserVisibleHint = getUserVisibleHint();
+        super.setUserVisibleHint(isVisibleToUser);
+        if (!lastUserVisibleHint && isVisibleToUser) {
+            if (!mPrepareResume) {
+                mPrepareResume = true;
+                take(new Take() {
+                    @Override
+                    public boolean handleException(Throwable ex) {
+                        return false;
+                    }
+
+                    @Override
+                    public Object take() throws Throwable {
+                        doResume();
+                        return this;
+                    }
+                }).onMainThread().toMainThread().build();
             }
-        } else {
-            super.setUserVisibleHint(isVisibleToUser);
         }
     }
 
@@ -217,6 +231,7 @@ public class FragmentFix extends Fragment {
         if (DEBUG) {
             Log.e(TAG, "onPause " + ID);
         }
+        mPrepareResume = false;
         if (mTakeList.size() > 0) {
             // Cancel all take
             for (Take<?> take : mTakeList) {
@@ -257,18 +272,35 @@ public class FragmentFix extends Fragment {
         super.performActivityCreated(savedInstanceState);
     }
 
+    void doResume() {
+        mCalled = false;
+        onResume();
+        if (!mCalled) {
+            throw new SuperNotCalledException("Fragment " + this
+                    + " did not call through to super.onResume()");
+        }
+    }
+
     @Override
     void performResume() {
+        if (mChildFragmentManager != null) {
+            mChildFragmentManager.noteStateNotSaved();
+            mChildFragmentManager.execPendingActions();
+        }
         if (getFragmentArgs().consumePopOnResume()) {
             if (DEBUG) {
                 Log.e(TAG, String.format("Consume OnResume. %s", ID));
             }
-        } else if (!getUserVisibleHint() && !mWillBeVisibleToUser) {
+        } else if (!getUserVisibleHint()) {
             if (DEBUG) {
                 Log.e(TAG, String.format("Skip OnResume. %s getUserVisibleHint() is false.", ID));
             }
         } else {
-            super.performResume();
+            doResume();
+        }
+        if (mChildFragmentManager != null) {
+            mChildFragmentManager.dispatchResume();
+            mChildFragmentManager.execPendingActions();
         }
     }
 
