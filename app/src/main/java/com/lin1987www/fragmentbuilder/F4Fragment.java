@@ -1,7 +1,7 @@
 package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentFix;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +13,7 @@ import lin1987www.com.fragmentbuilder.R;
 /**
  * Created by Administrator on 2015/6/26.
  */
-public class F4Fragment extends Fragment {
+public class F4Fragment extends FragmentFix {
     public String result;
 
     TextView mTextView;
@@ -27,6 +27,11 @@ public class F4Fragment extends Fragment {
         mTextView.setText(String.format("%s", getTag()));
         mNumberEditText = (EditText) view.findViewById(R.id.editText);
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     @Override

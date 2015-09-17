@@ -3,11 +3,10 @@ package com.lin1987www.fragmentbuilder;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivityFix;
+import android.support.v4.app.FragmentBuilder;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
-
-import android.support.v4.app.FragmentBuilder;
 
 import lin1987www.com.fragmentbuilder.R;
 

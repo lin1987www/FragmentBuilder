@@ -705,8 +705,7 @@ public class FragmentBuilder {
      * @return popBackStack count
      */
     public static int popBackStack(FragmentActivity activity, String name, @PopFlag int flags, boolean skipOnResume) {
-        return popBackStack(activity, new PredicateBackStackName(name), flags, skipOnResume)
-                ;
+        return popBackStack(activity, new PredicateBackStackName(name), flags, skipOnResume);
     }
 
     public static int popBackStack(FragmentActivity activity, Predicate predicate, @PopFlag int flags, boolean skipOnResume) {

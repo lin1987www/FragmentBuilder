@@ -25,6 +25,7 @@ import java.lang.reflect.Field;
 public class FragmentUtils {
     private static final String TAG = FragmentUtils.class.getName();
     private static final Field sChildFragmentManagerField;
+
     static {
         /**
          * BUG : causing a java.IllegalStateException error, No Activity, only

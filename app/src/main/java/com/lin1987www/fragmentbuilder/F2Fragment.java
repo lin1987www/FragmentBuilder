@@ -1,21 +1,20 @@
 package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentBuilder;
+import android.support.v4.app.FragmentFix;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import android.support.v4.app.FragmentBuilder;
-
 import lin1987www.com.fragmentbuilder.R;
 
 /**
  * Created by Administrator on 2015/6/26.
  */
-public class F2Fragment extends Fragment {
+public class F2Fragment extends FragmentFix {
     TextView mTextView;
     FrameLayout mContainer;
 
@@ -38,6 +37,11 @@ public class F2Fragment extends Fragment {
             }
         });
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     public void onPopFragment(F21Fragment fragment) {

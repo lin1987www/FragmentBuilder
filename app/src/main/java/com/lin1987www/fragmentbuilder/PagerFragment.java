@@ -2,9 +2,9 @@ package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentFix;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,7 +17,7 @@ import lin1987www.com.fragmentbuilder.R;
 /**
  * Created by Administrator on 2015/7/8.
  */
-public class PagerFragment extends Fragment {
+public class PagerFragment extends FragmentFix {
     ViewPager mPager;
     PagerAdapter mPagerAdapter;
 

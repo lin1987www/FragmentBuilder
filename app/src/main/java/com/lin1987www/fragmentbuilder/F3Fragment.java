@@ -27,7 +27,6 @@ public class F3Fragment extends FragmentFix implements View.OnClickListener {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_f3, container, false);
         mTextView = (TextView) view.findViewById(R.id.textView);
         mTextView.setText(String.format("%s", getTag()));
@@ -35,6 +34,11 @@ public class F3Fragment extends FragmentFix implements View.OnClickListener {
         mStartActivityResultButton = (Button) view.findViewById(R.id.startActivityResultButton);
         mStartActivityResultButton.setOnClickListener(this);
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     @Override

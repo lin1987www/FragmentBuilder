@@ -2,11 +2,11 @@ package com.lin1987www.fragmentbuilder.widget;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.FragmentBuilder;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
 
-import android.support.v4.app.FragmentBuilder;
 import com.lin1987www.fragmentbuilder.WizardStepsFragment;
 
 /**

@@ -1,17 +1,15 @@
 package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
+import android.support.v4.app.FragmentBuilder;
 import android.support.v4.app.FragmentFix;
 import android.support.v4.app.FragmentManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import android.support.v4.app.FragmentArgs;
-import android.support.v4.app.FragmentBuilder;
 import com.lin1987www.fragmentbuilder.widget.ShowEnterTextView;
 
 import lin1987www.com.fragmentbuilder.R;
@@ -53,11 +51,6 @@ public class F13Fragment extends FragmentFix {
     @Override
     public void onResume() {
         super.onResume();
-        FragmentArgs args = new FragmentArgs(getArguments());
-        if (args.consumeOnResume()) {
-            return;
-        }
-        Log.e(TAG, String.format("F13 onResume. %s", isHidden()));
     }
 
     @Override

@@ -1,14 +1,13 @@
 package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
+import android.support.v4.app.FragmentBuilder;
 import android.support.v4.app.FragmentFix;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import android.support.v4.app.FragmentBuilder;
 
 import lin1987www.com.fragmentbuilder.R;
 

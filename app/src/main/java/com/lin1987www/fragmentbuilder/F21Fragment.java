@@ -1,7 +1,7 @@
 package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentFix;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +14,7 @@ import lin1987www.com.fragmentbuilder.R;
 /**
  * Created by Administrator on 2015/6/26.
  */
-public class F21Fragment extends Fragment {
+public class F21Fragment extends FragmentFix {
     public String result;
     TextView mTextView;
     ShowEnterTextView mShowEnterTextView;
@@ -27,6 +27,11 @@ public class F21Fragment extends Fragment {
         mShowEnterTextView = (ShowEnterTextView) view.findViewById(R.id.showNameTextView);
         mTextView.setText(String.format("%s", getTag()));
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     @Override
