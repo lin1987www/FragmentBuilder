@@ -18,8 +18,15 @@ public abstract class PuppetActivity {
         return fragmentActivityWeakReference.get();
     }
 
-    public PuppetActivity setActivity(FragmentActivity activity) {
-        fragmentActivityWeakReference = new WeakReference<FragmentActivity>(activity);
+    public android.content.Context getApplicationContext() {
+        if (fragmentActivityWeakReference == null) {
+            return null;
+        }
+        return fragmentActivityWeakReference.get().getApplicationContext();
+    }
+
+    public PuppetActivity setActivity(FragmentActivity activity){
+        fragmentActivityWeakReference =new WeakReference<FragmentActivity>(activity);
         return this;
     }
 
@@ -35,7 +42,7 @@ public abstract class PuppetActivity {
 
     public abstract void onPause();
 
-    public abstract void onSaveInstanceState(android.os.Bundle outState);
+    public abstract void onSaveInstanceState(Bundle outState);
 
     public abstract void onStop();
 
