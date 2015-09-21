@@ -13,6 +13,7 @@ import android.view.animation.AnimationUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import fix.java.util.concurrent.ExceptionHelper;
@@ -38,7 +39,7 @@ public class FragmentFix extends Fragment {
     protected FragmentArgs mFragmentArgs;
     Animation.AnimationListener mFragmentAnimListener;
 
-    private boolean mPrepareResume = false;
+    private boolean mHasResumed = false;
 
     boolean afterAnimTakeout(Takeout.OutTaker outTaker) {
         if (mIsAnim.get()) {
@@ -80,32 +81,6 @@ public class FragmentFix extends Fragment {
             }
         }
         return mFragmentArgs;
-    }
-
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        if (DEBUG) {
-            Log.e(TAG, String.format("setUserVisibleHint %s %s -> %s", ID, getUserVisibleHint(), isVisibleToUser));
-        }
-        boolean lastUserVisibleHint = getUserVisibleHint();
-        super.setUserVisibleHint(isVisibleToUser);
-        if (!lastUserVisibleHint && isVisibleToUser) {
-            if (!mPrepareResume) {
-                mPrepareResume = true;
-                take(new Take() {
-                    @Override
-                    public boolean handleException(Throwable ex) {
-                        return false;
-                    }
-
-                    @Override
-                    public Object take() throws Throwable {
-                        doResume();
-                        return this;
-                    }
-                }).onMainThread().toMainThread().build();
-            }
-        }
     }
 
     @Override
@@ -220,7 +195,7 @@ public class FragmentFix extends Fragment {
     @Override
     public void onResume() {
         if (DEBUG) {
-            Log.e(TAG, String.format("onResume %s %s", ID, getUserVisibleHint()));
+            Log.e(TAG, String.format("onResume %s", ID));
         }
         super.onResume();
         // 更新畫面的一切行為
@@ -231,7 +206,7 @@ public class FragmentFix extends Fragment {
         if (DEBUG) {
             Log.e(TAG, "onPause " + ID);
         }
-        mPrepareResume = false;
+        mHasResumed = false;
         if (mTakeList.size() > 0) {
             // Cancel all take
             for (Take<?> take : mTakeList) {
@@ -272,13 +247,50 @@ public class FragmentFix extends Fragment {
         super.performActivityCreated(savedInstanceState);
     }
 
-    void doResume() {
-        mCalled = false;
-        onResume();
-        if (!mCalled) {
-            throw new SuperNotCalledException("Fragment " + this
-                    + " did not call through to super.onResume()");
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        if (DEBUG) {
+            Log.e(TAG, String.format("setUserVisibleHint %s %s -> %s", ID, getUserVisibleHint(), isVisibleToUser));
         }
+        boolean lastUserVisibleHint = getUserVisibleHint();
+        super.setUserVisibleHint(isVisibleToUser);
+        if (!lastUserVisibleHint && isVisibleToUser) {
+            doResume();
+        }
+    }
+
+    void doResume() {
+        take(new Take() {
+            @Override
+            public boolean handleException(Throwable ex) {
+                return false;
+            }
+
+            @Override
+            public Object take() throws Throwable {
+                if (!mHasResumed) {
+                    mHasResumed = true;
+                    ////// origin start
+                    mCalled = false;
+                    onResume();
+                    if (!mCalled) {
+                        throw new SuperNotCalledException("Fragment " + this
+                                + " did not call through to super.onResume()");
+                    }
+                    ////// origin end
+                    // child fragment resume
+                    List<Fragment> children = getChildFragmentManager().getFragments();
+                    if (children != null) {
+                        for (Fragment f : children) {
+                            if (f instanceof FragmentFix) {
+                                ((FragmentFix) f).doResume();
+                            }
+                        }
+                    }
+                }
+                return this;
+            }
+        }).onMainThread().toMainThread().build();
     }
 
     @Override
@@ -291,9 +303,10 @@ public class FragmentFix extends Fragment {
             if (DEBUG) {
                 Log.e(TAG, String.format("Consume OnResume. %s", ID));
             }
-        } else if (!getUserVisibleHint()) {
+
+        } else if (!FragmentUtils.getUserVisibleHintAllParent(this)) {
             if (DEBUG) {
-                Log.e(TAG, String.format("Skip OnResume. %s getUserVisibleHint() is false.", ID));
+                Log.e(TAG, String.format("Skip OnResume. %s getUserVisibleHintAllParent() is false.", ID));
             }
         } else {
             doResume();

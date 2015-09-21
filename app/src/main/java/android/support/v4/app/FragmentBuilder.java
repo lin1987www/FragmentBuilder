@@ -3,6 +3,7 @@ package android.support.v4.app;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.v4.app.FragmentManager.BackStackEntry;
+import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -55,7 +56,8 @@ public class FragmentBuilder {
     private boolean isKeepTarget = false;
     private boolean isKeepContainer = false;
     //
-    public static int defaultContainerViewId = android.R.id.content;
+    public final static int systemContainerViewId = android.R.id.content;
+    public static int defaultContainerViewId = systemContainerViewId;
     private int containerViewId = defaultContainerViewId;
     //
     public static Action defaultAction = Action.add;
@@ -345,7 +347,14 @@ public class FragmentBuilder {
         } else {
             if (builder.isKeepContainer) {
                 if (null != hereFrag) {
-                    builder.containerViewId = hereFrag.getId();
+                    // Fix fragment in ViewPager non available containerViewId cause problem!
+                    View availableView = FragmentPath.findAncestorOrSelf(hereFrag.getView(), ViewPager.class);
+                    Fragment availableFragment = FragmentPath.findFragmentByView(availableView);
+                    if (availableFragment != null) {
+                        builder.containerViewId = availableFragment.getId();
+                    } else {
+                        builder.containerViewId = systemContainerViewId;
+                    }
                 }
             }
             if (builder.isKeepTarget) {
@@ -1043,9 +1052,9 @@ public class FragmentBuilder {
             View srcView = content.getSrcView();
             if (srcView != null) {
                 FragmentActivity activity = (FragmentActivity) srcView.getContext();
-                ArrayList<Fragment> fragmentArrayList = new ArrayList<Fragment>();
+                ArrayList<Fragment> fragmentArrayList = new ArrayList<>();
                 fillAllFragments(activity.getSupportFragmentManager(), fragmentArrayList);
-                View contentView = srcView.getRootView().findViewById(android.R.id.content);
+                View contentView = srcView.getRootView().findViewById(systemContainerViewId);
                 if (fragmentArrayList.size() > 0) {
                     Fragment srcFragment = findFragmentByView(fragmentArrayList, srcView, contentView);
                     if (srcFragment != null) {
@@ -1127,6 +1136,7 @@ public class FragmentBuilder {
                 }
             }
             if (contentView.equals(srcView.getParent())) {
+                //If it is top view, return null
                 return null;
             }
             View parent = (View) srcView.getParent();
@@ -1137,24 +1147,24 @@ public class FragmentBuilder {
             }
         }
 
-        public static Fragment findFragmentByView(View view) {
-            if (view == null) {
+        public static Fragment findFragmentByView(View srcView) {
+            if (srcView == null) {
                 return null;
             }
             Fragment srcFragment = null;
-            FragmentActivity activity = (FragmentActivity) view.getContext();
-            ArrayList<Fragment> fragmentArrayList = new ArrayList<Fragment>();
+            FragmentActivity activity = (FragmentActivity) srcView.getContext();
+            ArrayList<Fragment> fragmentArrayList = new ArrayList<>();
             fillAllFragments(activity.getSupportFragmentManager(), fragmentArrayList);
-            View rootView = view.getRootView();
+            View rootView = srcView.getRootView();
             if (rootView == null) {
                 return null;
             }
-            View contentView = rootView.findViewById(android.R.id.content);
+            View contentView = rootView.findViewById(systemContainerViewId);
             if (contentView == null) {
                 return null;
             }
             if (fragmentArrayList.size() > 0) {
-                srcFragment = findFragmentByView(fragmentArrayList, view, contentView);
+                srcFragment = findFragmentByView(fragmentArrayList, srcView, contentView);
             }
             return srcFragment;
         }
@@ -1206,6 +1216,32 @@ public class FragmentBuilder {
                 fragmentPathString = TextUtils.join(delimiter, fragmentPath);
             }
             return fragmentPathString;
+        }
+
+        /*
+            Use this method to avoid finding fragment in ViewPager
+         */
+        private static View findAncestorOrSelf(View srcView, Class<?> targetClass) {
+            View view = srcView;
+            View targetView = srcView;
+            if (srcView == null) {
+                return targetView;
+            }
+            View rootView = srcView.getRootView();
+            if (rootView == null) {
+                return targetView;
+            }
+            View contentView = rootView.findViewById(systemContainerViewId);
+            if (contentView == null) {
+                return targetView;
+            }
+            do {
+                if (targetClass.isInstance(view)) {
+                    targetView = view;
+                }
+                view = (View) view.getParent();
+            } while (view != null && !view.equals(contentView));
+            return targetView;
         }
     }
 }

@@ -78,7 +78,7 @@ public class Takeout<T extends Take<?>> implements Callable<Takeout<T>> {
             if (targetObject instanceof TakeoutListener) {
                 ((TakeoutListener) targetObject).onTake(take);
             } else {
-                System.err.println(String.format("Miss onTake(%s) on %s throwable:\n%s", take, targetObject, ExceptionHelper.getPrintStackTraceString(throwable)));
+                System.out.println(String.format("Miss onTake(%s) on %s throwable:\n%s", take, targetObject, ExceptionHelper.getPrintStackTraceString(throwable)));
             }
         }
     }
