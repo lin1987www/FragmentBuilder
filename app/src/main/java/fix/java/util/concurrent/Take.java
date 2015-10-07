@@ -13,6 +13,7 @@ public abstract class Take<T> implements Callable<Take<T>>, IHandleException {
     protected long startTimeMillis = 0;
     protected long stopTimeMillis = 0;
     protected AtomicBoolean mCancelled = new AtomicBoolean(false);
+    protected AtomicBoolean mTakeoutCancelled = new AtomicBoolean(false);
     protected AtomicBoolean mCompleted = new AtomicBoolean(false);
     protected Throwable ex;
     protected String tag;
@@ -41,6 +42,14 @@ public abstract class Take<T> implements Callable<Take<T>>, IHandleException {
 
     public final boolean isCancelled() {
         return mCancelled.get();
+    }
+
+    public final boolean isTakeoutCancelled() {
+        return mTakeoutCancelled.get();
+    }
+
+    public void cancelTakeout() {
+        mTakeoutCancelled.set(true);
     }
 
     public void cancel() {

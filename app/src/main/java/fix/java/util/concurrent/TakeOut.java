@@ -65,6 +65,12 @@ public class Takeout<T extends Take<?>> implements Callable<Takeout<T>> {
                 }
                 return;
             }
+            if (take.isTakeoutCancelled()) {
+                if (DEBUG) {
+                    System.err.println(String.format("Takeout is canceled. %s", take));
+                }
+                return;
+            }
             Class<?> targetClass = targetObject.getClass();
             try {
                 Method method = targetClass.getDeclaredMethod("onTake", take.getClass());
