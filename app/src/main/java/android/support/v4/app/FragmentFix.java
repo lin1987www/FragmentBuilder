@@ -2,6 +2,7 @@ package android.support.v4.app;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -158,6 +159,7 @@ public class FragmentFix extends Fragment {
         if (DEBUG) {
             Log.e(TAG, "onCreate " + ID);
         }
+        FragmentState.CREATOR.createFromParcel(null);
         return null;
     }
 

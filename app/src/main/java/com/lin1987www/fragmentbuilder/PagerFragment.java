@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentFix;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapterFix;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,7 +20,8 @@ import lin1987www.com.fragmentbuilder.R;
  */
 public class PagerFragment extends FragmentFix {
     ViewPager mPager;
-    PagerAdapter mPagerAdapter;
+
+    FragmentStatePagerAdapterFix mPagerAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -27,7 +29,14 @@ public class PagerFragment extends FragmentFix {
         View view = inflater.inflate(R.layout.fragment_pager, container, false);
         mPager = (ViewPager) view.findViewById(R.id.pager);
         mPager.setOffscreenPageLimit(1);
-        mPagerAdapter = new PagerAdapter(getChildFragmentManager());
+
+        mPagerAdapter = new FragmentStatePagerAdapterFix(this);
+        mPagerAdapter.add(F1Fragment.class);
+        mPagerAdapter.add(F2Fragment.class);
+        mPagerAdapter.add(F3Fragment.class);
+        mPagerAdapter.add(F4Fragment.class);
+        mPagerAdapter.add(F5Fragment.class);
+
         mPager.setAdapter(mPagerAdapter);
         return view;
     }
