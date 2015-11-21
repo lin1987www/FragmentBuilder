@@ -265,6 +265,8 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
                     }
                 }
             }
+            // If restore will change
+            notifyDataSetChanged();
         }
     }
 
