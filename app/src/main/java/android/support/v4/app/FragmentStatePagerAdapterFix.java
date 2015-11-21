@@ -26,6 +26,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
     protected ArrayList<Bundle> mFragmentArgs = new ArrayList<>();
 
     private Fragment mCurrentPrimaryItem = null;
+    private boolean[] mTempPositionChange;
 
     @Override
     public int getCount() {
@@ -53,35 +54,41 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
     }
 
     public void add(Class<? extends android.support.v4.app.Fragment> fragClass) {
-        add(fragClass, null);
+        add(fragClass, null, null);
     }
 
     public void add(Class<? extends android.support.v4.app.Fragment> fragClass, Bundle args) {
         add(fragClass, args, null);
     }
 
+    public void add(Class<? extends android.support.v4.app.Fragment> fragClass, String tag) {
+        add(fragClass, null, tag);
+    }
+
     public void add(Class<? extends android.support.v4.app.Fragment> fragClass, Bundle args, String tag) {
-        mFragments.add(null);
-        mFragmentStates.add(null);
-        mFragmentTags.add(tag);
-        mFragmentClassNames.add(fragClass.getName());
-        mFragmentArgs.add(args);
+        add(fragClass, args, tag, getCount());
+    }
+
+    public void add(Class<? extends android.support.v4.app.Fragment> fragClass, Bundle args, String tag, int position) {
+        mFragments.add(position, null);
+        mFragmentStates.add(position, null);
+        mFragmentTags.add(position, tag);
+        mFragmentClassNames.add(position, fragClass.getName());
+        mFragmentArgs.add(position, args);
+        mTempPositionChange = new boolean[getCount()];
     }
 
     public void remove(int position) {
-        if (position < mFragmentClassNames.size()) {
-            Fragment fragment = mFragments.get(position);
+        if (position < getCount()) {
+            mTempPositionChange = new boolean[getCount()];
+            for (int i = position; i < mTempPositionChange.length; i++) {
+                mTempPositionChange[i] = true;
+            }
             mFragments.remove(position);
             mFragmentStates.remove(position);
             mFragmentTags.remove(position);
             mFragmentClassNames.remove(position);
             mFragmentArgs.remove(position);
-            if (fragment != null) {
-                FragmentTransaction transaction = mFragmentManager.beginTransaction();
-                transaction.remove(fragment);
-                transaction.commitAllowingStateLoss();
-                mFragmentManager.executePendingTransactions();
-            }
         }
     }
 
@@ -122,9 +129,6 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
         if (DEBUG) {
             Log.v(TAG, "Adding item #" + position + ": f=" + fragment);
         }
-        while (mFragments.size() <= position) {
-            mFragments.add(null);
-        }
         fragment.setMenuVisibility(false);
         fragment.setUserVisibleHint(false);
         mFragments.set(position, fragment);
@@ -145,17 +149,15 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             Log.v(TAG, "Removing item #" + position + ": f=" + object
                     + " v=" + ((Fragment) object).getView());
         }
-        while (mFragmentStates.size() <= position) {
-            mFragmentStates.add(null);
+        if (position < getCount()) {
+            FragmentState fragmentState = new FragmentState(fragment);
+            Fragment.SavedState savedState = mFragmentManager.saveFragmentInstanceState(fragment);
+            if (savedState != null) {
+                fragmentState.mSavedFragmentState = savedState.mState;
+            }
+            mFragmentStates.set(position, fragmentState);
+            mFragments.set(position, null);
         }
-        FragmentState fragmentState = new FragmentState(fragment);
-        Fragment.SavedState savedState = mFragmentManager.saveFragmentInstanceState(fragment);
-        if (savedState != null) {
-            fragmentState.mSavedFragmentState = savedState.mState;
-        }
-        mFragmentStates.set(position, fragmentState);
-
-        mFragments.set(position, null);
         mCurTransaction.remove(fragment);
     }
 
@@ -172,9 +174,6 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
                 fragment.setUserVisibleHint(true);
             }
             mCurrentPrimaryItem = fragment;
-            // TODO
-            // Fix: Fragment didn't Re-Add.
-            fixActiveFragment(mFragmentManager,fragment);
         }
     }
 
@@ -184,6 +183,12 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             mCurTransaction.commitAllowingStateLoss();
             mCurTransaction = null;
             mFragmentManager.executePendingTransactions();
+            // Fix: Fragment is added by transaction. BUT didn't add to FragmentManager's mActive.
+            for (Fragment fragment : mFragments) {
+                if (fragment != null) {
+                    fixActiveFragment(mFragmentManager, fragment);
+                }
+            }
         }
     }
 
@@ -241,6 +246,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
                         mFragmentTags.add(null);
                         mFragmentClassNames.add(null);
                     }
+                    mFragments.add(null);
                 }
             }
             Iterable<String> keys = bundle.keySet();
@@ -249,9 +255,6 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
                     int index = Integer.parseInt(key.substring(1));
                     Fragment f = mFragmentManager.getFragment(bundle, key);
                     if (f != null) {
-                        while (mFragments.size() <= index) {
-                            mFragments.add(null);
-                        }
                         f.setMenuVisibility(false);
                         mFragments.set(index, f);
                         mFragmentArgs.set(index, f.mArguments);
@@ -266,7 +269,6 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
     }
 
     public static void fixActiveFragment(FragmentManager fragmentManager, Fragment fragment) {
-        // TODO 滑到第5個頁，再回到第4頁，進行replace fragment 回來，第3頁 class name 消失...
         FragmentManagerImpl fm = (FragmentManagerImpl) fragmentManager;
         if (fm.mActive != null) {
             int index = fragment.mIndex;
@@ -282,5 +284,21 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             }
             fm.mActive.set(index, fragment);
         }
+    }
+
+    // Fix
+    // http://stackoverflow.com/questions/10396321/remove-fragment-page-from-viewpager-in-android
+    @Override
+    public int getItemPosition(Object object) {
+        int index = mFragments.indexOf(object);
+        if (index < 0) {
+            return PagerAdapter.POSITION_NONE;
+        }
+        boolean isPositionChange = mTempPositionChange[index];
+        int result = PagerAdapter.POSITION_UNCHANGED;
+        if (isPositionChange) {
+            result = PagerAdapter.POSITION_NONE;
+        }
+        return result;
     }
 }
