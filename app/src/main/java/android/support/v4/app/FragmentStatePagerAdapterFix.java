@@ -98,29 +98,25 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
 
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
+        Fragment fragment;
         // If we already have this item instantiated, there is nothing
         // to do.  This can happen when we are restoring the entire pager
         // from its saved state, where the fragment manager has already
         // taken care of restoring the fragments we previously had instantiated.
-        if (mFragments.size() > position) {
-            Fragment f = mFragments.get(position);
-            if (f != null) {
-                return f;
-            }
+        fragment = mFragments.get(position);
+        if (fragment != null) {
+            return fragment;
         }
         if (mCurTransaction == null) {
             mCurTransaction = mFragmentManager.beginTransaction();
         }
-        Fragment fragment = null;
-        if (mFragmentStates.size() > position) {
-            FragmentState fs = mFragmentStates.get(position);
-            if (fs != null) {
-                fragment = fs.instantiate(getFragmentActivity(), getParentFragment());
-                // Fix bug
-                // http://stackoverflow.com/questions/11381470/classnotfoundexception-when-unmarshalling-android-support-v4-view-viewpagersav
-                if (fragment.mSavedFragmentState != null) {
-                    fragment.mSavedFragmentState.setClassLoader(fragment.getClass().getClassLoader());
-                }
+        FragmentState fs = mFragmentStates.get(position);
+        if (fs != null) {
+            fragment = fs.instantiate(getFragmentActivity(), getParentFragment());
+            // Fix bug
+            // http://stackoverflow.com/questions/11381470/classnotfoundexception-when-unmarshalling-android-support-v4-view-viewpagersav
+            if (fragment.mSavedFragmentState != null) {
+                fragment.mSavedFragmentState.setClassLoader(fragment.getClass().getClassLoader());
             }
         }
         if (fragment == null) {
@@ -134,14 +130,12 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
         mFragments.set(position, fragment);
         mFragmentStates.set(position, null);
         mCurTransaction.add(container.getId(), fragment, mFragmentTags.get(position));
-
         return fragment;
     }
 
     @Override
     public void destroyItem(ViewGroup container, int position, Object object) {
         Fragment fragment = (Fragment) object;
-
         if (mCurTransaction == null) {
             mCurTransaction = mFragmentManager.beginTransaction();
         }

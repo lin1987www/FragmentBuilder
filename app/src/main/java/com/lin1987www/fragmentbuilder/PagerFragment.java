@@ -41,12 +41,6 @@ public class PagerFragment extends FragmentFix {
         mPagerAdapter = new FragmentStatePagerAdapterFix(this);
         mPager.setAdapter(mPagerAdapter);
 
-        for (Class fragClass : mFragArray) {
-            String tag = fragClass.getSimpleName() + "_" + mPagerAdapter.getCount();
-            mPagerAdapter.add(fragClass, tag);
-        }
-        mPagerAdapter.notifyDataSetChanged();
-
         mAppendPageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -68,8 +62,18 @@ public class PagerFragment extends FragmentFix {
                 }
             }
         });
-
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mPagerAdapter.getCount() == 0) {
+            for (Class fragClass : mFragArray) {
+                String tag = fragClass.getSimpleName() + "_" + mPagerAdapter.getCount();
+                mPagerAdapter.add(fragClass, tag);
+            }
+            mPagerAdapter.notifyDataSetChanged();
+        }
+    }
 }
