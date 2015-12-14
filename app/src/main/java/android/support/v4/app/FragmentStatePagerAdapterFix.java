@@ -92,6 +92,14 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
         }
     }
 
+    public void clear(){
+        mFragments.clear();
+        mFragmentStates.clear();
+        mFragmentTags.clear();
+        mFragmentClassNames.clear();
+        mFragmentArgs.clear();
+    }
+
     @Override
     public void startUpdate(ViewGroup container) {
     }

@@ -12,6 +12,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import fix.java.util.concurrent.CatchRunnable;
 import fix.java.util.concurrent.CatchThreadFactory;
 import fix.java.util.concurrent.ScheduledExecutorFix;
 
@@ -67,6 +68,9 @@ public class ExecutorSet {
 
                         @Override
                         public void execute(Runnable runnable) {
+                            if (!(runnable instanceof CatchRunnable)) {
+                                runnable = new CatchRunnable(runnable);
+                            }
                             getMainThreadHandler().post(runnable);
                         }
                     };

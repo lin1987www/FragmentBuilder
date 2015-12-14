@@ -20,6 +20,7 @@ public class PagerFragment extends FragmentFix {
     FragmentStatePagerAdapterFix mPagerAdapter;
     Button mAppendPageButton;
     Button mRemoveLastPageButton;
+    Button mClearPageButton;
 
     Class<?>[] mFragArray = new Class[]{
             F1Fragment.class,
@@ -36,6 +37,8 @@ public class PagerFragment extends FragmentFix {
         mPager = (ViewPager) view.findViewById(R.id.pager);
         mAppendPageButton = (Button) view.findViewById(R.id.appendPageButton);
         mRemoveLastPageButton = (Button) view.findViewById(R.id.removeLastPageButton);
+        mClearPageButton = (Button) view.findViewById(R.id.clearPageButton);
+
         mPager.setOffscreenPageLimit(1);
 
         mPagerAdapter = new FragmentStatePagerAdapterFix(this);
@@ -62,6 +65,15 @@ public class PagerFragment extends FragmentFix {
                 }
             }
         });
+
+        mClearPageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPagerAdapter.clear();
+                mPagerAdapter.notifyDataSetChanged();
+            }
+        });
+
         return view;
     }
 
