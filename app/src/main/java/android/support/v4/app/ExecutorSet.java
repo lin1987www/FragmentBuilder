@@ -22,9 +22,9 @@ import fix.java.util.concurrent.ScheduledExecutorFix;
 public class ExecutorSet {
     private static Handler mMainThreadHandler = new Handler(Looper.getMainLooper());
 
-    public static Handler getMainThreadHandler() {
+    private static Handler getMainThreadHandler() {
         if (null == mMainThreadHandler) {
-            synchronized (TakeoutBuilder.class) {
+            synchronized (ExecutorSet.class) {
                 if (null == mMainThreadHandler) {
                     mMainThreadHandler = new Handler(Looper.getMainLooper());
                 }
@@ -37,7 +37,7 @@ public class ExecutorSet {
 
     private static ExecutorService getMainThreadExecutor() {
         if (mMainThreadExecutor == null) {
-            synchronized (TakeoutBuilder.class) {
+            synchronized (ExecutorSet.class) {
                 if (mMainThreadExecutor == null) {
                     mMainThreadExecutor = new AbstractExecutorService() {
                         @Override
@@ -80,12 +80,12 @@ public class ExecutorSet {
         return mMainThreadExecutor;
     }
 
-    public final static ThreadFactory blockExecutorThreadFactory = new CatchThreadFactory("blockExecutor");
-    public final static ThreadFactory nonBlockExecutorThreadFactory = new CatchThreadFactory("nobBlockExecutor");
+    private final static ThreadFactory blockExecutorThreadFactory = new CatchThreadFactory("Block Executor");
     public final static ScheduledExecutorFix blockExecutor = new ScheduledExecutorFix(4, blockExecutorThreadFactory);
+    private final static ThreadFactory nonBlockExecutorThreadFactory = new CatchThreadFactory("Non-Block Executor");
     public final static ExecutorService nonBlockExecutor = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
             60L, TimeUnit.SECONDS,
             new SynchronousQueue<Runnable>(), nonBlockExecutorThreadFactory);
-    public final static ExecutorService mainThreadExecutor = getMainThreadExecutor();
 
+    public final static ExecutorService mainThreadExecutor = getMainThreadExecutor();
 }

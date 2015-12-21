@@ -1,22 +1,16 @@
 package com.lin1987www.fragmentbuilder.api;
 
-import fix.java.util.concurrent.Take;
+import fix.java.util.concurrent.Duty;
 
 /**
- * Created by Administrator on 2015/7/14.
+ * Created by Administrator on 2015/12/17.
  */
-public class GetUser extends Take<GetUser> {
+public class GetUser extends Duty<Void> {
     public String userName;
 
     @Override
-    public GetUser take() throws Throwable {
+    public void doTask(Void context, Duty previousDuty) throws Throwable {
         Thread.sleep(500);
         userName = "John";
-        return this;
-    }
-
-    @Override
-    public boolean handleException(Throwable ex) {
-        return false;
     }
 }

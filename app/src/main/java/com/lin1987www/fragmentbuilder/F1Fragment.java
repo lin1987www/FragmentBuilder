@@ -3,6 +3,7 @@ package com.lin1987www.fragmentbuilder;
 import android.os.Bundle;
 import android.support.v4.app.FragmentBuilder;
 import android.support.v4.app.FragmentFix;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,7 +42,8 @@ public class F1Fragment extends FragmentFix {
                         .setFragment(F11Fragment.class, F11Fragment.class.getSimpleName())
                         .replace()
                         .addToBackStack(F11Fragment.BACK_STACK_NAME)
-                        .build();
+                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                .build();
             }
         });
         return view;

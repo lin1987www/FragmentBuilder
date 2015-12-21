@@ -1,6 +1,7 @@
 package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
+import android.support.v4.app.ExecutorSet;
 import android.support.v4.app.FragmentBuilder;
 import android.support.v4.app.FragmentFix;
 import android.view.LayoutInflater;
@@ -14,6 +15,8 @@ import android.widget.Toast;
 
 import com.lin1987www.fragmentbuilder.api.GetUser;
 
+import fix.java.util.concurrent.Duty;
+import fix.java.util.concurrent.DutyTo;
 import lin1987www.com.fragmentbuilder.R;
 
 /**
@@ -68,7 +71,9 @@ public class F11Fragment extends FragmentFix {
     @Override
     public void onResume() {
         super.onResume();
-        take(new GetUser()).onNonBlockThread().toMainThread().build();
+        Duty duty = new GetUser().setExecutorService(ExecutorSet.nonBlockExecutor);
+        duty.always(new DutyTo(this).setExecutorService(ExecutorSet.mainThreadExecutor));
+        duty(duty);
     }
 
     @Override
@@ -82,6 +87,10 @@ public class F11Fragment extends FragmentFix {
     }
 
     public void onTake(GetUser task) {
+        Toast.makeText(getActivity(), String.format("UserName: %s", task.userName), Toast.LENGTH_SHORT).show();
+    }
+
+    public void onDuty(GetUser task) {
         Toast.makeText(getActivity(), String.format("UserName: %s", task.userName), Toast.LENGTH_SHORT).show();
     }
 }

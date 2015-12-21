@@ -14,7 +14,7 @@ public class FragmentActivityFix extends FragmentActivity {
     public static boolean DEBUG = true;
     public final static String TAG = FragmentActivityFix.class.getSimpleName();
     public final static String key_startActivityFromFragmentPath = "key_startActivityFromFragmentPath";
-    protected final String ID = String.format("%s", toString());
+    protected final String FORMAT = String.format("%s %s", toString(), "%s");
 
     public boolean enableDoubleBackPressed = true;
     private String mStartActivityFromFragmentPath = null;
@@ -39,7 +39,7 @@ public class FragmentActivityFix extends FragmentActivity {
     @Override
     protected void onCreate(android.os.Bundle savedInstanceState) {
         if (DEBUG) {
-            Log.e(TAG, "onCreate " + ID);
+            Log.d(TAG, String.format(FORMAT, "onCreate"));
         }
         super.onCreate(savedInstanceState);
         ContextHelper.setFragmentActivity(this);
@@ -54,7 +54,7 @@ public class FragmentActivityFix extends FragmentActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (DEBUG) {
-            Log.e(TAG, "onActivityResult " + ID);
+            Log.d(TAG, String.format(FORMAT, "onActivityResult"));
         }
         super.onActivityResult(requestCode, resultCode, data);
         for (PuppetActivity puppetActivity : puppetActivities) {
@@ -71,7 +71,7 @@ public class FragmentActivityFix extends FragmentActivity {
     @Override
     protected void onRestart() {
         if (DEBUG) {
-            Log.e(TAG, "onRestart " + ID);
+            Log.d(TAG, String.format(FORMAT, "onRestart"));
         }
         super.onRestart();
         for (PuppetActivity puppetActivity : puppetActivities) {
@@ -82,7 +82,7 @@ public class FragmentActivityFix extends FragmentActivity {
     @Override
     protected void onStart() {
         if (DEBUG) {
-            Log.e(TAG, "onStart " + ID);
+            Log.d(TAG, String.format(FORMAT, "onStart"));
         }
         super.onStart();
         for (PuppetActivity puppetActivity : puppetActivities) {
@@ -93,7 +93,7 @@ public class FragmentActivityFix extends FragmentActivity {
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         if (DEBUG) {
-            Log.e(TAG, "onRestoreInstanceState " + ID);
+            Log.d(TAG, String.format(FORMAT, "onRestoreInstanceState"));
         }
         super.onRestoreInstanceState(savedInstanceState);
         if (null != savedInstanceState) {
@@ -104,7 +104,7 @@ public class FragmentActivityFix extends FragmentActivity {
     @Override
     protected void onResume() {
         if (DEBUG) {
-            Log.e(TAG, "onResume " + ID);
+            Log.d(TAG, String.format(FORMAT, "onResume"));
         }
         super.onResume();
         for (PuppetActivity puppetActivity : puppetActivities) {
@@ -115,7 +115,7 @@ public class FragmentActivityFix extends FragmentActivity {
     @Override
     protected void onPause() {
         if (DEBUG) {
-            Log.e(TAG, "onPause " + ID);
+            Log.d(TAG, String.format(FORMAT, "onPause"));
         }
         super.onPause();
         for (PuppetActivity puppetActivity : puppetActivities) {
@@ -126,7 +126,7 @@ public class FragmentActivityFix extends FragmentActivity {
     @Override
     protected void onSaveInstanceState(android.os.Bundle outState) {
         if (DEBUG) {
-            Log.e(TAG, "onSaveInstanceState " + ID);
+            Log.d(TAG, String.format(FORMAT, "onSaveInstanceState"));
         }
         super.onSaveInstanceState(outState);
         for (PuppetActivity puppetActivity : puppetActivities) {
@@ -140,7 +140,7 @@ public class FragmentActivityFix extends FragmentActivity {
     @Override
     protected void onStop() {
         if (DEBUG) {
-            Log.e(TAG, "onStop " + ID);
+            Log.d(TAG, String.format(FORMAT, "onStop"));
         }
         super.onStop();
         for (PuppetActivity puppetActivity : puppetActivities) {
@@ -151,7 +151,7 @@ public class FragmentActivityFix extends FragmentActivity {
     @Override
     protected void onDestroy() {
         if (DEBUG) {
-            Log.e(TAG, "onDestroy " + ID);
+            Log.d(TAG, String.format(FORMAT, "onDestroy"));
         }
         super.onDestroy();
         for (PuppetActivity puppetActivity : puppetActivities) {

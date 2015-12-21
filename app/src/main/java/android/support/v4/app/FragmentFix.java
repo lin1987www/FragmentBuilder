@@ -2,7 +2,6 @@ package android.support.v4.app;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcel;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,10 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import fix.java.util.concurrent.Duty;
 import fix.java.util.concurrent.ExceptionHelper;
-import fix.java.util.concurrent.Take;
-import fix.java.util.concurrent.TakeWrap;
-import fix.java.util.concurrent.Takeout;
 
 
 /**
@@ -30,11 +27,10 @@ public class FragmentFix extends Fragment {
     public static boolean DEBUG = true;
     public final static String TAG = FragmentFix.class.getSimpleName();
     public final static String key_startActivityFromViewId = "key_startActivityFromViewId";
-    protected final String ID = String.format("%s", toString());
+    protected final String FORMAT = String.format("%s %s", toString(), "%s");
 
-    protected ArrayList<Take<?>> mTakeList = new ArrayList<>();
-    protected ArrayList<Takeout.OutTaker> mTakeoutList = new ArrayList<>();
-    protected final AtomicBoolean mIsAnim = new AtomicBoolean();
+    protected ArrayList<Duty<?>> mDutyList = new ArrayList<>();
+    protected final AtomicBoolean mIsEnterAnim = new AtomicBoolean();
 
     protected int mStartActivityFromViewId = 0;
     protected FragmentArgs mFragmentArgs;
@@ -42,32 +38,17 @@ public class FragmentFix extends Fragment {
 
     private boolean mHasResumed = false;
 
-    boolean afterAnimTakeout(Takeout.OutTaker outTaker) {
-        if (mIsAnim.get()) {
-            synchronized (this) {
-                mTakeoutList.add(outTaker);
-            }
-            return true;
-        } else {
-            if (getParentFragment() instanceof FragmentFix) {
-                return ((FragmentFix) getParentFragment()).afterAnimTakeout(outTaker);
-            }
-            return false;
-        }
-    }
-
     protected void prepareAnim() {
-        mIsAnim.set(true);
+        mIsEnterAnim.set(true);
     }
 
     protected void endAnim() {
-        mIsAnim.set(false);
-        if (mTakeoutList.size() > 0) {
-            synchronized (this) {
-                for (Takeout.OutTaker outTaker : mTakeoutList) {
-                    outTaker.run();
+        mIsEnterAnim.set(false);
+        if (mDutyList.size() > 0) {
+            for (Duty duty : mDutyList) {
+                if (!duty.isSubmitted()) {
+                    duty.submit();
                 }
-                mTakeoutList.clear();
             }
         }
     }
@@ -86,6 +67,9 @@ public class FragmentFix extends Fragment {
 
     @Override
     public Animation onCreateAnimation(int transit, boolean enter, int nextAnim) {
+        if (DEBUG) {
+            Log.d(TAG, String.format(FORMAT, "onCreateAnimation"));
+        }
         Animation anim = null;
         if (anim == null) {
             // Use customs
@@ -113,17 +97,15 @@ public class FragmentFix extends Fragment {
                             break;
                         case FragmentManagerImpl.ANIM_STYLE_FADE_ENTER:
                             //anim = FragmentManagerImpl.makeFadeAnimation(mActivity, 0, 1);
-                            // TODO 效果進行測試
                             anim = new AlphaAnimation(0, 1);
                             anim.setInterpolator(FragmentManagerImpl.DECELERATE_CUBIC);
-                            anim.setDuration(3000);
+                            anim.setDuration(220);
                             break;
                         case FragmentManagerImpl.ANIM_STYLE_FADE_EXIT:
                             //anim = FragmentManagerImpl.makeFadeAnimation(mActivity, 1, 0);
-                            // TODO 效果進行測試
                             anim = new AlphaAnimation(1, 0);
                             anim.setInterpolator(FragmentManagerImpl.DECELERATE_CUBIC);
-                            anim.setDuration(3000);
+                            anim.setDuration(220);
                             break;
                     }
                 }
@@ -134,18 +116,22 @@ public class FragmentFix extends Fragment {
             mFragmentAnimListener = new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
-
+                    if (DEBUG) {
+                        Log.d(TAG, String.format(FORMAT, "onAnimationStart"));
+                    }
                 }
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
+                    if (DEBUG) {
+                        Log.d(TAG, String.format(FORMAT, "onAnimationEnd"));
+                    }
                     endAnim();
                     mFragmentAnimListener = null;
                 }
 
                 @Override
                 public void onAnimationRepeat(Animation animation) {
-
                 }
             };
             anim.setAnimationListener(mFragmentAnimListener);
@@ -157,16 +143,15 @@ public class FragmentFix extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         if (DEBUG) {
-            Log.e(TAG, "onCreate " + ID);
+            Log.d(TAG, String.format(FORMAT, "onCreate"));
         }
-        FragmentState.CREATOR.createFromParcel(null);
         return null;
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (DEBUG) {
-            Log.e(TAG, "onActivityResult " + ID);
+            Log.d(TAG, String.format(FORMAT, "onActivityResult"));
         }
         if (0 != mStartActivityFromViewId) {
             View view = getView().findViewById(mStartActivityFromViewId);
@@ -178,7 +163,7 @@ public class FragmentFix extends Fragment {
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         if (DEBUG && null != savedInstanceState) {
-            Log.e(TAG, "onViewStateRestored " + ID);
+            Log.d(TAG, String.format(FORMAT, "onViewStateRestored"));
         }
         super.onViewStateRestored(savedInstanceState);
         if (null != savedInstanceState) {
@@ -189,7 +174,7 @@ public class FragmentFix extends Fragment {
     @Override
     public void onStart() {
         if (DEBUG) {
-            Log.e(TAG, "onStart " + ID);
+            Log.d(TAG, String.format(FORMAT, "onStart"));
         }
         super.onStart();
     }
@@ -197,7 +182,7 @@ public class FragmentFix extends Fragment {
     @Override
     public void onResume() {
         if (DEBUG) {
-            Log.e(TAG, String.format("onResume %s", ID));
+            Log.d(TAG, String.format(FORMAT, "onResume"));
         }
         super.onResume();
         // 更新畫面的一切行為
@@ -206,17 +191,17 @@ public class FragmentFix extends Fragment {
     @Override
     public void onPause() {
         if (DEBUG) {
-            Log.e(TAG, "onPause " + ID);
+            Log.d(TAG, String.format(FORMAT, "onPause"));
         }
         mHasResumed = false;
-        if (mTakeList.size() > 0) {
+        if (mDutyList.size() > 0) {
             // Cancel all take
-            for (Take<?> take : mTakeList) {
-                take.cancel();
+            for (Duty<?> duty : mDutyList) {
+                duty.cancel();
             }
-            mTakeList.clear();
+            mDutyList.clear();
             if (DEBUG) {
-                Log.e(TAG, "clear Take.");
+                Log.d(TAG, String.format(FORMAT, "clear Duty."));
             }
         }
         super.onPause();
@@ -225,7 +210,7 @@ public class FragmentFix extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         if (DEBUG) {
-            Log.e(TAG, "onSaveInstanceState " + ID);
+            Log.d(TAG, String.format(FORMAT, "onSaveInstanceState"));
         }
         super.onSaveInstanceState(outState);
         if (0 != mStartActivityFromViewId) {
@@ -236,7 +221,7 @@ public class FragmentFix extends Fragment {
     @Override
     public void onDestroyView() {
         if (DEBUG) {
-            Log.e(TAG, "onDestroyView " + ID);
+            Log.d(TAG, String.format(FORMAT, "onDestroyView"));
         }
         super.onDestroyView();
     }
@@ -252,7 +237,7 @@ public class FragmentFix extends Fragment {
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         if (DEBUG) {
-            Log.e(TAG, String.format("setUserVisibleHint %s %s -> %s", ID, getUserVisibleHint(), isVisibleToUser));
+            Log.d(TAG, String.format(FORMAT, String.format("setUserVisibleHint %s -> %s", getUserVisibleHint(), isVisibleToUser)));
         }
         boolean lastUserVisibleHint = getUserVisibleHint();
         super.setUserVisibleHint(isVisibleToUser);
@@ -261,38 +246,34 @@ public class FragmentFix extends Fragment {
         }
     }
 
-    void doResume() {
-        take(new Take() {
-            @Override
-            public boolean handleException(Throwable ex) {
-                return false;
-            }
-
-            @Override
-            public Object take() throws Throwable {
-                if (!mHasResumed) {
-                    mHasResumed = true;
-                    ////// origin start
-                    mCalled = false;
-                    onResume();
-                    if (!mCalled) {
-                        throw new SuperNotCalledException("Fragment " + this
-                                + " did not call through to super.onResume()");
-                    }
-                    ////// origin end
-                    // child fragment resume
-                    List<Fragment> children = getChildFragmentManager().getFragments();
-                    if (children != null) {
-                        for (Fragment f : children) {
-                            if (f instanceof FragmentFix) {
-                                ((FragmentFix) f).doResume();
-                            }
+    Duty mDoResumeDuty = new Duty() {
+        @Override
+        public void doTask(Object context, Duty previousDuty) throws Throwable {
+            if (!mHasResumed) {
+                mHasResumed = true;
+                ////// origin start
+                mCalled = false;
+                onResume();
+                if (!mCalled) {
+                    throw new SuperNotCalledException("Fragment " + this
+                            + " did not call through to super.onResume()");
+                }
+                ////// origin end
+                // child fragment resume
+                List<Fragment> children = getChildFragmentManager().getFragments();
+                if (children != null) {
+                    for (Fragment f : children) {
+                        if (f instanceof FragmentFix) {
+                            ((FragmentFix) f).doResume();
                         }
                     }
                 }
-                return this;
             }
-        }).onMainThread().toMainThread().build();
+        }
+    }.setExecutorService(ExecutorSet.mainThreadExecutor);
+
+    void doResume() {
+        duty(mDoResumeDuty);
     }
 
     @Override
@@ -303,12 +284,11 @@ public class FragmentFix extends Fragment {
         }
         if (getFragmentArgs().consumePopOnResume()) {
             if (DEBUG) {
-                Log.e(TAG, String.format("Consume OnResume. %s", ID));
+                Log.d(TAG, String.format(FORMAT, "Consume PopOnResume"));
             }
-
         } else if (!FragmentUtils.getUserVisibleHintAllParent(this)) {
             if (DEBUG) {
-                Log.e(TAG, String.format("Skip OnResume. %s getUserVisibleHintAllParent() is false.", ID));
+                Log.d(TAG, String.format(FORMAT, "Skip OnResume. getUserVisibleHintAllParent() is false."));
             }
         } else {
             doResume();
@@ -317,27 +297,6 @@ public class FragmentFix extends Fragment {
             mChildFragmentManager.dispatchResume();
             mChildFragmentManager.execPendingActions();
         }
-    }
-
-    public TakeoutBuilder take(Take<?> take) {
-        return take(new TakeWrap<Take<?>>(take));
-    }
-
-    public TakeoutBuilder take(TakeWrap<Take<?>> takeWrap) {
-        TakeoutBuilder builder = TakeoutBuilder.create(this, takeWrap, this);
-        mTakeList.add(takeWrap.getTask());
-        return builder;
-    }
-
-    public static TakeoutBuilder take(Take<?> take, View view) {
-        return take(new TakeWrap<Take<?>>(take), view);
-    }
-
-    public static TakeoutBuilder take(TakeWrap<Take<?>> takeWrap, View view) {
-        FragmentFix fragmentFix = (FragmentFix) FragmentBuilder.FragmentPath.findFragmentByView(view);
-        TakeoutBuilder builder = TakeoutBuilder.create(view, takeWrap, fragmentFix);
-        fragmentFix.mTakeList.add(takeWrap.getTask());
-        return builder;
     }
 
     public void startActivityFromFragment(View view, Intent intent,
@@ -370,5 +329,17 @@ public class FragmentFix extends Fragment {
                 System.err.println(String.format("Miss onActivityResult() on %s throwable:\n%s", view, ExceptionHelper.getPrintStackTraceString(ex)));
             }
         }
+    }
+
+    public void duty(Duty duty) {
+        mDutyList.add(duty);
+        if (!mIsEnterAnim.get()) {
+            duty.submit();
+        }
+    }
+
+    public static void duty(Duty duty, View view) {
+        FragmentFix fragmentFix = (FragmentFix) FragmentBuilder.FragmentPath.findFragmentByView(view);
+        fragmentFix.duty(duty);
     }
 }

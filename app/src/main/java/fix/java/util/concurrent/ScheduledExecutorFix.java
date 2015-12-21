@@ -13,18 +13,28 @@ import java.util.concurrent.TimeUnit;
 public class ScheduledExecutorFix extends ScheduledThreadPoolExecutor {
     public ScheduledExecutorFix(int corePoolSize) {
         super(corePoolSize);
+        check(corePoolSize);
     }
 
     public ScheduledExecutorFix(int corePoolSize, ThreadFactory threadFactory) {
         super(corePoolSize, threadFactory);
+        check(corePoolSize);
     }
 
     public ScheduledExecutorFix(int corePoolSize, RejectedExecutionHandler handler) {
         super(corePoolSize, handler);
+        check(corePoolSize);
     }
 
     public ScheduledExecutorFix(int corePoolSize, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
         super(corePoolSize, threadFactory, handler);
+        check(corePoolSize);
+    }
+
+    private void check(int corePoolSize) {
+        if(corePoolSize<=0){
+            throw new RuntimeException("ScheduledExecutorFix corePoolSize can't be less or equals 0.");
+        }
     }
 
     @Override
