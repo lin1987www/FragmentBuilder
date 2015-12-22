@@ -8,8 +8,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * 消除非同步，使得每件事情在不同的Executor裡面執行。
- * 如果遇到使用者非同步的操作，則依賴Fragment做反應。
+ * 使得每件事情在不同的Executor裡面執行。
+ * 如果使用 非同步，則由其他的Thread去觸發 done 或 fail 。
+ * 支援 Async
  * 參考 https://api.jquery.com/category/deferred-object/
  * <p/>
  * Created by Administrator on 2015/12/16.
@@ -21,6 +22,7 @@ public abstract class Duty<T> implements Callable<Duty<T>> {
     protected T mContext;
 
     // 必須等待使用者回應的操作，則附著在Fragment上，等使用者回應後，在Submit出去
+    protected boolean mIsAsync = false;
     protected boolean mIsRan = false;
     protected AtomicBoolean mIsFinished = new AtomicBoolean(false);
     protected boolean mIsDone = false;
@@ -61,6 +63,11 @@ public abstract class Duty<T> implements Callable<Duty<T>> {
 
     public Duty<T> setContext(T context) {
         this.mContext = context;
+        return this;
+    }
+
+    public Duty<T> setAsync(boolean isAsync) {
+        mIsAsync = isAsync;
         return this;
     }
 
@@ -108,6 +115,14 @@ public abstract class Duty<T> implements Callable<Duty<T>> {
         return mSubmitTimeMillis != 0;
     }
 
+    public boolean isSync() {
+        return !mIsAsync;
+    }
+
+    public boolean isAsync() {
+        return mIsAsync;
+    }
+
     public boolean isRan() {
         return mIsRan;
     }
@@ -140,7 +155,7 @@ public abstract class Duty<T> implements Callable<Duty<T>> {
         mIsCancelled = true;
     }
 
-    protected void done() {
+    public void done() {
         mIsFinished.set(true);
         mStopTimeMillis = System.currentTimeMillis();
         onPostExecute();
@@ -152,7 +167,7 @@ public abstract class Duty<T> implements Callable<Duty<T>> {
         always();
     }
 
-    protected void fail(Throwable ex) {
+    public void fail(Throwable ex) {
         setThrowable(ex);
         mIsFinished.set(true);
         mStopTimeMillis = System.currentTimeMillis();
@@ -232,16 +247,23 @@ public abstract class Duty<T> implements Callable<Duty<T>> {
                 onPreExecute();
                 if (!isCancelled()) {
                     doTask(getContext(), getPreviousDuty());
-                    done();
+                    if (isSync()) {
+                        done();
+                    }
                 } else {
                     always();
                 }
             } catch (Throwable ex) {
-                if (null == handleThrowable(ex)) {
-                    continue;
+                if (!isCancelled()) {
+                    if (null == handleThrowable(ex)) {
+                        continue;
+                    } else {
+                        ExceptionHelper.printException(this.toString(), ex);
+                        fail(ex);
+                    }
                 } else {
-                    ExceptionHelper.printException(this.toString(), ex);
-                    fail(ex);
+                    setThrowable(ex);
+                    always();
                 }
             }
             break;
