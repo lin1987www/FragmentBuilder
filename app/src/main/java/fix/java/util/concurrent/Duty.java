@@ -159,7 +159,7 @@ public abstract class Duty<T> implements Callable<Duty<T>> {
         mIsFinished.set(true);
         mStopTimeMillis = System.currentTimeMillis();
         onPostExecute();
-        if (mDoneDutyList != null) {
+        if (!isCancelled() && mDoneDutyList != null) {
             for (Duty duty : mDoneDutyList) {
                 duty.submit(this);
             }
@@ -172,7 +172,7 @@ public abstract class Duty<T> implements Callable<Duty<T>> {
         mIsFinished.set(true);
         mStopTimeMillis = System.currentTimeMillis();
         onPostExecute();
-        if (mFailDutyList != null) {
+        if (!isCancelled() && mFailDutyList != null) {
             for (Duty duty : mFailDutyList) {
                 duty.submit(this);
             }
