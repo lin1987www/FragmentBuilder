@@ -70,7 +70,7 @@ A -> B -> C
 
 then onBackPressed C is popped out from FragmentManager's back stack. B will receive C by onPopFragment().
 
-A -> B<-(C)
+A -> B <-(C)
 
 then onBackPressed B is popped out from FragmentManager's back stack. A will receive B by onPopFragment().
 
@@ -78,9 +78,9 @@ A <-(B)
 
 ##### When C use back() case:
 
-A <-(C) <-(B) 
+A <-(B) <-(C)
 
-C refer B's setting and pass to A
+C refer B's setting and pass to A, so A will receive C and B.
 
 
 #### PreAction reset()
