@@ -136,19 +136,15 @@ public abstract class Duty<T> implements Callable<Duty<T>> {
     }
 
     public boolean isCancelled() {
-        return mIsCancelled;
-    }
-
-    public boolean isCancelledCast() {
-        if (isCancelled()) {
-            return true;
-        }
-        if (getPreviousDuty() != null) {
-            if (getPreviousDuty().isCancelledCast()) {
-                return true;
+        boolean isCancelled = false;
+        if (mIsCancelled) {
+            isCancelled = true;
+        } else if (getPreviousDuty() != null) {
+            if (getPreviousDuty().isCancelled()) {
+                isCancelled = true;
             }
         }
-        return false;
+        return isCancelled;
     }
 
     public void cancel() {
@@ -186,7 +182,7 @@ public abstract class Duty<T> implements Callable<Duty<T>> {
             mStopTimeMillis = System.currentTimeMillis();
             onPostExecute();
         }
-        if (mAlwaysDutyList != null) {
+        if (!isCancelled() && mAlwaysDutyList != null) {
             for (Duty duty : mAlwaysDutyList) {
                 duty.submit(this);
             }
@@ -242,9 +238,9 @@ public abstract class Duty<T> implements Callable<Duty<T>> {
     public Duty<T> call() throws Exception {
         mIsRan = true;
         mStartTimeMillis = System.currentTimeMillis();
+        onPreExecute();
         while (true) {
             try {
-                onPreExecute();
                 if (!isCancelled()) {
                     doTask(getContext(), getPreviousDuty());
                     if (isSync()) {
