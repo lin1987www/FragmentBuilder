@@ -6,12 +6,12 @@ import java.lang.reflect.Method;
 /**
  * Created by Administrator on 2015/12/17.
  */
-public class DutyTo extends Duty<Void> {
+public class DutyOn extends Duty<Void> {
     public static boolean DEBUG = true;
 
     private WeakReference<Object> mWrTarget;
 
-    public DutyTo(Object target) {
+    public DutyOn(Object target) {
         mWrTarget = new WeakReference<>(target);
     }
 

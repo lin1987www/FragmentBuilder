@@ -16,7 +16,7 @@ import android.widget.Toast;
 import com.lin1987www.fragmentbuilder.api.GetUser;
 
 import fix.java.util.concurrent.Duty;
-import fix.java.util.concurrent.DutyTo;
+import fix.java.util.concurrent.DutyOn;
 import lin1987www.com.fragmentbuilder.R;
 
 /**
@@ -72,7 +72,7 @@ public class F11Fragment extends FragmentFix {
     public void onResume() {
         super.onResume();
         Duty duty = new GetUser().setExecutorService(ExecutorSet.nonBlockExecutor);
-        duty.always(new DutyTo(this).setExecutorService(ExecutorSet.mainThreadExecutor));
+        duty.always(new DutyOn(this).setExecutorService(ExecutorSet.mainThreadExecutor));
         duty(duty);
     }
 
