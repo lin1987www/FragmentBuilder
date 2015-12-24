@@ -66,6 +66,11 @@ public abstract class Duty<T> implements Callable<Duty<T>> {
         return this;
     }
 
+    public Duty<T> setPreviousDuty(Duty duty) {
+        this.mPreviousDuty = duty;
+        return this;
+    }
+
     public Duty<T> setAsync(boolean isAsync) {
         mIsAsync = isAsync;
         return this;
@@ -206,7 +211,7 @@ public abstract class Duty<T> implements Callable<Duty<T>> {
         if (es != null) {
             init();
             mSubmitTimeMillis = System.currentTimeMillis();
-            mPreviousDuty = previousDuty;
+            setPreviousDuty(previousDuty);
             es.submit(this);
         } else {
             if (DEBUG) {
