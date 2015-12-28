@@ -224,6 +224,11 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             FragmentState[] fs = new FragmentState[mFragmentStates.size()];
             mFragmentStates.toArray(fs);
             state.putParcelableArray("states_fragment", fs);
+            Bundle[] args = new Bundle[mFragmentArgs.size()];
+            mFragmentArgs.toArray(args);
+            state.putParcelableArray("arg_fragment", args);
+            state.putStringArrayList("tag_fragment", mFragmentTags);
+            state.putStringArrayList("classname_fragment", mFragmentClassNames);
         }
         return state;
     }
@@ -234,6 +239,10 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             Bundle bundle = (Bundle) state;
             bundle.setClassLoader(loader);
             Parcelable[] fs = bundle.getParcelableArray("states_fragment");
+            Bundle[] args = (Bundle[]) bundle.getParcelableArray("arg_fragment");
+            ArrayList<String> tags = bundle.getStringArrayList("tag_fragment");
+            ArrayList<String> classNames = bundle.getStringArrayList("classname_fragment");
+
             mFragments.clear();
             mFragmentStates.clear();
             mFragmentTags.clear();
@@ -248,9 +257,9 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
                         mFragmentTags.add(fragmentState.mTag);
                         mFragmentClassNames.add(fragmentState.mClassName);
                     } else {
-                        mFragmentArgs.add(null);
-                        mFragmentTags.add(null);
-                        mFragmentClassNames.add(null);
+                        mFragmentArgs.add(args[i]);
+                        mFragmentTags.add(tags.get(i));
+                        mFragmentClassNames.add(classNames.get(i));
                     }
                     mFragments.add(null);
                 }
@@ -284,9 +293,9 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             if (origin != null) {
                 if ((origin.mIndex != fragment.mIndex) || !(origin.equals(fragment))) {
                     Log.e(TAG,
-                            String.format("fixActiveFragment: Not Equal! Origin: %s %s, Fragment: %s $s",
-                                    origin.getClass().getName(), origin.mIndex,
-                                    fragment.getClass().getName(), fragment.mIndex
+                            String.format("fixActiveFragment: Not Equal! Origin: %s %s, Fragment: %s %s",
+                                    origin.toString(), origin.mIndex,
+                                    fragment.toString(), fragment.mIndex
                             ));
                 }
             }

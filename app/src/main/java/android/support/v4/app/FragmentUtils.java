@@ -89,8 +89,11 @@ public class FragmentUtils {
     */
 
     public static FragmentActivity getFragmentManagerActivity(FragmentManager fragmentManager) {
-        FragmentManagerImpl fm = (FragmentManagerImpl) fragmentManager;
-        return (FragmentActivity) fm.mHost.mContext;
+        FragmentHostCallback hostCallback = getFragmentHostCallback(fragmentManager);
+        if (hostCallback == null) {
+            return null;
+        }
+        return (FragmentActivity) hostCallback.mContext;
     }
 
     public static FragmentHostCallback getFragmentHostCallback(FragmentManager fragmentManager) {
