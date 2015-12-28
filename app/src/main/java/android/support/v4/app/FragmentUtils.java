@@ -80,9 +80,22 @@ public class FragmentUtils {
         }
     }
 
+    // SDK 22.0.1
+    /*
     public static FragmentActivity getFragmentManagerActivity(FragmentManager fragmentManager) {
         FragmentManagerImpl fm = (FragmentManagerImpl) fragmentManager;
         return fm.mActivity;
+    }
+    */
+
+    public static FragmentActivity getFragmentManagerActivity(FragmentManager fragmentManager) {
+        FragmentManagerImpl fm = (FragmentManagerImpl) fragmentManager;
+        return (FragmentActivity) fm.mHost.mContext;
+    }
+
+    public static FragmentHostCallback getFragmentHostCallback(FragmentManager fragmentManager) {
+        FragmentManagerImpl fm = (FragmentManagerImpl) fragmentManager;
+        return fm.mHost;
     }
 
     public static boolean isFragmentAvailable(View view) {

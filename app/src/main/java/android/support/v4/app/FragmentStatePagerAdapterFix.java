@@ -92,7 +92,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
         }
     }
 
-    public void clear(){
+    public void clear() {
         mFragments.clear();
         mFragmentStates.clear();
         mFragmentTags.clear();
@@ -120,7 +120,11 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
         }
         FragmentState fs = mFragmentStates.get(position);
         if (fs != null) {
-            fragment = fs.instantiate(getFragmentActivity(), getParentFragment());
+            FragmentManager fragmentManager = getFragmentActivity().getSupportFragmentManager();
+            if (getParentFragment() != null) {
+                fragmentManager = getParentFragment().getChildFragmentManager();
+            }
+            fragment = fs.instantiate(FragmentUtils.getFragmentHostCallback(fragmentManager), getParentFragment());
             // Fix bug
             // http://stackoverflow.com/questions/11381470/classnotfoundexception-when-unmarshalling-android-support-v4-view-viewpagersav
             if (fragment.mSavedFragmentState != null) {

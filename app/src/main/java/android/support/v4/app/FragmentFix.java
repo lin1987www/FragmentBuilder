@@ -74,7 +74,7 @@ public class FragmentFix extends Fragment {
         if (anim == null) {
             // Use customs
             if (mNextAnim != 0) {
-                anim = AnimationUtils.loadAnimation(mActivity, mNextAnim);
+                anim = AnimationUtils.loadAnimation(getActivity(), mNextAnim);
             }
         }
         if (anim == null) {
@@ -84,25 +84,25 @@ public class FragmentFix extends Fragment {
                 if (styleIndex >= 0) {
                     switch (styleIndex) {
                         case FragmentManagerImpl.ANIM_STYLE_OPEN_ENTER:
-                            anim = FragmentManagerImpl.makeOpenCloseAnimation(mActivity, 1.125f, 1.0f, 0, 1);
+                            anim = FragmentManagerImpl.makeOpenCloseAnimation(getActivity(), 1.125f, 1.0f, 0, 1);
                             break;
                         case FragmentManagerImpl.ANIM_STYLE_OPEN_EXIT:
-                            anim = FragmentManagerImpl.makeOpenCloseAnimation(mActivity, 1.0f, .975f, 1, 0);
+                            anim = FragmentManagerImpl.makeOpenCloseAnimation(getActivity(), 1.0f, .975f, 1, 0);
                             break;
                         case FragmentManagerImpl.ANIM_STYLE_CLOSE_ENTER:
-                            anim = FragmentManagerImpl.makeOpenCloseAnimation(mActivity, .975f, 1.0f, 0, 1);
+                            anim = FragmentManagerImpl.makeOpenCloseAnimation(getActivity(), .975f, 1.0f, 0, 1);
                             break;
                         case FragmentManagerImpl.ANIM_STYLE_CLOSE_EXIT:
-                            anim = FragmentManagerImpl.makeOpenCloseAnimation(mActivity, 1.0f, 1.075f, 1, 0);
+                            anim = FragmentManagerImpl.makeOpenCloseAnimation(getActivity(), 1.0f, 1.075f, 1, 0);
                             break;
                         case FragmentManagerImpl.ANIM_STYLE_FADE_ENTER:
-                            //anim = FragmentManagerImpl.makeFadeAnimation(mActivity, 0, 1);
+                            //anim = FragmentManagerImpl.makeFadeAnimation(getActivity(), 0, 1);
                             anim = new AlphaAnimation(0, 1);
                             anim.setInterpolator(FragmentManagerImpl.DECELERATE_CUBIC);
                             anim.setDuration(220);
                             break;
                         case FragmentManagerImpl.ANIM_STYLE_FADE_EXIT:
-                            //anim = FragmentManagerImpl.makeFadeAnimation(mActivity, 1, 0);
+                            //anim = FragmentManagerImpl.makeFadeAnimation(getActivity(), 1, 0);
                             anim = new AlphaAnimation(1, 0);
                             anim.setInterpolator(FragmentManagerImpl.DECELERATE_CUBIC);
                             anim.setDuration(220);
