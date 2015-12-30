@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">commonLibrary</string>
+    <string name="app_msg_loading">Loading</string>
+</resources>

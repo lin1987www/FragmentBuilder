@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/FragmentBuilder.iml" filepath="$PROJECT_DIR$/FragmentBuilder.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/commonLibrary/commonLibrary.iml" filepath="$PROJECT_DIR$/commonLibrary/commonLibrary.iml" />
     </modules>
   </component>
 </project>
