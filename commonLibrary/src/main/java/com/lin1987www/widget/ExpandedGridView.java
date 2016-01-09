@@ -9,7 +9,11 @@ import android.widget.GridView;
 /**
  * Created by Administrator on 2015/4/21.
  */
-public class ExpandedGridView extends GridView{
+public class ExpandedGridView extends GridView {
+    private final static String KEY_expanded = "KEY_expanded";
+    private final static String KEY_numColumns = "KEY_numColumns";
+
+    int numColumns = GridView.AUTO_FIT;
     boolean expanded = false;
     private ExpandedAbsListViewKeeper expandedViewGroupKeeper;
 
@@ -23,6 +27,12 @@ public class ExpandedGridView extends GridView{
 
     public ExpandedGridView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+    }
+
+    @Override
+    public void setNumColumns(int numColumns) {
+        this.numColumns = numColumns;
+        super.setNumColumns(numColumns);
     }
 
     public boolean isExpanded() {
@@ -59,9 +69,11 @@ public class ExpandedGridView extends GridView{
     @Override
     public android.os.Parcelable onSaveInstanceState() {
         expandedViewGroupKeeper = new ExpandedAbsListViewKeeper();
-        expandedViewGroupKeeper.onSaveInstanceState(this,super.onSaveInstanceState());
+        expandedViewGroupKeeper.onSaveInstanceState(this, super.onSaveInstanceState());
         Bundle bundle = expandedViewGroupKeeper.bundle;
         // save bundle
+        bundle.putBoolean(KEY_expanded, expanded);
+        bundle.putInt(KEY_numColumns, numColumns);
         return bundle;
     }
 
@@ -74,6 +86,8 @@ public class ExpandedGridView extends GridView{
             expandedViewGroupKeeper = new ExpandedAbsListViewKeeper(state);
             Bundle bundle = expandedViewGroupKeeper.bundle;
             // restore bundle
+            expanded = bundle.getBoolean(KEY_expanded);
+            setNumColumns(bundle.getInt(KEY_numColumns));
         }
         super.onRestoreInstanceState(expandedViewGroupKeeper.getAbsListViewState());
     }

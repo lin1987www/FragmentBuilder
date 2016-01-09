@@ -157,6 +157,7 @@ public abstract class Duty<T> implements Callable<Duty<T>> {
     }
 
     public void done() {
+        mIsDone = true;
         mIsFinished.set(true);
         mStopTimeMillis = System.currentTimeMillis();
         onPostExecute();

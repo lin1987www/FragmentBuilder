@@ -481,7 +481,13 @@ public class FragmentBuilder {
         }
         // Animation setting
         setAnimations(ft);
-        if (Action.replace == action) {
+        if (Action.add == action) {
+            if (containerFragment != null) {
+                if (isTraceable()) {
+                    ft.detach(containerFragment);
+                }
+            }
+        } else if (Action.replace == action) {
             // Affect containerFragment.
             if (containerFragment != null) {
                 if (isTraceable()) {

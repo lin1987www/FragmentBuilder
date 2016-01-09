@@ -5,6 +5,7 @@ import android.database.DataSetObservable;
 import android.database.DataSetObserver;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ListAdapter;
 
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.List;
 /**
  * Created by Administrator on 2015/5/22.
  */
-public class ViewHolderAdapter<T, VH extends ViewHolder<T>> implements ListAdapter {
+public class ViewHolderAdapter<T, VH extends ViewHolder<T>> implements ListAdapter, AbsListView.OnScrollListener {
     private final PageArrayList<T> mPageArrayList = new PageArrayList<T>();
     private final DataSetObservable mDataSetObservable = new DataSetObservable();
     private final VH mViewHolder;
@@ -110,5 +111,40 @@ public class ViewHolderAdapter<T, VH extends ViewHolder<T>> implements ListAdapt
     @Override
     public boolean isEnabled(int position) {
         return true;
+    }
+
+    private AbsListView mAbsListView;
+
+    public void init(AbsListView listView, int defaultPage) {
+        mAbsListView = listView;
+        getPageArrayList().setDefaultLoadPage(defaultPage);
+        mAbsListView.setOnScrollListener(this);
+    }
+
+    public void addPageData(List<T> pageData, int page) {
+        int selection = getPageArrayList().setDataAndGetCurrentIndex(pageData, page);
+        notifyDataSetChanged();
+        // move to selection position
+        // mAbsListView.setSelection(selection);
+        mIsLoading = false;
+    }
+
+    private boolean mIsLoading = false;
+
+    @Override
+    public void onScrollStateChanged(AbsListView absListView, int scrollState) {
+    }
+
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+        if (!mIsLoading) {
+            int visibleThreshold = 1;
+            if ((totalItemCount - visibleItemCount)
+                    <= (firstVisibleItem + visibleThreshold)) {
+                // End has been reached
+                mIsLoading = true;
+                mViewHolder.onLoadPage(getPageArrayList().getNextPage());
+            }
+        }
     }
 }

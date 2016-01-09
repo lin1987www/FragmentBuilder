@@ -10,6 +10,8 @@ import android.widget.ListView;
 * Ref: http://stackoverflow.com/questions/18353515/how-to-make-multiplelistview-in-scrollview/18354096#18354096
 * */
 public class ExpandedListView extends ListView {
+    private final static String KEY_expanded = "KEY_expanded";
+
     boolean expanded = false;
     private ExpandedAbsListViewKeeper expandedViewGroupKeeper;
 
@@ -62,6 +64,7 @@ public class ExpandedListView extends ListView {
         expandedViewGroupKeeper.onSaveInstanceState(this,super.onSaveInstanceState());
         Bundle bundle = expandedViewGroupKeeper.bundle;
         // save bundle
+        bundle.putBoolean(KEY_expanded, expanded);
         return bundle;
     }
 
@@ -74,6 +77,7 @@ public class ExpandedListView extends ListView {
             expandedViewGroupKeeper = new ExpandedAbsListViewKeeper(state);
             Bundle bundle = expandedViewGroupKeeper.bundle;
             // restore bundle
+            expanded = bundle.getBoolean(KEY_expanded);
         }
         super.onRestoreInstanceState(expandedViewGroupKeeper.getAbsListViewState());
     }

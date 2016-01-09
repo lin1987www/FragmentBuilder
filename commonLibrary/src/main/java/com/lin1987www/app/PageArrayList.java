@@ -12,7 +12,7 @@ public class PageArrayList<T> {
     private int mFloorPage = 1;
     private int mCeilingPage = Integer.MAX_VALUE;
 
-    private final ArrayList<T> mList = new ArrayList<T>();
+    private final ArrayList<T> mList = new ArrayList<>();
     private int mPageSize;
     private int mDefaultLoadPage = mFloorPage;
     private int mStartPage = NONE;

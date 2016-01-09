@@ -73,7 +73,7 @@ public class GoogleGeocodeGet extends Take<GoogleGeocodeGet> {
         } else if (!TextUtils.isEmpty(mAddress)) {
             query.put("address", mAddress);
         }
-        RequestQueueAgent.getDefault().add(request);
+        RequestQueueAgent.getRequestQueue().add(request);
         Result<GoogleGeocodeResults> result = request.getResultSync();
         mGoogleGeocodeResults = result.result;
         ex = result.error;

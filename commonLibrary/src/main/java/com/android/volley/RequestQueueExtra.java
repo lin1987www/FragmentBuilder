@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class RequestQueueExtra extends RequestQueue {
+    public static final int DEFAULT_NETWORK_THREAD_POOL_SIZE = 4;
     public final static String TAG = RequestQueueExtra.class.getName();
 
     public RequestQueueExtra(Cache cache, Network network, int threadPoolSize,
@@ -113,11 +114,12 @@ public class RequestQueueExtra extends RequestQueue {
     /**
      * Creates a default instance of the worker pool and calls {@link RequestQueue#start()} on it.
      *
-     * @param context A {@link android.content.Context} to use for creating the cache dir.
-     * @param stack   An {@link com.android.volley.toolbox.HttpStack} to use for the network, or null for default.
+     * @param context A {@link Context} to use for creating the cache dir.
+     * @param stack   An {@link HttpStack} to use for the network, or null for default.
      * @return A started {@link RequestQueue} instance.
      */
-    public static RequestQueue newRequestQueue(Context context, HttpStack stack) {
+    public static RequestQueue newRequestQueue(Context context, HttpStack stack, int threadPoolSize,
+                                               ResponseDelivery delivery) {
         File cacheDir = new File(context.getCacheDir(), DEFAULT_CACHE_DIR);
 
         String userAgent = "volley/0";
@@ -140,7 +142,7 @@ public class RequestQueueExtra extends RequestQueue {
 
         Network network = new BasicNetwork(stack);
         // Using RequestQueueExtra
-        RequestQueue queue = new RequestQueueExtra(new DiskBasedCache(cacheDir), network);
+        RequestQueue queue = new RequestQueueExtra(new DiskBasedCache(cacheDir), network, threadPoolSize, delivery);
         queue.start();
 
         return queue;

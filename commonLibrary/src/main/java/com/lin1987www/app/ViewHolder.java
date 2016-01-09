@@ -12,7 +12,7 @@ import butterknife.ButterKnife;
 /**
  * Created by lin on 2014/11/10.
  */
-public abstract class ViewHolder<T> {
+public abstract class ViewHolder<T> implements OnLoadPageListener {
     private View view;
     private T data;
     private int position;
