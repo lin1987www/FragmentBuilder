@@ -27,7 +27,7 @@ public class LoadImageTask extends Take<LoadImageTask> {
         ExecutorSet.mainThreadExecutor.submit(new Runnable() {
             @Override
             public void run() {
-                mImageContainer = RequestQueueAgent.getmImageLoader().get(imageUrl, new ImageLoader.ImageListener() {
+                mImageContainer = RequestQueueAgent.getImageLoader().get(imageUrl, new ImageLoader.ImageListener() {
                             @Override
                             public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
                                 if (response.getBitmap() == null) {

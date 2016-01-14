@@ -297,31 +297,31 @@ public abstract class RequestExtra<T> extends Request<T> {
         }
         String method = null;
         switch (this.getMethod()) {
-            case Request.Method.DELETE:
+            case Method.DELETE:
                 method = "DELETE";
                 break;
-            case Request.Method.DEPRECATED_GET_OR_POST:
+            case Method.DEPRECATED_GET_OR_POST:
                 method = "DEPRECATED_GET_OR_POST";
                 break;
-            case Request.Method.GET:
+            case Method.GET:
                 method = "GET";
                 break;
-            case Request.Method.HEAD:
+            case Method.HEAD:
                 method = "HEAD";
                 break;
-            case Request.Method.OPTIONS:
+            case Method.OPTIONS:
                 method = "OPTIONS";
                 break;
-            case Request.Method.PATCH:
+            case Method.PATCH:
                 method = "PATCH";
                 break;
-            case Request.Method.POST:
+            case Method.POST:
                 method = "POST";
                 break;
-            case Request.Method.PUT:
+            case Method.PUT:
                 method = "PUT";
                 break;
-            case Request.Method.TRACE:
+            case Method.TRACE:
                 method = "TRACE";
                 break;
         }
@@ -405,10 +405,10 @@ public abstract class RequestExtra<T> extends Request<T> {
     public RequestExtra<T> useMultipartEntity() {
         if (!mHasMultipartEntity) {
             switch (this.getMethod()) {
-                case Request.Method.POST:
-                case Request.Method.PUT:
-                case Request.Method.PATCH:
-                case Request.Method.DELETE:
+                case Method.POST:
+                case Method.PUT:
+                case Method.PATCH:
+                case Method.DELETE:
                     break;
                 default:
                     throw new RuntimeException("只有POST PUT PATCH DELETE可以上傳檔案!");
@@ -525,5 +525,15 @@ public abstract class RequestExtra<T> extends Request<T> {
 
     public Map<String, String> getResponseHeaders() {
         return mResponseHeaders;
+    }
+
+    public RequestExtra<T> userAgentMobile() {
+        mRequestHeaders.put("User-Agent", "Mozilla/5.0 (Linux; U; Android 4.4.4; Nexus 5 Build/KTU84P) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30");
+        return this;
+    }
+
+    public RequestExtra<T> userAgentDesktop() {
+        mRequestHeaders.put("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36");
+        return this;
     }
 }

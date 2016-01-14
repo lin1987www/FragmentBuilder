@@ -870,7 +870,8 @@ public class FragmentBuilder {
                     if (f == null) {
                         continue;
                     }
-                    if (f.isVisible()) {
+                    // 2016.01.14 必須被看到!
+                    if (f.isVisible() && FragmentUtils.getUserVisibleHintAllParent(f)) {
                         findLeavesBackStack(f, outHookFragMap, f.getChildFragmentManager(), outLeaves, outHookFmMap);
                     }
                 }

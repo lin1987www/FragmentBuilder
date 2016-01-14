@@ -42,7 +42,6 @@ public class Utility {
         return dateString;
     }
 
-
     public static String getVersionString(FragmentActivity activity) {
         String version = "unknown";
         try {
@@ -57,4 +56,9 @@ public class Utility {
         return version;
     }
 
+    public static String removeHtmlAndTrim(String value) {
+        String result = value;
+        result = result.replaceAll("^(<[^>]*>|\\s*)*|<[^>]*>|(<[^>]*>|\\s*)*$", "");
+        return result;
+    }
 }

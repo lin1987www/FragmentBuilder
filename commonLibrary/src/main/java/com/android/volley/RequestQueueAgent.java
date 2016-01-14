@@ -14,6 +14,8 @@ public class RequestQueueAgent {
     private static RequestQueue mRequestQueue;
     private static ImageLoader.ImageCache mImageCache;
     private static ImageLoader mImageLoader;
+    private static CookieHandler mCookieHandler;
+    private static OkHttpHurlStack mOkHttpStack;
 
     public static RequestQueue getRequestQueue() {
         if (mRequestQueue == null) {
@@ -21,11 +23,8 @@ public class RequestQueueAgent {
                 if (mRequestQueue == null) {
                     // 取得 Context 並且進行其設定
                     Context context = ContextHelper.getApplication();
-                    // 建立 Cookie 處理者
-                    CookieHandler cookieHandler = CookieHandlerFactory.openCookieHandler(context);
                     // 建立 HttpStack
-                    OkHttpHurlStack httpStack = new OkHttpHurlStack();
-                    httpStack.getOkHttpClient().setCookieHandler(cookieHandler);
+                    OkHttpHurlStack httpStack = getOkHttpHurlStack();
                     mRequestQueue = RequestQueueExtra.newRequestQueue(
                             context,
                             httpStack,
@@ -38,7 +37,7 @@ public class RequestQueueAgent {
         return mRequestQueue;
     }
 
-    public static ImageLoader.ImageCache getmImageCache() {
+    public static ImageLoader.ImageCache getImageCache() {
         if (mImageCache == null) {
             synchronized (RequestQueueAgent.class) {
                 if (mImageCache == null) {
@@ -49,14 +48,41 @@ public class RequestQueueAgent {
         return mImageCache;
     }
 
-    public static ImageLoader getmImageLoader() {
+    public static ImageLoader getImageLoader() {
         if (mImageLoader == null) {
             synchronized (RequestQueueAgent.class) {
                 if (mImageLoader == null) {
-                    mImageLoader = new ImageLoaderCache(getRequestQueue(), getmImageCache());
+                    mImageLoader = new ImageLoaderCache(getRequestQueue(), getImageCache());
                 }
             }
         }
         return mImageLoader;
+    }
+
+    public static CookieHandler getCookieHandler() {
+        if (mCookieHandler == null) {
+            synchronized (RequestQueueAgent.class) {
+                if (mCookieHandler == null) {
+                    // 取得 Context 並且進行其設定
+                    Context context = ContextHelper.getApplication();
+                    // 建立 Cookie 處理者
+                    mCookieHandler = CookieHandlerFactory.openCookieHandler(context);
+                }
+            }
+        }
+        return mCookieHandler;
+    }
+
+    public static OkHttpHurlStack getOkHttpHurlStack() {
+        if (mOkHttpStack == null) {
+            synchronized (RequestQueueAgent.class) {
+                if (mOkHttpStack == null) {
+                    // 建立 HttpStack
+                    mOkHttpStack = new OkHttpHurlStack();
+                    mOkHttpStack.getOkHttpClient().setCookieHandler(getCookieHandler());
+                }
+            }
+        }
+        return mOkHttpStack;
     }
 }
