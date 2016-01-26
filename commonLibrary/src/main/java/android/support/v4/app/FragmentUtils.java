@@ -119,4 +119,8 @@ public class FragmentUtils {
         }
         return isAvailable;
     }
+
+    public static int getFragmentState(Fragment fragment){
+        return fragment.mState;
+    }
 }

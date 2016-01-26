@@ -8,6 +8,8 @@ import android.text.format.DateUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by lin on 2014/9/11.
@@ -58,7 +60,17 @@ public class Utility {
 
     public static String removeHtmlAndTrim(String value) {
         String result = value;
-        result = result.replaceAll("^(<[^>]*>|\\s*)*|<[^>]*>|(<[^>]*>|\\s*)*$", "");
+        result = result.replaceAll("(?><[^>]*>|\\s*)*", "");
+        return result;
+    }
+
+    public static String getBaseUrl(String value) {
+        Pattern pattern = Pattern.compile("((?>[^\\/]+\\/{1,2})*)");
+        String result = value;
+        Matcher matcher = pattern.matcher(value);
+        if (matcher.find()) {
+            result = matcher.group();
+        }
         return result;
     }
 }

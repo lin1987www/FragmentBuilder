@@ -53,23 +53,23 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
         wrParentFragment = new WeakReference<>(fragment);
     }
 
-    public void add(Class<? extends android.support.v4.app.Fragment> fragClass) {
+    public void add(Class<? extends Fragment> fragClass) {
         add(fragClass, null, null);
     }
 
-    public void add(Class<? extends android.support.v4.app.Fragment> fragClass, Bundle args) {
+    public void add(Class<? extends Fragment> fragClass, Bundle args) {
         add(fragClass, args, null);
     }
 
-    public void add(Class<? extends android.support.v4.app.Fragment> fragClass, String tag) {
+    public void add(Class<? extends Fragment> fragClass, String tag) {
         add(fragClass, null, tag);
     }
 
-    public void add(Class<? extends android.support.v4.app.Fragment> fragClass, Bundle args, String tag) {
+    public void add(Class<? extends Fragment> fragClass, Bundle args, String tag) {
         add(fragClass, args, tag, getCount());
     }
 
-    public void add(Class<? extends android.support.v4.app.Fragment> fragClass, Bundle args, String tag, int position) {
+    public void add(Class<? extends Fragment> fragClass, Bundle args, String tag, int position) {
         mFragments.add(position, null);
         mFragmentStates.add(position, null);
         mFragmentTags.add(position, tag);
@@ -124,7 +124,17 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             if (getParentFragment() != null) {
                 fragmentManager = getParentFragment().getChildFragmentManager();
             }
-            fragment = fs.instantiate(FragmentUtils.getFragmentHostCallback(fragmentManager), getParentFragment());
+            // Fix Can't change tag of fragment Error
+            // http://stackoverflow.com/questions/24355838/cant-change-tag-of-fragment-error-trying-to-use-a-pageradapter-for-switching
+            if (fs.mTag != null && fs.mTag.equals(mFragmentTags.get(position))) {
+                fragment = fs.instantiate(FragmentUtils.getFragmentHostCallback(fragmentManager), getParentFragment());
+            } else {
+                Log.e(TAG,
+                        String.format("Fragment Tag: Not Equal! Origin: %s %s",
+                                fs.mTag, mFragmentTags.get(position)
+                        ));
+                mFragmentStates.set(position, null);
+            }
             // Fix bug
             // http://stackoverflow.com/questions/11381470/classnotfoundexception-when-unmarshalling-android-support-v4-view-viewpagersav
             if (fragment.mSavedFragmentState != null) {
@@ -292,6 +302,8 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
 
     public static void fixActiveFragment(FragmentManager fragmentManager, Fragment fragment) {
         FragmentManagerImpl fm = (FragmentManagerImpl) fragmentManager;
+        boolean needMatch = false;
+        Fragment willRemoveFrag = null;
         if (fm.mActive != null) {
             int index = fragment.mIndex;
             Fragment origin = fm.mActive.get(index);
@@ -302,9 +314,22 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
                                     origin.toString(), origin.mIndex,
                                     fragment.toString(), fragment.mIndex
                             ));
+                    ArrayList<Integer> indexArray = new ArrayList<>();
+                    for (Fragment f : fm.mAdded) {
+                        if (indexArray.contains(f.mIndex)) {
+                            willRemoveFrag = origin;
+                            break;
+                        }
+                        indexArray.add(f.mIndex);
+                    }
                 }
             }
             fm.mActive.set(index, fragment);
+            if (willRemoveFrag != null) {
+                // 2016.01.26 Fix bug mAdded not match
+                // 瀏覽所有Fragment後，轉至後瀏覽其他Fragment會產生衝突
+                fm.mAdded.remove(willRemoveFrag);
+            }
         }
     }
 

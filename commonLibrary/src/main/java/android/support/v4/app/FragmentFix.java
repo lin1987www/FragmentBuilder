@@ -242,7 +242,10 @@ public class FragmentFix extends Fragment {
         boolean lastUserVisibleHint = getUserVisibleHint();
         super.setUserVisibleHint(isVisibleToUser);
         if (!lastUserVisibleHint && isVisibleToUser) {
-            doResume();
+            int state = FragmentUtils.getFragmentState(this);
+            if (state == FragmentFix.RESUMED) {
+                doResume();
+            }
         }
     }
 
@@ -286,7 +289,7 @@ public class FragmentFix extends Fragment {
             if (DEBUG) {
                 Log.d(TAG, String.format(FORMAT, "Consume PopOnResume"));
             }
-        } else if (!FragmentUtils.getUserVisibleHintAllParent(this)) {
+        } else if (!getFragmentArgs().isUseNormalResume() && !FragmentUtils.getUserVisibleHintAllParent(this)) {
             if (DEBUG) {
                 Log.d(TAG, String.format(FORMAT, "Skip OnResume. getUserVisibleHintAllParent() is false."));
             }

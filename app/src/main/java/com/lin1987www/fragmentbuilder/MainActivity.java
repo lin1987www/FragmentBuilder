@@ -42,7 +42,7 @@ public class MainActivity extends FragmentActivityFix {
         });
 
         FragmentBuilder.defaultContainerViewId = R.id.container;
-
+        
         Fragment hereFrag = getSupportFragmentManager().findFragmentById(R.id.container);
         if (hereFrag == null) {
             FragmentBuilder
