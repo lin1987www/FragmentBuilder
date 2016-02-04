@@ -128,17 +128,17 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             // http://stackoverflow.com/questions/24355838/cant-change-tag-of-fragment-error-trying-to-use-a-pageradapter-for-switching
             if (fs.mTag != null && fs.mTag.equals(mFragmentTags.get(position))) {
                 fragment = fs.instantiate(FragmentUtils.getFragmentHostCallback(fragmentManager), getParentFragment());
+                // Fix bug
+                // http://stackoverflow.com/questions/11381470/classnotfoundexception-when-unmarshalling-android-support-v4-view-viewpagersav
+                if (fragment.mSavedFragmentState != null) {
+                    fragment.mSavedFragmentState.setClassLoader(fragment.getClass().getClassLoader());
+                }
             } else {
                 Log.e(TAG,
                         String.format("Fragment Tag: Not Equal! Origin: %s %s",
                                 fs.mTag, mFragmentTags.get(position)
                         ));
                 mFragmentStates.set(position, null);
-            }
-            // Fix bug
-            // http://stackoverflow.com/questions/11381470/classnotfoundexception-when-unmarshalling-android-support-v4-view-viewpagersav
-            if (fragment.mSavedFragmentState != null) {
-                fragment.mSavedFragmentState.setClassLoader(fragment.getClass().getClassLoader());
             }
         }
         if (fragment == null) {
@@ -310,7 +310,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             if (origin != null) {
                 if ((origin.mIndex != fragment.mIndex) || !(origin.equals(fragment))) {
                     Log.e(TAG,
-                            String.format("fixActiveFragment: Not Equal! Origin: %s %s, Fragment: %s %s",
+                            String.format("Fragment: Not Equal! Origin: %s %s, Fragment: %s %s",
                                     origin.toString(), origin.mIndex,
                                     fragment.toString(), fragment.mIndex
                             ));

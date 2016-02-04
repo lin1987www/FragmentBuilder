@@ -92,15 +92,19 @@ public class RequestQueueExtra extends RequestQueue {
             HandlerHelper.runMainThread(new Runnable() {
                 @Override
                 public void run() {
-                    loadingMsg.show();
+                    if (loadingMsg != null) {
+                        loadingMsg.show();
+                    }
                 }
             });
         } else if (requestCounter.get() == 0 && loadingMsg != null) {
             HandlerHelper.runMainThread(new Runnable() {
                 @Override
                 public void run() {
-                    loadingMsg.cancel();
-                    loadingMsg = null;
+                    if (loadingMsg != null) {
+                        loadingMsg.cancel();
+                        loadingMsg = null;
+                    }
                 }
             });
         }

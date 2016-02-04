@@ -33,6 +33,7 @@ dependencies {
     compile 'com.android.support:multidex:1.0.0'
     compile 'com.android.support:appcompat-v7:23.+'
     compile 'com.android.support:support-v4:23.+'
+    compile 'com.android.support:recyclerview-v7:23.+'
     //
     compile 'com.squareup.okhttp:okhttp:1.6.0'
     compile 'com.squareup.okhttp:okhttp-urlconnection:1.6.0'

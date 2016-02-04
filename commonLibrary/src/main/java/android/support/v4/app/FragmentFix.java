@@ -335,6 +335,9 @@ public class FragmentFix extends Fragment {
     }
 
     public void duty(Duty duty) {
+        if (!FragmentUtils.isFragmentAvailable(this)) {
+            return;
+        }
         mDutyList.add(duty);
         if (!mIsEnterAnim.get()) {
             duty.submit();
@@ -343,6 +346,8 @@ public class FragmentFix extends Fragment {
 
     public static void duty(Duty duty, View view) {
         FragmentFix fragmentFix = (FragmentFix) FragmentBuilder.FragmentPath.findFragmentByView(view);
-        fragmentFix.duty(duty);
+        if (fragmentFix != null) {
+            fragmentFix.duty(duty);
+        }
     }
 }
