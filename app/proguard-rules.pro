@@ -20,5 +20,5 @@
 }
 
 -keepclassmembers class ** {
-    public void onTake(**);
+    public boolean onDuty(**);
 }

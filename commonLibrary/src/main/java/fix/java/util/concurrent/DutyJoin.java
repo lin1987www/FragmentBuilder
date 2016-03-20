@@ -12,14 +12,14 @@ public class DutyJoin<T> extends Duty<T> {
             if (!isFinished()) {
                 synchronized (mDoneDuty) {
                     if (!isFinished()) {
-                        boolean isAllDone = true;
+                        boolean isAllFinished = true;
                         for (Duty duty : mDutyArray) {
                             if (!duty.isFinished()) {
-                                isAllDone = false;
+                                isAllFinished = false;
                                 break;
                             }
                         }
-                        if (isAllDone) {
+                        if (isAllFinished) {
                             done();
                             DutyJoin.this.done();
                         }
@@ -29,7 +29,11 @@ public class DutyJoin<T> extends Duty<T> {
         }
     };
 
-    protected ArrayList<Duty> mDutyArray = new ArrayList<>();
+    protected ArrayList<Duty> mDutyArray = new ArrayList<Duty>();
+
+    public ArrayList<Duty> getDutyArray(){
+        return mDutyArray;
+    }
 
     public DutyJoin<T> join(Duty duty) {
         mDutyArray.add(duty);

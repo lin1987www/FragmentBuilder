@@ -3,6 +3,7 @@ package com.lin1987www.app;
 import android.content.Context;
 import android.database.DataSetObservable;
 import android.database.DataSetObserver;
+import android.os.Parcelable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -46,6 +47,7 @@ public class ViewHolderAdapter<T, VH extends ViewHolder<T>> implements ListAdapt
      */
     public void notifyDataSetChanged() {
         mDataSetObservable.notifyChanged();
+        notifyDataSetInvalidated();
     }
 
     /**
@@ -121,11 +123,16 @@ public class ViewHolderAdapter<T, VH extends ViewHolder<T>> implements ListAdapt
         mAbsListView.setOnScrollListener(this);
     }
 
+
     public void addPageData(List<T> pageData, int page) {
+        Parcelable state = mAbsListView.onSaveInstanceState();
         int selection = getPageArrayList().setDataAndGetCurrentIndex(pageData, page);
-        notifyDataSetChanged();
-        // move to selection position
-        // mAbsListView.setSelection(selection);
+        if (android.os.Build.VERSION.SDK_INT > 10) {
+            mAbsListView.setAdapter(this);
+        } else {
+            notifyDataSetChanged();
+        }
+        mAbsListView.onRestoreInstanceState(state);
         mIsLoading = false;
     }
 
@@ -137,8 +144,8 @@ public class ViewHolderAdapter<T, VH extends ViewHolder<T>> implements ListAdapt
 
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+        int visibleThreshold = visibleItemCount;
         if (!mIsLoading) {
-            int visibleThreshold = 1;
             if ((totalItemCount - visibleItemCount)
                     <= (firstVisibleItem + visibleThreshold)) {
                 // End has been reached

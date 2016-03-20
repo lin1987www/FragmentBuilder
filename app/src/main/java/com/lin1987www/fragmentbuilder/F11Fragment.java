@@ -86,11 +86,12 @@ public class F11Fragment extends FragmentFix {
         f111Result = fragment.result;
     }
 
-    public void onTake(GetUser task) {
-        Toast.makeText(getActivity(), String.format("UserName: %s", task.userName), Toast.LENGTH_SHORT).show();
-    }
-
-    public void onDuty(GetUser task) {
-        Toast.makeText(getActivity(), String.format("UserName: %s", task.userName), Toast.LENGTH_SHORT).show();
+    public boolean onDuty(GetUser task) {
+        if (task.isDone()) {
+            Toast.makeText(getActivity(), String.format("UserName: %s", task.userName), Toast.LENGTH_SHORT).show();
+            return true;
+        } else {
+            return false;
+        }
     }
 }

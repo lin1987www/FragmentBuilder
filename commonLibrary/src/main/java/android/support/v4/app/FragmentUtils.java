@@ -120,7 +120,13 @@ public class FragmentUtils {
         return isAvailable;
     }
 
-    public static int getFragmentState(Fragment fragment){
+    public static int getFragmentState(Fragment fragment) {
         return fragment.mState;
+    }
+
+    public static boolean isStateLoss(FragmentManager fragmentManager) {
+        FragmentManagerImpl fm = (FragmentManagerImpl) fragmentManager;
+        boolean isStateLoss = fm.mStateSaved | (fm.mNoTransactionsBecause != null);
+        return isStateLoss;
     }
 }

@@ -1,6 +1,7 @@
 package com.lin1987www.app;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -38,6 +39,7 @@ public class PageArrayList<T> {
     }
 
     public PageArrayList<T> init(int pageSize, int firstLoadPage) {
+        clear();
         return setPageSize(pageSize).setDefaultLoadPage(firstLoadPage);
     }
 
@@ -112,7 +114,7 @@ public class PageArrayList<T> {
         mList.clear();
     }
 
-    private void refreshPageData(int page, List<T> pageData) {
+    private void refreshPageData(int page, Collection<T> pageData) {
         if (refreshFirstPageClearAll && page == 1) {
             mList.clear();
             mList.addAll(pageData);
@@ -157,7 +159,7 @@ public class PageArrayList<T> {
         return position % mPageSize;
     }
 
-    public int setDataAndGetCurrentIndex(List<T> pageData, int page) {
+    public int setDataAndGetCurrentIndex(Collection<T> pageData, int page) {
         boolean isRefreshPage = false;
         // True if it is next page, false if it is prev page
         Boolean isNextPage = null;
@@ -175,6 +177,9 @@ public class PageArrayList<T> {
             throw new RuntimeException("Page不在允許的範圍內");
         }
         int selection = -1;
+        if (pageData == null) {
+            pageData = new ArrayList<>();
+        }
         if (isNextPage == null) {
             if (isRefreshPage) {
                 // Refresh Page

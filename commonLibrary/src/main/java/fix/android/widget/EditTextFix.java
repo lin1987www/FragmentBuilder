@@ -9,6 +9,10 @@ import android.widget.EditText;
  * Created by lin on 2014/10/8.
  */
 public class EditTextFix extends EditText {
+    public EditTextFix(Context context) {
+        super(context);
+    }
+
     public EditTextFix(Context context, AttributeSet attrs) {
         super(context, attrs);
     }

@@ -126,7 +126,8 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             }
             // Fix Can't change tag of fragment Error
             // http://stackoverflow.com/questions/24355838/cant-change-tag-of-fragment-error-trying-to-use-a-pageradapter-for-switching
-            if (fs.mTag != null && fs.mTag.equals(mFragmentTags.get(position))) {
+            if ((fs.mTag != null && fs.mTag.equals(mFragmentTags.get(position))) ||
+                    (fs.mTag == null && mFragmentTags.get(position) == null)) {
                 fragment = fs.instantiate(FragmentUtils.getFragmentHostCallback(fragmentManager), getParentFragment());
                 // Fix bug
                 // http://stackoverflow.com/questions/11381470/classnotfoundexception-when-unmarshalling-android-support-v4-view-viewpagersav
@@ -135,7 +136,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
                 }
             } else {
                 Log.e(TAG,
-                        String.format("Fragment Tag: Not Equal! Origin: %s %s",
+                        String.format("Fragment tag isn't equal! Origin: %s %s",
                                 fs.mTag, mFragmentTags.get(position)
                         ));
                 mFragmentStates.set(position, null);
@@ -165,7 +166,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             Log.v(TAG, "Removing item #" + position + ": f=" + object
                     + " v=" + ((Fragment) object).getView());
         }
-        if (position < getCount()) {
+        if (position < getCount() && fragment.mIndex >= 0) {
             FragmentState fragmentState = new FragmentState(fragment);
             Fragment.SavedState savedState = mFragmentManager.saveFragmentInstanceState(fragment);
             if (savedState != null) {
@@ -204,6 +205,9 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
                 if (fragment != null) {
                     if (fragment.isAdded() && !fragment.isResumed()) {
                         // Fix sdk 23.0.1 : Fragment isAdded, but didn't resumed.
+                        if (FragmentUtils.isStateLoss(fragment.getFragmentManager())) {
+                            continue;
+                        }
                         fragment.getFragmentManager().beginTransaction().detach(fragment).attach(fragment).commit();
                     }
                     // Fix sdk 22.0.1 : Fragment is added by transaction. BUT didn't add to FragmentManager's mActive. If you Rotation.
@@ -236,14 +240,22 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             if (state == null) {
                 state = new Bundle();
             }
+            // Create new instance for some reason
             FragmentState[] fs = new FragmentState[mFragmentStates.size()];
             mFragmentStates.toArray(fs);
             state.putParcelableArray("states_fragment", fs);
+
             Bundle[] args = new Bundle[mFragmentArgs.size()];
             mFragmentArgs.toArray(args);
             state.putParcelableArray("arg_fragment", args);
-            state.putStringArrayList("tag_fragment", mFragmentTags);
-            state.putStringArrayList("classname_fragment", mFragmentClassNames);
+
+            ArrayList<String> tagArray = new ArrayList<>();
+            tagArray.addAll(mFragmentTags);
+            state.putStringArrayList("tag_fragment", tagArray);
+
+            ArrayList<String> classNameArray = new ArrayList<>();
+            classNameArray.addAll(mFragmentClassNames);
+            state.putStringArrayList("classname_fragment", classNameArray);
         }
         return state;
     }
@@ -310,7 +322,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             if (origin != null) {
                 if ((origin.mIndex != fragment.mIndex) || !(origin.equals(fragment))) {
                     Log.e(TAG,
-                            String.format("Fragment: Not Equal! Origin: %s %s, Fragment: %s %s",
+                            String.format("Fragment isn't equal! Origin: %s %s, Fragment: %s %s",
                                     origin.toString(), origin.mIndex,
                                     fragment.toString(), fragment.mIndex
                             ));

@@ -118,3 +118,7 @@ Wherever you call FragmentBuilder, it will find FragmentPath. ( FragmentActivity
 
 ## FragmentActivity Lifecycle
 ![](/images/FragmentActivityLifecycle.png)
+
+## Fragment detach/attach
+
+Detach cause fragment call onPause(),but attach cause fragment call onCreateView() expect onResume()
