@@ -5,27 +5,17 @@ import android.util.Log;
 
 import com.j256.ormlite.dao.Dao;
 
-import java.io.IOException;
-import java.net.CookieHandler;
-import java.net.URI;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-
-import java6.net.CookieManager;
-import java6.net.CookiePolicy;
-import java6.net.HttpCookie;
-import java6.net.InMemoryCookieStore;
 
 public class CookieHandlerFactory {
     public static boolean DEBUG = true;
     private static final String TAG = CookieHandlerFactory.class.getName();
-    private static final Map<Context, CookieHandler> mCookieHandlerMap = new WeakHashMap<Context, CookieHandler>();
+    private static final Map<Context, CookieKeeper> mCookieHandlerMap = new WeakHashMap<>();
     private static final Object mLock = new Object();
     public static boolean enableApplicationContext = false;
 
-    public static CookieHandler openCookieHandler(Context context) {
+    public static CookieKeeper openCookieHandler(Context context) {
         // TODO 記得改成
         Context targetContext = context;
         if (enableApplicationContext) {
@@ -57,7 +47,7 @@ public class CookieHandlerFactory {
         }
     }
 
-    private static CookieHandler generateCookieHandler(final Context context) {
+    private static CookieKeeper generateCookieHandler(final Context context) {
         Dao<Cookie, String> dao = null;
         try {
             dao = (new DatabaseHelper(context)).getCookieDao();
@@ -66,7 +56,9 @@ public class CookieHandlerFactory {
             Log.e(TAG, e.toString());
             return null;
         }
-
+        CookieKeeper keeper =new CookieKeeper(dao);
+        return keeper;
+        /*
         final Dao<Cookie, String> cookieDao = dao;
 
         InMemoryCookieStore store = new InMemoryCookieStore() {
@@ -133,8 +125,7 @@ public class CookieHandlerFactory {
         }
         //
         //
-        CookieManager manager = new CookieManager(store,
-                CookiePolicy.ACCEPT_ALL) {
+        CookieManager manager = new CookieManager(store, CookiePolicy.ACCEPT_ALL) {
             @Override
             public Map<String, List<String>> get(URI uri,
                                                  Map<String, List<String>> requestHeaders)
@@ -150,15 +141,13 @@ public class CookieHandlerFactory {
                 requestHeaders = super.get(uri, requestHeaders);
                 if (DEBUG) {
                     if (requestHeaders != null) {
-                        Iterator<String> keySet = requestHeaders.keySet()
-                                .iterator();
+                        Iterator<String> keySet = requestHeaders.keySet().iterator();
 
                         Log.d(TAG, String.format("%1$s", url));
                         while (keySet.hasNext()) {
                             String name = keySet.next();
                             String value = requestHeaders.get(name).toString();
-                            Log.d(TAG,
-                                    String.format("%1$s: %2$s\n", name, value));
+                            Log.d(TAG, String.format("%1$s: %2$s\n", name, value));
                         }
                     }
                 }
@@ -198,5 +187,6 @@ public class CookieHandlerFactory {
             }
         };
         return manager;
+        */
     }
 }

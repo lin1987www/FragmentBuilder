@@ -29,6 +29,7 @@ public class MainFragment extends FragmentFix {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
 
+        // TODO 因為每次都會覆蓋上去，所致被蓋上去了!!，因為遮住螢幕 使用 MainFragment 重新建立覆蓋上去!
         FragmentBuilder
                 .create(this)
                 .setContainerViewId(R.id.container_main_1)

@@ -1,6 +1,7 @@
 package com.lin1987www.fragmentbuilder.widget;
 
 import android.content.Context;
+import android.support.v4.app.FragContent;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentBuilder;
 import android.util.AttributeSet;
@@ -21,7 +22,8 @@ public class F12SwitchButton extends Button implements View.OnClickListener {
 
     @Override
     public void onClick(View view) {
-        Class<? extends Fragment> fragClass = FragmentBuilder.FragmentPath.findFragmentByView(view).getClass();
+        FragContent content = new FragContent(view);
+        Class<? extends Fragment> fragClass = content.getSrcFragment().getClass();
         if (fragClass.equals(F12Fragment.class)) {
             fragClass = F12NewFragment.class;
         } else {

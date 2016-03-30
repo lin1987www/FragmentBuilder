@@ -6,6 +6,7 @@ import android.support.v4.app.ContextHelper;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.OkHttpHurlStack;
 import com.lin1987www.http.cookie.CookieHandlerFactory;
+import com.lin1987www.http.cookie.CookieKeeper;
 import com.lin1987www.os.HandlerHelper;
 
 import java.net.CookieHandler;
@@ -14,8 +15,8 @@ public class RequestQueueAgent {
     private static RequestQueue mRequestQueue;
     private static ImageLoader.ImageCache mImageCache;
     private static ImageLoader mImageLoader;
-    private static CookieHandler mCookieHandler;
     private static OkHttpHurlStack mOkHttpStack;
+    private static CookieKeeper mCookieKeeper;
 
     public static RequestQueue getRequestQueue() {
         if (mRequestQueue == null) {
@@ -60,17 +61,7 @@ public class RequestQueueAgent {
     }
 
     public static CookieHandler getCookieHandler() {
-        if (mCookieHandler == null) {
-            synchronized (RequestQueueAgent.class) {
-                if (mCookieHandler == null) {
-                    // 取得 Context 並且進行其設定
-                    Context context = ContextHelper.getApplication();
-                    // 建立 Cookie 處理者
-                    mCookieHandler = CookieHandlerFactory.openCookieHandler(context);
-                }
-            }
-        }
-        return mCookieHandler;
+        return getCookieKeeper().manager;
     }
 
     public static OkHttpHurlStack getOkHttpHurlStack() {
@@ -79,10 +70,23 @@ public class RequestQueueAgent {
                 if (mOkHttpStack == null) {
                     // 建立 HttpStack
                     mOkHttpStack = new OkHttpHurlStack();
-                    mOkHttpStack.getOkHttpClient().setCookieHandler(getCookieHandler());
+                    mOkHttpStack.getOkHttpClientBuilder().cookieJar(getCookieKeeper().cookieJar);
                 }
             }
         }
         return mOkHttpStack;
+    }
+
+    public static CookieKeeper getCookieKeeper() {
+        if (mCookieKeeper == null) {
+            synchronized (RequestQueueAgent.class) {
+                if (mCookieKeeper == null) {
+                    // 建立 HttpStack
+                    Context context = ContextHelper.getApplication();
+                    mCookieKeeper = CookieHandlerFactory.openCookieHandler(context);
+                }
+            }
+        }
+        return mCookieKeeper;
     }
 }

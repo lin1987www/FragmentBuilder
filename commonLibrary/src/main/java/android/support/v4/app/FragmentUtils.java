@@ -102,7 +102,8 @@ public class FragmentUtils {
     }
 
     public static boolean isFragmentAvailable(View view) {
-        Fragment fragment = FragmentBuilder.FragmentPath.findFragmentByView(view);
+        FragContent content = new FragContent(view);
+        Fragment fragment = content.getSrcFragment();
         return isFragmentAvailable(fragment);
     }
 
@@ -118,6 +119,15 @@ public class FragmentUtils {
             }
         }
         return isAvailable;
+    }
+
+    public static boolean isFragmentExist(Fragment fragment) {
+        if (fragment == null) {
+            return false;
+        }
+        return (fragment.isRemoving() && fragment.isInBackStack())
+                ||
+                (!fragment.isRemoving() && !fragment.isInBackStack());
     }
 
     public static int getFragmentState(Fragment fragment) {

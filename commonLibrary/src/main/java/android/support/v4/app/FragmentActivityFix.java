@@ -61,7 +61,7 @@ public class FragmentActivityFix extends FragmentActivity {
             puppetActivity.onActivityResult(requestCode, resultCode, data);
         }
         if (null != mStartActivityFromFragmentPath) {
-            FragmentBuilder.FragmentPath
+            FragContentPath
                     .findFragment(this, mStartActivityFromFragmentPath)
                     .onActivityResult(requestCode, resultCode, data);
             mStartActivityFromFragmentPath = null;
@@ -163,7 +163,7 @@ public class FragmentActivityFix extends FragmentActivity {
     @Override
     public void startActivityFromFragment(Fragment fragment, Intent intent,
                                           int requestCode) {
-        mStartActivityFromFragmentPath = FragmentBuilder.FragmentPath.getFragmentPathString(new FragmentBuilder.Content(fragment));
+        mStartActivityFromFragmentPath = FragContentPath.covert(new FragContent(fragment).getFragPath());
         super.startActivityForResult(intent, requestCode);
     }
 
