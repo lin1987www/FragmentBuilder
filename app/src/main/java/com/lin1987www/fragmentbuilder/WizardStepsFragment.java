@@ -55,7 +55,7 @@ public class WizardStepsFragment extends FragmentFix {
         if (isFinish) {
             result = String.format("WizardStepsTextView Result:\n%s\n%s\n%s", f11text, f12text, f13text);
         }
-        FragmentBuilder.popFragment(getActivity());
+        FragmentBuilder.hasPopBackStack(getActivity());
     }
 
     public void onPopFragment(F12Fragment fragment) {

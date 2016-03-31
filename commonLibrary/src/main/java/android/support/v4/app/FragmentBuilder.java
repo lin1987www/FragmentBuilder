@@ -51,8 +51,8 @@ public class FragmentBuilder {
     private boolean needToFindContainerFragment = true;
     private Fragment containerFragment;
     private PreAction preAction = PreAction.none;
-    // isKeepTarget, isKeepContainer are for PreAction:back.
-    private boolean isKeepTarget = false;
+    // isKeepDelegate, isKeepContainer are for PreAction:back.
+    private boolean isKeepDelegate = false;
     private boolean isKeepContainer = false;
     //
     public final static int systemContainerViewId = android.R.id.content;
@@ -69,13 +69,15 @@ public class FragmentBuilder {
     private String assignBackStackName = "";
     //
     private String fragmentTag;
-    private String targetFragmentPathString = "";
-    private String targetViewPathString = "";
-    private int targetViewId = 0;
-    // 用於Debug 得知從何處發起
-    private String originFragmentTag;
+    // target 最後由轉交給誰 發起
+    private String delegateFragmentPathString = "";
+    private String delegateViewPathString = "";
+    private int delegateViewId = 0;
+    // 用於Debug 得知從何處發起 src
+    private String srcFragmentTag;
     private String srcFragmentPathString = "";
     private String srcViewPathString = "";
+    private int srcViewId = 0;
     //
     private long builtTimeMillis = 0;
     //
@@ -130,9 +132,10 @@ public class FragmentBuilder {
 
     private FragmentBuilder(FragmentActivity srcFragmentActivity, Fragment srcFragment, View srcView) {
         this.content = new FragContent(srcFragmentActivity, srcFragment, srcView);
-        this.originFragmentTag = (srcFragment == null) ? "" : srcFragment.getTag();
+        this.srcFragmentTag = (srcFragment == null) ? "" : srcFragment.getTag();
         if (srcView != null) {
-            setTargetViewId(srcView.getId());
+            setDelegateViewId(srcView.getId());
+            srcViewId = srcView.getId();
         }
     }
 
@@ -228,27 +231,27 @@ public class FragmentBuilder {
         return this;
     }
 
-    public int getTargetViewId() {
-        return this.targetViewId;
+    public int getDelegateViewId() {
+        return this.delegateViewId;
     }
 
-    public FragmentBuilder setTargetViewId(int targetViewId) {
-        if (targetViewId > 0) {
+    public FragmentBuilder setDelegateViewId(int delegateViewId) {
+        if (delegateViewId > 0) {
             if (content.srcFragmentActivity != null) {
-                if (content.srcFragmentActivity.findViewById(targetViewId) == null) {
-                    throw new RuntimeException("Didn't find targetViewId");
+                if (content.srcFragmentActivity.findViewById(delegateViewId) == null) {
+                    throw new RuntimeException("Didn't find delegateViewId");
                 }
             } else if (content.srcFragment != null) {
-                if (content.srcFragment.getView().findViewById(targetViewId) == null) {
-                    throw new RuntimeException("Didn't find targetViewId");
+                if (content.srcFragment.getView().findViewById(delegateViewId) == null) {
+                    throw new RuntimeException("Didn't find delegateViewId");
                 }
             } else {
-                if (((FragmentActivity) content.srcView.getContext()).findViewById(targetViewId) == null) {
-                    throw new RuntimeException("Didn't find targetViewId");
+                if (((FragmentActivity) content.srcView.getContext()).findViewById(delegateViewId) == null) {
+                    throw new RuntimeException("Didn't find delegateViewId");
                 }
             }
         }
-        this.targetViewId = targetViewId;
+        this.delegateViewId = delegateViewId;
         return this;
     }
 
@@ -266,14 +269,14 @@ public class FragmentBuilder {
 
     public FragmentBuilder back(boolean isKeepContainer, boolean isKeepTarget) {
         this.preAction = PreAction.back;
-        this.isKeepTarget = isKeepTarget;
+        this.isKeepDelegate = isKeepTarget;
         this.isKeepContainer = isKeepContainer;
         return this;
     }
 
     public FragmentBuilder reset() {
         this.preAction = PreAction.reset;
-        this.isKeepTarget = true;
+        this.isKeepDelegate = true;
         this.isKeepContainer = true;
         return this;
     }
@@ -341,15 +344,19 @@ public class FragmentBuilder {
         if (backBuilder != null) {
             if (builder.preAction.equals(PreAction.reset)) {
                 builder.needToFindContainerFragment = false;
-                builder.containerFragment = FragContentPath.findFragment(builder.content.getFragmentActivity(), backBuilder.srcFragmentPathString);
+                // reset 的話 真正的發起來會 等等就會被移除掉
                 builder.srcFragmentPathString = backBuilder.srcFragmentPathString;
                 builder.srcViewPathString = backBuilder.srcViewPathString;
+                builder.srcViewId = backBuilder.srcViewId;
+                builder.containerFragment = FragContentPath.findFragment(builder.content.getFragmentActivity(), backBuilder.srcFragmentPathString);
                 backFm.popBackStack();
                 overrideBuilder(backBuilder, builder, true, true);
             } else if (builder.preAction.equals(PreAction.back)) {
-                overrideBuilder(backBuilder, builder, builder.isKeepContainer, builder.isKeepTarget);
+                // back 會參考目前的 建立的 builder 建立
+                overrideBuilder(backBuilder, builder, builder.isKeepContainer, builder.isKeepDelegate);
             }
         } else {
+            // 可能是使用 FragmentAdapter  或者直接在 Activity 中產生
             if (builder.isKeepContainer) {
                 if (null != hereFrag) {
                     // Fix fragment in ViewPager non available containerViewId cause problem!
@@ -363,10 +370,10 @@ public class FragmentBuilder {
                     }
                 }
             }
-            if (builder.isKeepTarget) {
-                builder.targetFragmentPathString = backFragmentPathString;
-                builder.targetViewPathString = "";
-                builder.targetViewId = 0;
+            if (builder.isKeepDelegate) {
+                builder.delegateFragmentPathString = backFragmentPathString;
+                builder.delegateViewPathString = "";
+                builder.delegateViewId = 0;
             }
         }
     }
@@ -395,16 +402,16 @@ public class FragmentBuilder {
         return backBuilder;
     }
 
-    public static void overrideBuilder(FragmentBuilder defaultBuilder, FragmentBuilder builder, boolean isKeepContainer, boolean isKeepTarget) {
+    public static void overrideBuilder(FragmentBuilder defaultBuilder, FragmentBuilder builder, boolean isKeepContainer, boolean isKeepDelegate) {
         if (isKeepContainer) {
             // replace containerViewId
             builder.containerViewId = defaultBuilder.containerViewId;
         }
 
-        if (isKeepTarget) {
-            builder.targetViewId = defaultBuilder.targetViewId;
-            builder.targetViewPathString = defaultBuilder.targetViewPathString;
-            builder.targetFragmentPathString = defaultBuilder.targetFragmentPathString;
+        if (isKeepDelegate) {
+            builder.delegateViewId = defaultBuilder.delegateViewId;
+            builder.delegateViewPathString = defaultBuilder.delegateViewPathString;
+            builder.delegateFragmentPathString = defaultBuilder.delegateFragmentPathString;
         }
 
         if (builder.action == Action.none) {
@@ -429,11 +436,11 @@ public class FragmentBuilder {
         if (content == null) {
             throw new RuntimeException("Forbid build!");
         }
-        // targetFragmentPathString maybe be modified by PreAction.
+        // delegateFragmentPathString maybe be modified by PreAction.
         this.srcFragmentPathString = FragContentPath.covert(content.getFragPath());
         this.srcViewPathString = FragContentPath.covert(content.getViewPath());
-        this.targetFragmentPathString = srcFragmentPathString;
-        this.targetViewPathString = srcViewPathString;
+        this.delegateFragmentPathString = srcFragmentPathString;
+        this.delegateViewPathString = srcViewPathString;
 
         doPreAction(this);
         if (action.equals(Action.none)) {
@@ -538,23 +545,24 @@ public class FragmentBuilder {
 
     public static String generateBackStackName(FragmentBuilder builder) {
         String backStackName;
-        backStackName = String.format("%s %s %s %s [%s][%s][%s][%s] %s %s,%s,%s,%s,%s,%s [%s][%s][%s][%s]",
+        backStackName = String.format("%s %s %s %s [%s][%s][%s][%s][%s] %s %s,%s,%s,%s,%s,%s [%s][%s][%s][%s]",
                 builder.containerViewId,
                 builder.action.toString(),
                 builder.isTraceable,
                 builder.ifExistPolicy.toString(),
                 //
                 builder.fragmentTag,
-                builder.originFragmentTag,
-                builder.targetViewId,
+                builder.srcFragmentTag,
+                builder.delegateViewId,
+                builder.srcViewId,
                 builder.assignBackStackName,
                 //
                 builder.builtTimeMillis,
                 //
                 builder.transition, builder.styleRes, builder.enter, builder.exit, builder.popEnter, builder.popExit,
                 //
-                builder.targetFragmentPathString,
-                builder.targetViewPathString,
+                builder.delegateFragmentPathString,
+                builder.delegateViewPathString,
                 builder.srcFragmentPathString,
                 builder.srcViewPathString
         );
@@ -563,7 +571,7 @@ public class FragmentBuilder {
 
     public static FragmentBuilder parse(BackStackEntry stackEntry) {
         FragmentBuilder builder = null;
-        Pattern p = Pattern.compile("(\\d+) (\\S+) (\\S+) (\\S+) \\[(.*)\\]\\[(.*)\\]\\[(.*)\\]\\[(.*)\\] (\\d+) (\\d+),(\\d+),(\\d+),(\\d+),(\\d+),(\\d+) \\[(.*)\\]\\[(.*)\\]\\[(.*)\\]\\[(.*)\\]");
+        Pattern p = Pattern.compile("(\\d+) (\\S+) (\\S+) (\\S+) \\[(.*)\\]\\[(.*)\\]\\[(.*)\\]\\[(.*)\\]\\[(.*)\\] (\\d+) (\\d+),(\\d+),(\\d+),(\\d+),(\\d+),(\\d+) \\[(.*)\\]\\[(.*)\\]\\[(.*)\\]\\[(.*)\\]");
         Matcher m = p.matcher(stackEntry.getName());
         if (m.find()) {
             int i = 1;
@@ -574,8 +582,9 @@ public class FragmentBuilder {
             builder.ifExistPolicy = ExistPolicy.valueOf(m.group(i++));
             //
             builder.fragmentTag = m.group(i++);
-            builder.originFragmentTag = m.group(i++);
-            builder.targetViewId = Integer.parseInt(m.group(i++));
+            builder.srcFragmentTag = m.group(i++);
+            builder.delegateViewId = Integer.parseInt(m.group(i++));
+            builder.srcViewId = Integer.parseInt(m.group(i++));
             builder.assignBackStackName = m.group(i++);
             //
             builder.builtTimeMillis = Long.parseLong(m.group(i++));
@@ -587,8 +596,8 @@ public class FragmentBuilder {
             builder.popEnter = Integer.parseInt(m.group(i++));
             builder.popExit = Integer.parseInt(m.group(i++));
             //
-            builder.targetFragmentPathString = m.group(i++);
-            builder.targetViewPathString = m.group(i++);
+            builder.delegateFragmentPathString = m.group(i++);
+            builder.delegateViewPathString = m.group(i++);
             builder.srcFragmentPathString = m.group(i++);
             builder.srcViewPathString = m.group(i++);
         }
@@ -744,25 +753,6 @@ public class FragmentBuilder {
         return false;
     }
 
-    public static void postPopBackStack(final FragmentActivity activity) {
-        activity.getWindow().getDecorView().post(new Runnable() {
-            @Override
-            public void run() {
-                hasPopBackStack(activity);
-            }
-        });
-    }
-
-    public static void popFragment(final FragmentActivity activity) {
-        View view = activity.getWindow().getDecorView();
-        view.post(new Runnable() {
-            @Override
-            public void run() {
-                hasPopBackStack(activity);
-            }
-        });
-    }
-
     private static void findLeavesBackStack(Fragment frag, Map<BackStackEntry, Fragment> outHookFragMap, FragmentManager fm, List<BackStackEntry> outLeaves, Map<BackStackEntry, FragmentManager> outHookFmMap) {
         if (fm != null) {
             if (fm.getBackStackEntryCount() > 0) {
@@ -830,7 +820,7 @@ public class FragmentBuilder {
             this.hookFragmentManager = hookFragmentManager;
             this.popFragment = popFragment;
             this.builder = builder;
-            this.targetFragment = FragContentPath.findFragment(fragmentActivity, builder.targetFragmentPathString);
+            this.targetFragment = FragContentPath.findFragment(fragmentActivity, builder.delegateFragmentPathString);
         }
 
         public void popBackStack() {
@@ -870,11 +860,10 @@ public class FragmentBuilder {
             }
             if ((targetFragment == null || targetFragment.isVisible()) && !popFragment.isVisible()) {
                 FragContentPath path = new FragContentPath();
-                path.fragPath = FragContentPath.covert(builder.targetFragmentPathString);
-                path.viewPath = FragContentPath.covert(builder.targetViewPathString);
-                path.viewId = builder.targetViewId;
+                path.fragPath = FragContentPath.covert(builder.delegateFragmentPathString);
+                path.viewPath = FragContentPath.covert(builder.delegateViewPathString);
+                path.viewId = builder.delegateViewId;
 
-                // TODO 有問題!!!
                 targetObject = FragContentPath.findObject(fragmentActivity, path);
 
                 if (targetObject != null) {
@@ -882,9 +871,11 @@ public class FragmentBuilder {
                     removeListener();
                     sendFragment(fragmentActivity, targetObject, popFragment);
                 } else {
-                    //throw new RuntimeException(String.format("Didn't find target Object. %s", builder));
+                    throw new RuntimeException(String.format("Didn't find target Object. %s", builder));
+                    /*
                     fragmentActivity.getWindow().getDecorView().post(retry);
                     return;
+                    */
                 }
             }
             popNextSender();
@@ -936,7 +927,6 @@ public class FragmentBuilder {
         }
         return result;
     }
-
 }
 
 
