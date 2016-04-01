@@ -50,6 +50,7 @@ public class FragmentBuilder {
     private Bundle fragmentArgs;
     private boolean needToFindContainerFragment = true;
     private Fragment containerFragment;
+    private ArrayList<Fragment> containerFragmentList = new ArrayList<>();
     private PreAction preAction = PreAction.none;
     // isKeepDelegate, isKeepContainer are for PreAction:back.
     private boolean isKeepDelegate = false;
@@ -488,6 +489,7 @@ public class FragmentBuilder {
             }
         }
         if (needToFindContainerFragment) {
+            // TODO 會出現多個 Fragment 在同一個 ContainerView 的情況!
             // If needToFindContainerFragment is false, containerFragment must be written by PreAction of reset
             containerFragment = fragmentManager.findFragmentById(containerViewId);
         }
@@ -670,14 +672,14 @@ public class FragmentBuilder {
                     if (willAttachFragmentArgs != null) {
                         willAttachFragmentArgs.skipPopOnResume();
                     }
-                    notifyPopFragmentList.add(new PopFragmentSender(activity, hookFragment, hookFragmentManager, popFragment, builder));
+                    notifyPopFragmentList.add(new PopFragmentSender(activity, hookFragment, hookFragmentManager, popFragment, builder, backStackEntry));
                 }
                 break;
             } else {
                 if (willAttachFragmentArgs != null) {
                     willAttachFragmentArgs.skipPopOnResume();
                 }
-                notifyPopFragmentList.add(new PopFragmentSender(activity, hookFragment, hookFragmentManager, popFragment, builder));
+                notifyPopFragmentList.add(new PopFragmentSender(activity, hookFragment, hookFragmentManager, popFragment, builder, backStackEntry));
             }
         }
         // 串聯的方式 popStack
@@ -744,10 +746,11 @@ public class FragmentBuilder {
                     lastBuilder = parse(lastEntry);
                 }
             }
+
             FragmentManager hookFragmentManager = hookFmMap.get(lastEntry);
             Fragment hookFragment = hookFragMap.get(lastEntry);
             Fragment popFragment = hookFragmentManager.findFragmentByTag(lastBuilder.fragmentTag);
-            new PopFragmentSender(activity, hookFragment, hookFragmentManager, popFragment, lastBuilder).popBackStack();
+            new PopFragmentSender(activity, hookFragment, hookFragmentManager, popFragment, lastBuilder, lastEntry).popBackStack();
             return true;
         }
         return false;
@@ -805,6 +808,7 @@ public class FragmentBuilder {
         private Fragment targetFragment;
         private Fragment popFragment;
         private FragmentBuilder builder;
+        private BackStackEntry entry;
         private boolean isSent = false;
         public PopFragmentSender nextSender;
         private Runnable retry = new Runnable() {
@@ -814,13 +818,16 @@ public class FragmentBuilder {
             }
         };
 
-        public PopFragmentSender(FragmentActivity fragmentActivity, Fragment hookFragment, FragmentManager hookFragmentManager, Fragment popFragment, FragmentBuilder builder) {
+        public PopFragmentSender(FragmentActivity fragmentActivity, Fragment hookFragment, FragmentManager hookFragmentManager, Fragment popFragment, FragmentBuilder builder, BackStackEntry entry) {
             this.fragmentActivity = fragmentActivity;
             this.hookFragment = hookFragment;
             this.hookFragmentManager = hookFragmentManager;
             this.popFragment = popFragment;
             this.builder = builder;
             this.targetFragment = FragContentPath.findFragment(fragmentActivity, builder.delegateFragmentPathString);
+            this.entry = entry;
+
+            FragmentUtils.putAnim(entry, builder.transition, builder.styleRes, builder.enter, builder.exit, builder.popEnter, builder.popExit);
         }
 
         public void popBackStack() {

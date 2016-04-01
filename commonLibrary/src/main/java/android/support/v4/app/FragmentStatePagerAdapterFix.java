@@ -241,13 +241,13 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
                 state = new Bundle();
             }
             // Create new instance for some reason
-            FragmentState[] fs = new FragmentState[mFragmentStates.size()];
-            mFragmentStates.toArray(fs);
-            state.putParcelableArray("states_fragment", fs);
+            ArrayList<FragmentState> fs = new ArrayList<>();
+            fs.addAll(mFragmentStates);
+            state.putParcelableArrayList("states_fragment", fs);
 
-            Bundle[] args = new Bundle[mFragmentArgs.size()];
-            mFragmentArgs.toArray(args);
-            state.putParcelableArray("arg_fragment", args);
+            ArrayList<Bundle> args = new ArrayList<>();
+            args.addAll(mFragmentArgs);
+            state.putParcelableArrayList("arg_fragment", args);
 
             ArrayList<String> tagArray = new ArrayList<>();
             tagArray.addAll(mFragmentTags);
@@ -265,8 +265,8 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
         if (state != null) {
             Bundle bundle = (Bundle) state;
             bundle.setClassLoader(loader);
-            Parcelable[] fs = bundle.getParcelableArray("states_fragment");
-            Parcelable[] args = bundle.getParcelableArray("arg_fragment");
+            ArrayList<FragmentState> fs = bundle.getParcelableArrayList("states_fragment");
+            ArrayList<Bundle> args = bundle.getParcelableArrayList("arg_fragment");
             ArrayList<String> tags = bundle.getStringArrayList("tag_fragment");
             ArrayList<String> classNames = bundle.getStringArrayList("classname_fragment");
 
@@ -276,15 +276,15 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             mFragmentClassNames.clear();
             mFragmentArgs.clear();
             if (fs != null) {
-                for (int i = 0; i < fs.length; i++) {
-                    FragmentState fragmentState = (FragmentState) fs[i];
+                for (int i = 0; i < fs.size(); i++) {
+                    FragmentState fragmentState = (FragmentState) fs.get(i);
                     mFragmentStates.add(fragmentState);
                     if (fragmentState != null) {
                         mFragmentArgs.add(fragmentState.mArguments);
                         mFragmentTags.add(fragmentState.mTag);
                         mFragmentClassNames.add(fragmentState.mClassName);
                     } else {
-                        mFragmentArgs.add((Bundle) args[i]);
+                        mFragmentArgs.add(args.get(i));
                         mFragmentTags.add(tags.get(i));
                         mFragmentClassNames.add(classNames.get(i));
                     }

@@ -42,17 +42,14 @@ public class MainActivity extends FragmentActivityFix {
         });
 
         FragmentBuilder.defaultContainerViewId = R.id.container;
-        
-        Fragment hereFrag = getSupportFragmentManager().findFragmentById(R.id.container);
-        if (hereFrag == null) {
-            FragmentBuilder
-                    .create(this)
-                    .setContainerViewId(R.id.container)
-                    .setFragment(MainFragment.class)
-                    .add()
-                    .untraceable()
-                    .build();
-        }
+
+        FragmentBuilder
+                .create(this)
+                .add()
+                .untraceable()
+                .setContainerViewId(R.id.container)
+                .setFragment(MainFragment.class)
+                .build();
     }
 
     public void onPopFragment(WizardStepsFragment fragment) {

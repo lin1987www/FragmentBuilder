@@ -125,9 +125,15 @@ public class FragmentUtils {
         if (fragment == null) {
             return false;
         }
-        return (fragment.isRemoving() && fragment.isInBackStack())
-                ||
-                (!fragment.isRemoving() && !fragment.isInBackStack());
+        return
+                // 轉至螢幕的瞬間 Fragment 會忘記 isRemoving，但依然在 backStack當中，且會在原位子上顯示
+                (!fragment.isRemoving() && fragment.isInBackStack())
+                        ||
+                        // 被遮住，且在 backStack
+                        (fragment.isRemoving() && fragment.isInBackStack())
+                        ||
+                        // 顯示中
+                        (!fragment.isRemoving() && !fragment.isInBackStack());
     }
 
     public static int getFragmentState(Fragment fragment) {
@@ -138,5 +144,23 @@ public class FragmentUtils {
         FragmentManagerImpl fm = (FragmentManagerImpl) fragmentManager;
         boolean isStateLoss = fm.mStateSaved | (fm.mNoTransactionsBecause != null);
         return isStateLoss;
+    }
+
+    public static void putAnim(FragmentManager.BackStackEntry backStackEntry, int transit, int styleRes, int enter,
+                               int exit, int popEnter, int popExit) {
+        // fix rotation screen cause BackStack animation lose.
+        BackStackRecord backStackRecord = (BackStackRecord) backStackEntry;
+        backStackRecord.setTransition(transit);
+        backStackRecord.setTransitionStyle(styleRes);
+        backStackRecord.setCustomAnimations(enter, exit, popEnter, popExit);
+
+        BackStackRecord.Op op = backStackRecord.mHead;
+        while (op != null) {
+            op.enterAnim = enter;
+            op.exitAnim = exit;
+            op.popEnterAnim = popEnter;
+            op.popExitAnim = popExit;
+            op = op.next;
+        }
     }
 }
