@@ -66,6 +66,9 @@ public class FragContentPath {
             FragmentManager fm = activity.getSupportFragmentManager();
             for (Integer index : fragmentPath) {
                 fragment = fm.getFragments().get(index);
+                if (fragment == null) {
+                    break;
+                }
                 fm = fragment.getChildFragmentManager();
             }
         }

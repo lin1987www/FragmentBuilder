@@ -9,8 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import lin1987www.com.fragmentbuilder.R;
-
 /**
  * Created by Administrator on 2015/7/3.
  */

@@ -1,5 +1,7 @@
 package fix.java.util.concurrent;
 
+import android.support.annotation.CallSuper;
+
 import java.util.ArrayList;
 
 /**
@@ -20,6 +22,13 @@ public class DutyJoin<T> extends Duty<T> {
                             }
                         }
                         if (isAllFinished) {
+                            for (Duty duty : getDutyArray()) {
+                                if (!duty.isDone()) {
+                                    fail(duty.getThrowable());
+                                    DutyJoin.this.fail(duty.getThrowable());
+                                    return;
+                                }
+                            }
                             done();
                             DutyJoin.this.done();
                         }
@@ -29,9 +38,9 @@ public class DutyJoin<T> extends Duty<T> {
         }
     };
 
-    protected ArrayList<Duty> mDutyArray = new ArrayList<Duty>();
+    protected ArrayList<Duty> mDutyArray = new ArrayList<>();
 
-    public ArrayList<Duty> getDutyArray(){
+    public ArrayList<Duty> getDutyArray() {
         return mDutyArray;
     }
 
@@ -58,6 +67,7 @@ public class DutyJoin<T> extends Duty<T> {
         return ex;
     }
 
+    @CallSuper
     @Override
     public void doTask(T context, Duty previousDuty) throws Throwable {
         mDoneDuty.setExecutorService(getExecutorService());

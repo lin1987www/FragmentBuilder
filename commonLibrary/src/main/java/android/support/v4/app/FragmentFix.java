@@ -39,15 +39,27 @@ public class FragmentFix extends Fragment {
     private boolean mHasResumed = false;
 
     protected void prepareAnim() {
+        if (DEBUG) {
+            Log.d(TAG, String.format(FORMAT, "onCreateAnimation prepareAnim state: " + mState));
+        }
         mIsEnterAnim.set(true);
     }
 
     protected void endAnim() {
         mIsEnterAnim.set(false);
-        if (mDutyList.size() > 0) {
-            for (Duty duty : mDutyList) {
-                if (!duty.isSubmitted()) {
-                    duty.submit();
+        performPendingDuty();
+    }
+
+    protected void performPendingDuty() {
+        if (!mIsEnterAnim.get()) {
+            if (mDutyList.size() > 0) {
+                for (Duty duty : mDutyList) {
+                    if (!duty.isSubmitted()) {
+                        duty.submit();
+                        if (DEBUG) {
+                            Log.d(TAG, String.format(FORMAT, "perform pending duty " + duty.getClass().getSimpleName()));
+                        }
+                    }
                 }
             }
         }
@@ -67,14 +79,11 @@ public class FragmentFix extends Fragment {
 
     @Override
     public Animation onCreateAnimation(int transit, boolean enter, int nextAnim) {
-        if (DEBUG) {
-            Log.d(TAG, String.format(FORMAT, "onCreateAnimation"));
-        }
         Animation anim = null;
         if (anim == null) {
             // Use customs
-            if (mNextAnim != 0) {
-                anim = AnimationUtils.loadAnimation(getActivity(), mNextAnim);
+            if (nextAnim != 0) {
+                anim = AnimationUtils.loadAnimation(getActivity(), nextAnim);
             }
         }
         if (anim == null) {
@@ -117,14 +126,14 @@ public class FragmentFix extends Fragment {
                 @Override
                 public void onAnimationStart(Animation animation) {
                     if (DEBUG) {
-                        Log.d(TAG, String.format(FORMAT, "onAnimationStart"));
+                        Log.d(TAG, String.format(FORMAT, "onAnimationStart state: " + mState));
                     }
                 }
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
                     if (DEBUG) {
-                        Log.d(TAG, String.format(FORMAT, "onAnimationEnd"));
+                        Log.d(TAG, String.format(FORMAT, "onAnimationEnd state: " + mState));
                     }
                     endAnim();
                     mFragmentAnimListener = null;
@@ -241,17 +250,26 @@ public class FragmentFix extends Fragment {
         }
         boolean lastUserVisibleHint = getUserVisibleHint();
         super.setUserVisibleHint(isVisibleToUser);
+        /* TODO test remove
         if (!lastUserVisibleHint && isVisibleToUser) {
             int state = FragmentUtils.getFragmentState(this);
             if (state == FragmentFix.RESUMED) {
+                Log.d(TAG, String.format(FORMAT, "doResume by setUserVisibleHint"));
                 doResume();
             }
+        }
+        */
+        if (isVisibleToUser) {
+            performPendingDuty();
         }
     }
 
     Duty mDoResumeDuty = new Duty() {
         @Override
         public void doTask(Object context, Duty previousDuty) throws Throwable {
+            if (!FragmentUtils.isFragmentAvailable(FragmentFix.this)) {
+                return;
+            }
             if (!mHasResumed) {
                 mHasResumed = true;
                 ////// origin start
@@ -266,17 +284,23 @@ public class FragmentFix extends Fragment {
                 List<Fragment> children = getChildFragmentManager().getFragments();
                 if (children != null) {
                     for (Fragment f : children) {
-                        if (f instanceof FragmentFix) {
-                            ((FragmentFix) f).doResume();
+                        if (FragmentUtils.isFragmentAvailable(FragmentFix.this)) {
+                            if (f instanceof FragmentFix) {
+                                Log.d(TAG, String.format(FORMAT, "doResume by children DoResumeDuty"));
+                                ((FragmentFix) f).doResume();
+                            }
                         }
                     }
                 }
             }
+            performPendingDuty();
         }
     }.setExecutorService(ExecutorSet.mainThreadExecutor);
 
     void doResume() {
-        duty(mDoResumeDuty);
+        // do resume
+        mDutyList.add(mDoResumeDuty);
+        mDoResumeDuty.submit();
     }
 
     @Override
@@ -294,6 +318,7 @@ public class FragmentFix extends Fragment {
                 Log.d(TAG, String.format(FORMAT, "Skip OnResume. getUserVisibleHintAllParent() is false."));
             }
         } else {
+            Log.d(TAG, String.format(FORMAT, "doResume by performResume"));
             doResume();
         }
         if (mChildFragmentManager != null) {
@@ -339,8 +364,16 @@ public class FragmentFix extends Fragment {
             return;
         }
         mDutyList.add(duty);
-        if (!mIsEnterAnim.get()) {
+        boolean availableState = isResumed();
+        if (availableState && !mIsEnterAnim.get()) {
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, "submit duty " + duty.getClass().getName()));
+            }
             duty.submit();
+        } else {
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, "add duty " + duty.getClass().getSimpleName()));
+            }
         }
     }
 

@@ -37,7 +37,7 @@ public class FragmentActivityFix extends FragmentActivity {
     }
 
     @Override
-    protected void onCreate(android.os.Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         if (DEBUG) {
             Log.d(TAG, String.format(FORMAT, "onCreate"));
         }
@@ -124,7 +124,7 @@ public class FragmentActivityFix extends FragmentActivity {
     }
 
     @Override
-    protected void onSaveInstanceState(android.os.Bundle outState) {
+    protected void onSaveInstanceState(Bundle outState) {
         if (DEBUG) {
             Log.d(TAG, String.format(FORMAT, "onSaveInstanceState"));
         }

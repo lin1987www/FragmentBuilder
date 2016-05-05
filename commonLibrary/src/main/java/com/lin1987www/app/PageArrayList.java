@@ -122,7 +122,9 @@ public class PageArrayList<T> {
             int minRemoveIndex = (page - mStartPage) * mPageSize;
             int maxRemoveIndex = minRemoveIndex + mPageSize - 1;
             for (; maxRemoveIndex >= minRemoveIndex; maxRemoveIndex--) {
-                mList.remove(maxRemoveIndex);
+                if (maxRemoveIndex < mList.size() && maxRemoveIndex > -1) {
+                    mList.remove(maxRemoveIndex);
+                }
             }
             mList.addAll(minRemoveIndex, pageData);
         }

@@ -1,5 +1,6 @@
 package android.support.v4.app;
 
+import android.support.annotation.IdRes;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -168,6 +169,17 @@ public class FragContent {
         return fragments;
     }
 
+    public ArrayList<Fragment> findFragmentById(@IdRes int id) {
+        ArrayList<Fragment> fragmentArrayList = new ArrayList<>();
+        for (int i = (getAllFragments().size() - 1); i > -1; i--) {
+            Fragment f = getAllFragments().get(i);
+            if (f != null && f.mFragmentId == id) {
+                fragmentArrayList.add(f);
+            }
+        }
+        return fragmentArrayList;
+    }
+
     public static void fillAllFragments(FragmentManager fm, List<Fragment> fragmentList) {
         if (fm != null) {
             List<Fragment> fragList = fm.getFragments();
@@ -299,5 +311,4 @@ public class FragContent {
             }
         }
     }
-
 }

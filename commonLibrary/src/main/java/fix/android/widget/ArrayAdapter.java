@@ -417,7 +417,7 @@ public class ArrayAdapter<T> extends BaseAdapter implements Filterable {
      * <p>Sets the layout resource to create the drop down views.</p>
      *
      * @param resource the layout resource defining the drop down views
-     * @see #getDropDownView(int, android.view.View, android.view.ViewGroup)
+     * @see #getDropDownView(int, View, ViewGroup)
      */
     public void setDropDownViewResource(int resource) {
         this.mDropDownResource = resource;

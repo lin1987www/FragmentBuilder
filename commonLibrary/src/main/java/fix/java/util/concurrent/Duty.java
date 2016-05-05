@@ -1,5 +1,7 @@
 package fix.java.util.concurrent;
 
+import com.lin1987www.common.Utility;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Created by Administrator on 2015/12/16.
  */
 public abstract class Duty<T> implements Callable<Duty<T>> {
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = Utility.DEBUG;
     protected Throwable mThrowable;
     protected WeakReference<ExecutorService> mExecutorService;
     protected T mContext;
@@ -199,7 +201,8 @@ public abstract class Duty<T> implements Callable<Duty<T>> {
         mIsRan = false;
         mIsFinished.set(false);
         mIsDone = false;
-        mIsCancelled = false;
+        // Fix Cancel duty before submit
+        // mIsCancelled = false;
         mSubmitTimeMillis = 0;
         mStartTimeMillis = 0;
         mStopTimeMillis = 0;

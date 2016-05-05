@@ -11,6 +11,8 @@ import com.lin1987www.os.HandlerHelper;
 
 import java.net.CookieHandler;
 
+import okhttp3.OkHttpClient;
+
 public class RequestQueueAgent {
     private static RequestQueue mRequestQueue;
     private static ImageLoader.ImageCache mImageCache;

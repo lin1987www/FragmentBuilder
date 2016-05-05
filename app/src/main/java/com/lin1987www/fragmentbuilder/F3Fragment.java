@@ -13,8 +13,6 @@ import android.widget.Toast;
 
 import com.lin1987www.fragmentbuilder.widget.ShowEnterTextView;
 
-import lin1987www.com.fragmentbuilder.R;
-
 /**
  * Created by Administrator on 2015/6/26.
  */

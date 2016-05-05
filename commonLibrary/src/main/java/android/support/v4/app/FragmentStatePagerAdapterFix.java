@@ -277,7 +277,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             mFragmentArgs.clear();
             if (fs != null) {
                 for (int i = 0; i < fs.size(); i++) {
-                    FragmentState fragmentState = (FragmentState) fs.get(i);
+                    FragmentState fragmentState = fs.get(i);
                     mFragmentStates.add(fragmentState);
                     if (fragmentState != null) {
                         mFragmentArgs.add(fragmentState.mArguments);

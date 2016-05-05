@@ -12,8 +12,6 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import lin1987www.com.fragmentbuilder.R;
-
 /**
  * A placeholder fragment containing a simple view.
  */

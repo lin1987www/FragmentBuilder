@@ -5,8 +5,6 @@ import android.support.v4.app.FragmentActivityFix;
 import android.view.View;
 import android.widget.Button;
 
-import lin1987www.com.fragmentbuilder.R;
-
 /**
  * Created by Administrator on 2015/7/15.
  */

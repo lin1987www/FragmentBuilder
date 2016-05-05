@@ -2,7 +2,7 @@ package android.support.v4.app;
 
 import android.os.Bundle;
 
-public class DialogFragmentFix extends android.support.v4.app.DialogFragment {
+public class DialogFragmentFix extends DialogFragment {
     @Override
     void performActivityCreated(Bundle savedInstanceState) {
         if (FragmentUtils.getFragmentManagerActivity(mChildFragmentManager) == null) {

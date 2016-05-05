@@ -45,7 +45,7 @@ public class Geometry implements Parcelable {
         this.bounds = in.readParcelable(GeometryArea.class.getClassLoader());
     }
 
-    public static final Parcelable.Creator<Geometry> CREATOR = new Parcelable.Creator<Geometry>() {
+    public static final Creator<Geometry> CREATOR = new Creator<Geometry>() {
         public Geometry createFromParcel(Parcel source) {
             return new Geometry(source);
         }

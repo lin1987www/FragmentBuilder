@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import com.android.volley.Response.ErrorListener;
 import com.android.volley.Response.Listener;
 import com.android.volley.toolbox.HttpHeaderParser;
+import com.lin1987www.common.Utility;
 import com.lin1987www.common.util.concurrent.Result;
 import com.lin1987www.jackson.HttpRequestRecord;
 import com.lin1987www.jackson.JacksonHelper;
@@ -50,7 +51,7 @@ public abstract class RequestExtra<T> extends Request<T> {
     private static final String CONTENT_TYPE_MULTIPART_FORMAT = "multipart/form-data; boundary=%s";
     // http://tekeye.biz/2013/android-debug-vs-release-build
     // 可以根據 BuildConfig.DEBUG 判斷是否要紀錄
-    public static boolean enableRecord = true;
+    public static boolean DEBUG = Utility.DEBUG;
     // #endregion
     private static RetryPolicy DEFAULT_RETRY_POLICY = new DefaultRetryPolicy(
             (int) TimeUnit.SECONDS.toMillis(30),
@@ -286,7 +287,7 @@ public abstract class RequestExtra<T> extends Request<T> {
     }
 
     protected void record(Result<T> result) {
-        if (!enableRecord) {
+        if (!DEBUG) {
             return;
         }
         String request_headers = JacksonHelper.toJson(mRequestHeaders);

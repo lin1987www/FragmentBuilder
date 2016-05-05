@@ -9,8 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import lin1987www.com.fragmentbuilder.R;
-
 /**
  * Created by Administrator on 2015/7/8.
  */

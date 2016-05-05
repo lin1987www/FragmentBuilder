@@ -3,6 +3,7 @@ package com.lin1987www.http.cookie;
 import android.util.Log;
 
 import com.j256.ormlite.dao.Dao;
+import com.lin1987www.common.Utility;
 
 import java.io.IOException;
 import java.net.URI;
@@ -21,7 +22,7 @@ import okhttp3.JavaNetCookieJar;
  * Created by Administrator on 2016/3/23.
  */
 public class CookieKeeper {
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = Utility.DEBUG;
     private static final String TAG = CookieHandlerFactory.class.getName();
 
     public Dao<Cookie, String> cookieDao;

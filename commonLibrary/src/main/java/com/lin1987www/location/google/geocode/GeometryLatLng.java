@@ -35,7 +35,7 @@ public class GeometryLatLng implements Parcelable {
         this.lng = (Float) in.readValue(Float.class.getClassLoader());
     }
 
-    public static final Parcelable.Creator<GeometryLatLng> CREATOR = new Parcelable.Creator<GeometryLatLng>() {
+    public static final Creator<GeometryLatLng> CREATOR = new Creator<GeometryLatLng>() {
         public GeometryLatLng createFromParcel(Parcel source) {
             return new GeometryLatLng(source);
         }

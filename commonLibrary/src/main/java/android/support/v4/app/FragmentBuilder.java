@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import fix.java.util.concurrent.ExceptionHelper;
+
 import static android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_CLOSE;
 import static android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE;
 import static android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN;
@@ -151,6 +153,18 @@ public class FragmentBuilder {
 
     public static FragmentBuilder create(View srcView) {
         FragmentBuilder builder = new FragmentBuilder(null, null, srcView);
+        return builder;
+    }
+
+    public static FragmentBuilder createObject(Object obj) {
+        FragmentBuilder builder = null;
+        if (obj instanceof FragmentActivity) {
+            builder = create((FragmentActivity) obj);
+        } else if (obj instanceof Fragment) {
+            builder = create((Fragment) obj);
+        } else if (obj instanceof View) {
+            builder = create((View) obj);
+        }
         return builder;
     }
 
@@ -488,8 +502,9 @@ public class FragmentBuilder {
                 FragmentUtils.putArguments(fragment, fragmentArgs);
             }
         }
+
         if (needToFindContainerFragment) {
-            // TODO 會出現多個 Fragment 在同一個 ContainerView 的情況!
+            // TODO 可能會出現多個 Fragment 在同一個 ContainerView 的情況! 但可能用不到
             // If needToFindContainerFragment is false, containerFragment must be written by PreAction of reset
             containerFragment = fragmentManager.findFragmentById(containerViewId);
         }
@@ -631,17 +646,25 @@ public class FragmentBuilder {
         return fm;
     }
 
+    public static int popBackStack(FragmentActivity activity, String name, @PopFlag int flags, boolean skipOnResume) {
+        return popBackStack(activity, new PredicateBackStackName(name), flags, skipOnResume, null);
+    }
+
     /**
      * @param activity
      * @param name
      * @param flags
      * @return popBackStack count
      */
-    public static int popBackStack(FragmentActivity activity, String name, @PopFlag int flags, boolean skipOnResume) {
-        return popBackStack(activity, new PredicateBackStackName(name), flags, skipOnResume);
+    public static int popBackStack(FragmentActivity activity, String name, @PopFlag int flags, boolean skipOnResume, PopFragmentCallback callback) {
+        return popBackStack(activity, new PredicateBackStackName(name), flags, skipOnResume, callback);
     }
 
     public static int popBackStack(FragmentActivity activity, Predicate predicate, @PopFlag int flags, boolean skipOnResume) {
+        return popBackStack(activity, predicate, flags, skipOnResume, null);
+    }
+
+    public static int popBackStack(FragmentActivity activity, Predicate predicate, @PopFlag int flags, boolean skipOnResume, PopFragmentCallback callback) {
         ArrayList<BackStackEntry> list = new ArrayList<BackStackEntry>();
         HashMap<BackStackEntry, FragmentManager> hookFmMap = new HashMap<BackStackEntry, FragmentManager>();
         HashMap<BackStackEntry, Fragment> hookFragMap = new HashMap<BackStackEntry, Fragment>();
@@ -662,7 +685,8 @@ public class FragmentBuilder {
             Fragment hookFragment = hookFragMap.get(backStackEntry);
             Fragment willAttachFragment = FragContentPath.findFragment(activity, builder.srcFragmentPathString);
             FragmentArgs willAttachFragmentArgs = null;
-            if (willAttachFragment != null && skipOnResume) {
+            // Last attachFragment didn't skip onResume
+            if (willAttachFragment != null && skipOnResume && i != 0) {
                 willAttachFragmentArgs = new FragmentArgs(willAttachFragment.getArguments());
             }
             Fragment popFragment = hookFragmentManager.findFragmentByTag(builder.fragmentTag);
@@ -689,6 +713,8 @@ public class FragmentBuilder {
                 PopFragmentSender next = notifyPopFragmentList.get(i + 1);
                 sender.nextSender = next;
             }
+            PopFragmentSender last = notifyPopFragmentList.get(notifyPopFragmentList.size() - 1);
+            last.setCallback(callback);
             notifyPopFragmentList.get(0).popBackStack();
         }
         return notifyPopFragmentList.size();
@@ -708,7 +734,8 @@ public class FragmentBuilder {
         @Override
         public boolean apply(BackStackEntry entry, FragmentBuilder builder) {
             if (value == null) {
-                return true;
+                // TODO  2016.05.05 fixed
+                return false;
             }
             boolean result = builder.assignBackStackName.equals(value);
             return result;
@@ -725,7 +752,8 @@ public class FragmentBuilder {
         @Override
         public boolean apply(BackStackEntry entry, FragmentBuilder builder) {
             if (value == null) {
-                return true;
+                // TODO  2016.05.05 fixed
+                return false;
             }
             boolean result = entry.equals(value);
             return result;
@@ -801,6 +829,10 @@ public class FragmentBuilder {
         }
     }
 
+    public interface PopFragmentCallback {
+        void callback(FragmentActivity fragmentActivity, Object target);
+    }
+
     private static class PopFragmentSender implements FragmentManager.OnBackStackChangedListener {
         private FragmentActivity fragmentActivity;
         private Fragment hookFragment;
@@ -817,6 +849,13 @@ public class FragmentBuilder {
                 onBackStackChanged();
             }
         };
+        private PopFragmentCallback callback;
+
+        private Object targetObject;
+
+        public void setCallback(PopFragmentCallback callback) {
+            this.callback = callback;
+        }
 
         public PopFragmentSender(FragmentActivity fragmentActivity, Fragment hookFragment, FragmentManager hookFragmentManager, Fragment popFragment, FragmentBuilder builder, BackStackEntry entry) {
             this.fragmentActivity = fragmentActivity;
@@ -842,7 +881,7 @@ public class FragmentBuilder {
             );
         }
 
-        private void removeListener() {
+        protected void removeListener() {
             // Remove listener
             fragmentActivity.getWindow().getDecorView().post(new Runnable() {
                 @Override
@@ -857,11 +896,19 @@ public class FragmentBuilder {
                 nextSender.popBackStack();
                 nextSender = null;
             }
+            if (callback != null) {
+                fragmentActivity.getWindow().getDecorView().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.callback(fragmentActivity, targetObject);
+                        callback = null;
+                    }
+                }, 0L);
+            }
         }
 
         @Override
         public void onBackStackChanged() {
-            Object targetObject;
             if (isSent) {
                 return;
             }
@@ -909,6 +956,7 @@ public class FragmentBuilder {
                     return;
                 }
             } catch (Throwable ex) {
+                ExceptionHelper.printException(String.format("onPopFragment on %s", targetObject), ex);
             }
             if (targetObject instanceof PopFragmentListener) {
                 ((PopFragmentListener) targetObject).onPopFragment(fragment);

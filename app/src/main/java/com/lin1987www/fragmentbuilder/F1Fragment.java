@@ -11,7 +11,6 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import lin1987www.com.fragmentbuilder.R;
 
 /**
  * Created by Administrator on 2015/6/26.
@@ -43,7 +42,7 @@ public class F1Fragment extends FragmentFix {
                         .replace()
                         .addToBackStack(F11Fragment.BACK_STACK_NAME)
                         .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                .build();
+                        .build();
             }
         });
         return view;

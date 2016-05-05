@@ -8,8 +8,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import lin1987www.com.fragmentbuilder.R;
-
 public class MainActivity extends FragmentActivityFix {
     Button mButton;
 

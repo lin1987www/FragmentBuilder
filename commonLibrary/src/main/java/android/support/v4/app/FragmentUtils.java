@@ -163,4 +163,8 @@ public class FragmentUtils {
             op = op.next;
         }
     }
+
+    public static boolean isInBackStack(Fragment fragment) {
+        return fragment.isInBackStack();
+    }
 }

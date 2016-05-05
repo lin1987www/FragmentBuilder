@@ -17,7 +17,7 @@ import com.lin1987www.fragmentbuilder.api.GetUser;
 
 import fix.java.util.concurrent.Duty;
 import fix.java.util.concurrent.DutyOn;
-import lin1987www.com.fragmentbuilder.R;
+
 
 /**
  * Created by Administrator on 2015/6/26.

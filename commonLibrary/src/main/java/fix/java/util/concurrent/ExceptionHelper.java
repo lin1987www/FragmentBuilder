@@ -3,11 +3,22 @@ package fix.java.util.concurrent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 
 /**
  * Created by Administrator on 2015/3/6.
  */
 public class ExceptionHelper {
+    private static final ArrayList<ExceptionPrinter> mArray = new ArrayList<>();
+
+    public static void addExceptionPrinter(ExceptionPrinter exceptionPrinter) {
+        mArray.add(exceptionPrinter);
+    }
+
+    public static void removeExceptionPrinter(ExceptionPrinter exceptionPrinter) {
+        mArray.remove(exceptionPrinter);
+    }
+
     public static void throwException(String taskName, Throwable ex) throws Exception {
         printException(taskName, ex);
         Exception e;
@@ -34,6 +45,10 @@ public class ExceptionHelper {
         Thread thread = Thread.currentThread();
         System.err.println(String.format("Exception in thread \"%s\" %s %s", thread.toString(), ex.toString(), taskName));
         ex.printStackTrace();
+
+        for (ExceptionPrinter handler : mArray) {
+            handler.printException(taskName, ex);
+        }
     }
 
     public static Throwable getNestedCause(Throwable throwable) {
@@ -51,5 +66,9 @@ public class ExceptionHelper {
         String stackTrace = result.toString();
         printWriter.close();
         return stackTrace;
+    }
+
+    public interface ExceptionPrinter {
+        void printException(String taskName, Throwable ex);
     }
 }

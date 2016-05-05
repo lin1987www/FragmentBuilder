@@ -9,12 +9,12 @@ import android.os.HandlerThread;
 public class StartedHandler extends Handler {
     private final HandlerThread handlerThread;
 
-    private StartedHandler(HandlerThread handlerThread, android.os.Handler.Callback callback) {
+    private StartedHandler(HandlerThread handlerThread, Callback callback) {
         super(handlerThread.getLooper(), callback);
         this.handlerThread = handlerThread;
     }
 
-    public static StartedHandler create(String threadName, android.os.Handler.Callback callback) {
+    public static StartedHandler create(String threadName, Callback callback) {
         HandlerThread handlerThread = new HandlerThread(threadName);
         handlerThread.start();
         StartedHandler startedHandler = new StartedHandler(handlerThread, callback);

@@ -8,6 +8,7 @@ import android.text.format.DateUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,7 +16,15 @@ import java.util.regex.Pattern;
  * Created by lin on 2014/9/11.
  */
 public class Utility {
-    private final static SimpleDateFormat mDateFormat = new SimpleDateFormat("yyyy/MM/dd a hh:mm");
+    public static boolean DEBUG = true;
+
+    private final static SimpleDateFormat mDateFormat;
+
+    static {
+        mDateFormat = new SimpleDateFormat("yyyy/MM/dd a hh:mm");
+        mDateFormat.setTimeZone(TimeZone.getDefault());
+    }
+
 
     public static String getDateTimeAgoString(Long unixTime) {
         return getDateTimeAgoStringByTime(unixTime, new Date().getTime());
@@ -37,9 +46,9 @@ public class Utility {
         return getDateTimeString(unixTime, mDateFormat);
     }
 
-
     public static String getDateTimeString(Long unixTime, SimpleDateFormat dateFormat) {
         Date date = new Date(unixTime * 1000);
+
         String dateString = dateFormat.format(date);
         return dateString;
     }
@@ -65,12 +74,24 @@ public class Utility {
     }
 
     public static String getBaseUrl(String value) {
-        Pattern pattern = Pattern.compile("((?>[^\\/]+\\/{1,2})*)");
+        Pattern pattern = Pattern.compile("(?>[^\\/]+\\/{1,2})*");
         String result = value;
         Matcher matcher = pattern.matcher(value);
         if (matcher.find()) {
             result = matcher.group();
         }
+        return result;
+    }
+
+    private final static String headTag = "<head>";
+
+    public static String insertCss(String html, String css) {
+        String style = String.format("<style type=\"text/css\">%s</style>", css);
+        StringBuffer htmlBuffer = new StringBuffer();
+        htmlBuffer.append(html);
+        int headIndex = htmlBuffer.indexOf(headTag);
+        htmlBuffer.insert(headIndex + headTag.length(), style);
+        String result = htmlBuffer.toString();
         return result;
     }
 }

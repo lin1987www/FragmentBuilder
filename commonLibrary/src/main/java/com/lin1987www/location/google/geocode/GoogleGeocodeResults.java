@@ -206,7 +206,7 @@ public class GoogleGeocodeResults implements Parcelable {
         this.mResponseText = in.readString();
     }
 
-    public static final Parcelable.Creator<GoogleGeocodeResults> CREATOR = new Parcelable.Creator<GoogleGeocodeResults>() {
+    public static final Creator<GoogleGeocodeResults> CREATOR = new Creator<GoogleGeocodeResults>() {
         public GoogleGeocodeResults createFromParcel(Parcel source) {
             return new GoogleGeocodeResults(source);
         }

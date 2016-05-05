@@ -7,8 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
-import lin1987www.com.fragmentbuilder.R;
-
 /**
  * Created by Administrator on 2015/6/26.
  */
