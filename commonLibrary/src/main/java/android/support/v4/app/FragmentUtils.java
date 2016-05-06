@@ -116,6 +116,9 @@ public class FragmentUtils {
                 isAvailable = false;
             } else if (getFragmentManagerActivity(fragment.getChildFragmentManager()) == null) {
                 isAvailable = false;
+            } else if (!fragment.isAdded()) {
+                // TODO
+                isAvailable = false;
             }
         }
         return isAvailable;
