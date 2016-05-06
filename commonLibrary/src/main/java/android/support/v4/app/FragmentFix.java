@@ -299,8 +299,8 @@ public class FragmentFix extends Fragment {
                         }
                     }
                 }
-                performPendingDuty("DoResumeDuty");
             }
+            performPendingDuty("DoResumeDuty");
             done();
         }
     }.setExecutorService(ExecutorSet.mainThreadExecutor);
