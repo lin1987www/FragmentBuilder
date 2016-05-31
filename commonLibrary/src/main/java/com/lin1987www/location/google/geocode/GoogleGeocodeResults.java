@@ -17,11 +17,11 @@ public class GoogleGeocodeResults implements Parcelable {
 
     @JsonCreator
     public GoogleGeocodeResults(
-            @JsonProperty("status")String status,
-            @JsonProperty("results")List<GoogleGeocodeResult> results
+            @JsonProperty("status") String status,
+            @JsonProperty("results") List<GoogleGeocodeResult> results
     ) {
         this.status = status;
-        this.results =results;
+        this.results = results;
     }
 
     protected String postal_code, country, administrative_area_level_1,

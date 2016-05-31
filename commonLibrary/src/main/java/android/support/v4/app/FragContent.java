@@ -1,6 +1,7 @@
 package android.support.v4.app;
 
 import android.support.annotation.IdRes;
+import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -36,6 +37,18 @@ public class FragContent {
         if (srcView == null) {
             throw new NullPointerException();
         }
+    }
+
+    public static FragContent create(Object obj) {
+        FragContent content = null;
+        if (obj instanceof FragmentActivity) {
+            content = new FragContent((FragmentActivity) obj);
+        } else if (obj instanceof Fragment) {
+            content = new FragContent((Fragment) obj);
+        } else if (obj instanceof View) {
+            content = new FragContent((View) obj);
+        }
+        return content;
     }
 
     public FragContent(FragmentActivity srcFragmentActivity, Fragment srcFragment, View srcView) {
@@ -83,13 +96,24 @@ public class FragContent {
         }
     }
 
-    public FragmentManager getFragmentManager(int containerViewId) {
+    public FragmentManager getContainerFragmentManager(int containerViewId) {
         if (fragmentManager != null) {
             return fragmentManager;
         } else {
             setContainerViewId(containerViewId);
         }
         return fragmentManager;
+    }
+
+    public FragmentManager getParentFragmentManager() {
+        Fragment fragment = getSrcFragment();
+        if (fragment != null) {
+            Fragment parentFragment = fragment.getParentFragment();
+            if (parentFragment != null) {
+                return parentFragment.getChildFragmentManager();
+            }
+        }
+        return getFragmentActivity().getSupportFragmentManager();
     }
 
     private View mSrcView = null;
@@ -158,15 +182,27 @@ public class FragContent {
 
     public ArrayList<Fragment> getAllFragments() {
         if (mAllFragments == null) {
-            mAllFragments = getAllFragments(getFragmentActivity().getSupportFragmentManager());
+            fillAllFragmentAndManagerAndRecord();
         }
         return mAllFragments;
     }
 
-    public static ArrayList<Fragment> getAllFragments(FragmentManager fm) {
-        ArrayList<Fragment> fragments = new ArrayList<>();
-        fillAllFragments(fm, fragments);
-        return fragments;
+    private ArrayList<FragmentManager> mAllFragmentManagers = null;
+
+    public ArrayList<FragmentManager> getAllFragmentManagers() {
+        if (mAllFragmentManagers == null) {
+            fillAllFragmentAndManagerAndRecord();
+        }
+        return mAllFragmentManagers;
+    }
+
+    private ArrayList<BackStackRecord> mAllBackStackRecords = null;
+
+    public ArrayList<BackStackRecord> getAllBackStackRecords() {
+        if (mAllBackStackRecords == null) {
+            fillAllFragmentAndManagerAndRecord();
+        }
+        return mAllBackStackRecords;
     }
 
     public ArrayList<Fragment> findFragmentById(@IdRes int id) {
@@ -180,8 +216,25 @@ public class FragContent {
         return fragmentArrayList;
     }
 
-    public static void fillAllFragments(FragmentManager fm, List<Fragment> fragmentList) {
+    private void fillAllFragmentAndManagerAndRecord() {
+        ArrayList<Fragment> fragments = new ArrayList<>();
+        ArrayList<FragmentManager> fragmentManagers = new ArrayList<>();
+        ArrayList<BackStackRecord> backStackRecords = new ArrayList<>();
+        fillAllFragmentAndManagerAndRecord(getFragmentActivity().getSupportFragmentManager(), fragments, fragmentManagers, backStackRecords);
+        mAllFragments = fragments;
+        mAllFragmentManagers = fragmentManagers;
+        mAllBackStackRecords = backStackRecords;
+    }
+
+    public static void fillAllFragmentAndManagerAndRecord(FragmentManager fm, List<Fragment> fragmentList, List<FragmentManager> fragmentManagerList, ArrayList<BackStackRecord> backStackRecords) {
         if (fm != null) {
+            fragmentManagerList.add(fm);
+            if (fm.getBackStackEntryCount() > 0) {
+                for (int i = fm.getBackStackEntryCount() - 1; i > -1; i--) {
+                    BackStackRecord backStackRecord = (BackStackRecord) fm.getBackStackEntryAt(i);
+                    backStackRecords.add(backStackRecord);
+                }
+            }
             List<Fragment> fragList = fm.getFragments();
             if (fragList != null && fragList.size() > 0) {
                 for (Fragment frag : fragList) {
@@ -189,7 +242,7 @@ public class FragContent {
                         continue;
                     }
                     fragmentList.add(frag);
-                    fillAllFragments(frag.getChildFragmentManager(), fragmentList);
+                    fillAllFragmentAndManagerAndRecord(frag.getChildFragmentManager(), fragmentList, fragmentManagerList, backStackRecords);
                 }
             }
         }
@@ -254,6 +307,19 @@ public class FragContent {
         return path;
     }
 
+    public int getSafeContainerViewId() {
+        int containerViewId = 0;
+        View view = FragContentPath.findAncestorOrSelf(getSrcView(), ViewPager.class);
+        if (view != null) {
+            FragContent content = new FragContent(view);
+            Fragment fragment = content.getSrcFragment();
+            if (fragment != null) {
+                containerViewId = fragment.getId();
+            }
+        }
+        return containerViewId;
+    }
+
     public static void fillFragmentPath(ArrayList<Integer> path, Fragment frag) {
         Fragment parentFrag = frag.getParentFragment();
         int index;
@@ -310,5 +376,16 @@ public class FragContent {
                 throw new RuntimeException("Didn't match FragmentActivity.");
             }
         }
+    }
+
+    public static Fragment findAddFragment(BackStackRecord backStackRecord) {
+        BackStackRecord.Op op = backStackRecord.mHead;
+        while (op != null) {
+            if (op.cmd == BackStackRecord.OP_ADD) {
+                return op.fragment;
+            }
+            op = op.next;
+        }
+        return null;
     }
 }

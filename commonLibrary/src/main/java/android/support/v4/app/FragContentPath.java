@@ -17,11 +17,11 @@ public class FragContentPath {
     public ArrayList<Integer> fragPath = new ArrayList<>();
     public ArrayList<Integer> viewPath = new ArrayList<>();
 
-    public static int back(ArrayList<Integer> arrayList) {
+    public static ArrayList<Integer> back(ArrayList<Integer> arrayList) {
         if (arrayList.size() > 0) {
             arrayList.remove(arrayList.size() - 1);
         }
-        return arrayList.size();
+        return arrayList;
     }
 
     public static Object findObject(FragmentActivity activity, FragContentPath fragContentPath) {
@@ -105,6 +105,9 @@ public class FragContentPath {
             Use this method to avoid finding fragment in ViewPager
     */
     public static View findAncestorOrSelf(View srcView, Class<?> targetClass) {
+        if (srcView == null) {
+            return null;
+        }
         View view = srcView;
         View targetView = srcView;
         FragContent content = new FragContent(srcView);

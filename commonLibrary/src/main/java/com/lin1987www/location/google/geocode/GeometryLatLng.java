@@ -7,8 +7,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class GeometryLatLng implements Parcelable {
-	public Float lat;
-	public Float lng;
+    public Float lat;
+    public Float lng;
 
     @JsonCreator
     public GeometryLatLng(
@@ -16,7 +16,7 @@ public class GeometryLatLng implements Parcelable {
             @JsonProperty("lng") Float lng
     ) {
         this.lat = lat;
-        this.lng =lng;
+        this.lng = lng;
     }
 
     @Override

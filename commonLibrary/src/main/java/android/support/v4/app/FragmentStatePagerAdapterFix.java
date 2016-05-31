@@ -318,6 +318,11 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
         Fragment willRemoveFrag = null;
         if (fm.mActive != null) {
             int index = fragment.mIndex;
+            if (index < 0) {
+                Log.e(TAG,
+                        String.format("Fragment mIndex %s < 0 ! Origin: %s", fragment.mIndex, fragment));
+                return;
+            }
             Fragment origin = fm.mActive.get(index);
             if (origin != null) {
                 if ((origin.mIndex != fragment.mIndex) || !(origin.equals(fragment))) {

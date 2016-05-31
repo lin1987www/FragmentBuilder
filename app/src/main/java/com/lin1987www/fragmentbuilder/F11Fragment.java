@@ -48,8 +48,7 @@ public class F11Fragment extends FragmentFix {
                         .create(F11Fragment.this)
                         .setContainerViewId(R.id.container_f11)
                         .setFragment(F111Fragment.class, F111Fragment.class.getSimpleName())
-                        .add()
-                        .traceable()
+                        .attach()
                         .build();
             }
         });

@@ -60,7 +60,7 @@ public class ShowEnterTextView extends TextView implements View.OnClickListener 
                 .create(this)
                 .setFragment(EnterTextFragment.class, getClass().getName() + " " + getId())
                 .replace()
-                .traceable()
+                .addToBackStack()
                 .build();
     }
 }

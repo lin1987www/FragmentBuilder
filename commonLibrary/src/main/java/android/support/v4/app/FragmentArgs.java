@@ -9,6 +9,7 @@ public class FragmentArgs {
     private final static String suffix = FragmentArgs.class.getName();
     private final static String key_isSkipPopOnResume = key("key_isSkipPopOnResume");
     private final static String key_useNormalResume = key("key_useNormalResume");
+    private final static String key_fragmentBuilderText = key("key_fragmentBuilderText");
 
     private static String key(String name) {
         return String.format("%s_%s", name, suffix);
@@ -33,6 +34,7 @@ public class FragmentArgs {
         }
         return isConsumed;
     }
+
     /**
      * Use Case: When  popBackState  all  detach Fragment will attach again, we ignore it onResume.
      */
@@ -40,12 +42,20 @@ public class FragmentArgs {
         bundle.putBoolean(key_isSkipPopOnResume, true);
     }
 
-    boolean isUseNormalResume(){
+    boolean isUseNormalResume() {
         boolean useNormalResume = bundle.getBoolean(key_useNormalResume, false);
         return useNormalResume;
     }
 
-    public void useNormalResume(){
+    public void useNormalResume() {
         bundle.putBoolean(key_useNormalResume, true);
+    }
+
+    public String getFragmentBuilderText() {
+        return bundle.getString(key_fragmentBuilderText);
+    }
+
+    void setFragmentBuilderText(String value) {
+        bundle.putString(key_fragmentBuilderText, value);
     }
 }

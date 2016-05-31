@@ -45,7 +45,11 @@ public class DutyJoin<T> extends Duty<T> {
     }
 
     public DutyJoin<T> join(Duty duty) {
-        mDutyArray.add(duty);
+        if (isRan()) {
+            submitDuty(duty);
+        } else {
+            mDutyArray.add(duty);
+        }
         return this;
     }
 
@@ -72,6 +76,12 @@ public class DutyJoin<T> extends Duty<T> {
     public void doTask(T context, Duty previousDuty) throws Throwable {
         mDoneDuty.setExecutorService(getExecutorService());
         for (Duty duty : mDutyArray) {
+            submitDuty(duty);
+        }
+    }
+
+    private void submitDuty(Duty duty) {
+        if (!duty.isRan()) {
             duty.always(mDoneDuty);
             duty.submit(this);
         }

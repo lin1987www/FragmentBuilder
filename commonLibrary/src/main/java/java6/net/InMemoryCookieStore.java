@@ -98,9 +98,9 @@ public class InMemoryCookieStore implements CookieStore {
 
     /**
      * Get all cookies, which:
-     *  1) given uri domain-matches with, or, associated with
-     *     given uri when added to the cookie store.
-     *  3) not expired.
+     * 1) given uri domain-matches with, or, associated with
+     * given uri when added to the cookie store.
+     * 3) not expired.
      * See RFC 2965 sec. 3.3.4 for more detail.
      */
     public List<HttpCookie> get(URI uri) {
@@ -235,9 +235,8 @@ public class InMemoryCookieStore implements CookieStore {
     // @param comparator        the prediction to decide whether or not
     //                          a cookie in index should be returned
     private <T> void getInternal(List<HttpCookie> cookies,
-                                Map<T, List<HttpCookie>> cookieIndex,
-                                Comparable<T> comparator)
-    {
+                                 Map<T, List<HttpCookie>> cookieIndex,
+                                 Comparable<T> comparator) {
         for (T index : cookieIndex.keySet()) {
             if (comparator.compareTo(index) == 0) {
                 List<HttpCookie> indexedCookies = cookieIndex.get(index);
@@ -270,8 +269,7 @@ public class InMemoryCookieStore implements CookieStore {
     // add 'cookie' indexed by 'index' into 'indexStore'
     private <T> void addIndex(Map<T, List<HttpCookie>> indexStore,
                               T index,
-                              HttpCookie cookie)
-    {
+                              HttpCookie cookie) {
         if (index != null) {
             List<HttpCookie> cookies = indexStore.get(index);
             if (cookies != null) {
@@ -296,11 +294,11 @@ public class InMemoryCookieStore implements CookieStore {
         URI effectiveURI = null;
         try {
             effectiveURI = new URI(uri.getScheme(),
-                                   uri.getAuthority(),
-                                   null,  // path component
-                                   null,  // query component
-                                   null   // fragment component
-                                  );
+                    uri.getAuthority(),
+                    null,  // path component
+                    null,  // query component
+                    null   // fragment component
+            );
         } catch (URISyntaxException ignored) {
             effectiveURI = uri;
         }

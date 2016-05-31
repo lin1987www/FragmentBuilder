@@ -255,7 +255,7 @@ public class FragmentFix extends Fragment {
         }
         boolean lastUserVisibleHint = getUserVisibleHint();
         super.setUserVisibleHint(isVisibleToUser);
-        if (!lastUserVisibleHint && isVisibleToUser && isResumed()) {
+        if (isVisibleToUser && isResumed()) {
             performPendingDuty("setUserVisibleHint");
         }
     }
@@ -299,8 +299,8 @@ public class FragmentFix extends Fragment {
                         }
                     }
                 }
+                performPendingDuty("DoResumeDuty");
             }
-            performPendingDuty("DoResumeDuty");
             done();
         }
     }.setExecutorService(ExecutorSet.mainThreadExecutor);

@@ -2,8 +2,11 @@ package android.support.v4.app;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
@@ -192,7 +195,9 @@ public class FragmentActivityFix extends FragmentActivity {
             }
         }
         //
-        if (FragmentBuilder.hasPopBackStack(this)) {
+        FragmentBuilder.PopBackStackRecord record = FragmentBuilder.popBackStackRecord(this);
+        if (record != null) {
+            record.popBackStack();
             return;
         }
         // 都沒有Pop Fragment時會用到，大概是用於SideMenu上
@@ -219,4 +224,45 @@ public class FragmentActivityFix extends FragmentActivity {
         // 如果回傳true代表已處理
         boolean onBackPressed();
     }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        boolean result;
+        result = super.onKeyUp(keyCode, event);
+        if ((event.getAction() == KeyEvent.ACTION_UP) &&
+                ((keyCode == KeyEvent.KEYCODE_ENTER) || (keyCode == KeyEvent.KEYCODE_ESCAPE))) {
+            boolean needHideKeyboard = true;
+            if (getCurrentFocus() instanceof EditText) {
+                EditText editText = (EditText) getCurrentFocus();
+                int inputType = editText.getInputType();
+                boolean isMultiLine = (inputType & InputType.TYPE_TEXT_FLAG_MULTI_LINE) == InputType.TYPE_TEXT_FLAG_MULTI_LINE || (inputType & InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE) == InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE;
+                needHideKeyboard = !isMultiLine;
+            }
+            if (needHideKeyboard) {
+                ContextHelper.hideKeyboard(this);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        boolean result;
+        result = super.onKeyDown(keyCode, event);
+        if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                ((keyCode == KeyEvent.KEYCODE_ENTER) || (keyCode == KeyEvent.KEYCODE_ESCAPE))) {
+            boolean needHideKeyboard = true;
+            if (getCurrentFocus() instanceof EditText) {
+                EditText editText = (EditText) getCurrentFocus();
+                int inputType = editText.getInputType();
+                boolean isMultiLine = (inputType & InputType.TYPE_TEXT_FLAG_MULTI_LINE) == InputType.TYPE_TEXT_FLAG_MULTI_LINE || (inputType & InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE) == InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE;
+                needHideKeyboard = !isMultiLine;
+            }
+            if (needHideKeyboard) {
+                ContextHelper.hideKeyboard(this);
+            }
+        }
+        return result;
+    }
+
 }

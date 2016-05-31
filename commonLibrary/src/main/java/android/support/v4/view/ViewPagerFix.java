@@ -1,4 +1,4 @@
-package fix.android.support.v4.view;
+package android.support.v4.view;
 
 import android.content.Context;
 import android.support.v4.view.ViewPager;

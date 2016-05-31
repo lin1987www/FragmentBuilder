@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.j256.ormlite.dao.Dao;
-import com.lin1987www.common.Utility;
 
 import java.util.Map;
 import java.util.WeakHashMap;

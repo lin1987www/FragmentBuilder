@@ -7,10 +7,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Geometry implements Parcelable {
-	public String location_type;
-	public GeometryLatLng location;
-	public GeometryArea viewport;
-	public GeometryArea bounds;
+    public String location_type;
+    public GeometryLatLng location;
+    public GeometryArea viewport;
+    public GeometryArea bounds;
 
     @JsonCreator
     public Geometry(
@@ -19,7 +19,7 @@ public class Geometry implements Parcelable {
             @JsonProperty("viewport") GeometryArea viewport,
             @JsonProperty("bounds") GeometryArea bounds
     ) {
-        this.location_type =location_type;
+        this.location_type = location_type;
         this.location = location;
         this.viewport = viewport;
         this.bounds = bounds;

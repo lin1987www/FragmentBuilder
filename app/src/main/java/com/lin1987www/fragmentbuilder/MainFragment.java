@@ -1,9 +1,9 @@
 package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
+import android.support.v4.app.FragContent;
 import android.support.v4.app.FragmentBuilder;
 import android.support.v4.app.FragmentFix;
-import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,7 +32,6 @@ public class MainFragment extends FragmentFix {
                 .setContainerViewId(R.id.container_main_1)
                 .setFragment(F1Fragment.class, F1Fragment.class.getSimpleName())
                 .add()
-                .untraceable()
                 .build();
 
         FragmentBuilder
@@ -40,7 +39,6 @@ public class MainFragment extends FragmentFix {
                 .setContainerViewId(R.id.container_main_2)
                 .setFragment(F2Fragment.class, F2Fragment.class.getSimpleName())
                 .add()
-                .untraceable()
                 .build();
 
         FragmentBuilder
@@ -48,7 +46,6 @@ public class MainFragment extends FragmentFix {
                 .setContainerViewId(R.id.container_main_3)
                 .setFragment(F3Fragment.class, F3Fragment.class.getSimpleName())
                 .add()
-                .untraceable()
                 .build();
 
         mContainerMain4 = (FrameLayout) view.findViewById(R.id.container_main_4);
@@ -59,8 +56,7 @@ public class MainFragment extends FragmentFix {
                         .create(MainFragment.this)
                         .setContainerViewId(R.id.container_main_4)
                         .setFragment(F4Fragment.class, F4Fragment.class.getSimpleName())
-                        .add()
-                        .traceable()
+                        .attach()
                         .build();
             }
         });
@@ -73,8 +69,7 @@ public class MainFragment extends FragmentFix {
                         .create(MainFragment.this)
                         .setContainerViewId(R.id.container_main_5)
                         .setFragment(F5Fragment.class, F5Fragment.class.getSimpleName())
-                        .add()
-                        .traceable()
+                        .attach()
                         .build();
             }
         });
@@ -84,10 +79,10 @@ public class MainFragment extends FragmentFix {
         mTestCodeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FragmentManager.BackStackEntry backStackEntry =
-                        FragmentBuilder.findBackStackEntry(MainFragment.this);
+                FragmentBuilder builder =
+                        FragmentBuilder.findFragmentBuilder(new FragContent(MainFragment.this));
 
-                Log.e(TAG, String.format("BackStackEntry: %s", backStackEntry));
+                Log.e(TAG, String.format("BackStackEntry: %s", builder));
             }
         });
 

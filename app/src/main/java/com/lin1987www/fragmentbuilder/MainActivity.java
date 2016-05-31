@@ -44,7 +44,6 @@ public class MainActivity extends FragmentActivityFix {
         FragmentBuilder
                 .create(this)
                 .add()
-                .untraceable()
                 .setContainerViewId(R.id.container)
                 .setFragment(MainFragment.class)
                 .build();

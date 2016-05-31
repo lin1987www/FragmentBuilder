@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.View;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 
 /**
  * Created by Administrator on 2015/7/5.
@@ -117,11 +118,25 @@ public class FragmentUtils {
             } else if (getFragmentManagerActivity(fragment.getChildFragmentManager()) == null) {
                 isAvailable = false;
             } else if (!fragment.isAdded()) {
-                // TODO
                 isAvailable = false;
             }
         }
         return isAvailable;
+    }
+
+    public static boolean hasSavedViewState(View view) {
+        FragContent content = new FragContent(view);
+        return hasSavedViewState(content.getSrcFragment());
+    }
+
+    public static boolean hasSavedViewState(Fragment fragment) {
+        boolean hasSaveState = false;
+        if (fragment != null) {
+            if (fragment.mSavedViewState != null) {
+                hasSaveState = true;
+            }
+        }
+        return hasSaveState;
     }
 
     public static boolean isFragmentExist(Fragment fragment) {
@@ -169,5 +184,18 @@ public class FragmentUtils {
 
     public static boolean isInBackStack(Fragment fragment) {
         return fragment.isInBackStack();
+    }
+
+    public static ArrayList<Fragment> getAllFragments(FragmentManager fragmentManager) {
+        // TODO 可能有錯誤 不需要加上 mAdded
+        FragmentManagerImpl fm = (FragmentManagerImpl) fragmentManager;
+        ArrayList<Fragment> fragments = new ArrayList<>();
+        if (fm.getFragments() != null) {
+            fragments.addAll(fm.getFragments());
+        }
+        if (fm.mAdded != null) {
+            fragments.addAll(fm.mAdded);
+        }
+        return fragments;
     }
 }

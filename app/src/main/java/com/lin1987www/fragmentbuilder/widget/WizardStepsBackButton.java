@@ -26,7 +26,7 @@ public class WizardStepsBackButton extends Button implements View.OnClickListene
                 .create(this)
                 .back()
                 .replace()
-                .traceable()
+                .addToBackStack()
                 .setFragment(WizardStepsFragment.class)
                 .setArgs(args)
                 .build();

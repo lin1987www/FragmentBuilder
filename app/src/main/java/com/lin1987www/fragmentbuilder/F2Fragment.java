@@ -30,8 +30,7 @@ public class F2Fragment extends FragmentFix {
                 FragmentBuilder
                         .create(F2Fragment.this)
                         .setFragment(F21Fragment.class, F21Fragment.class.getSimpleName())
-                        .add()
-                        .traceable()
+                        .attach()
                         .build();
             }
         });

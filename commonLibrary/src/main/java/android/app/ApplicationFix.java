@@ -1,6 +1,5 @@
-package fix.android.app;
+package android.app;
 
-import android.app.Application;
 import android.content.Context;
 import android.support.multidex.MultiDex;
 import android.support.v4.app.ContextHelper;

@@ -25,8 +25,8 @@ public abstract class PuppetActivity {
         return fragmentActivityWeakReference.get().getApplicationContext();
     }
 
-    public PuppetActivity setActivity(FragmentActivity activity){
-        fragmentActivityWeakReference =new WeakReference<FragmentActivity>(activity);
+    public PuppetActivity setActivity(FragmentActivity activity) {
+        fragmentActivityWeakReference = new WeakReference<FragmentActivity>(activity);
         return this;
     }
 

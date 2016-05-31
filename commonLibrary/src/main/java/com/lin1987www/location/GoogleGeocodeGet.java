@@ -1,24 +1,22 @@
 package com.lin1987www.location;
 
 import android.location.Location;
+import android.support.v4.app.ExecutorSet;
 import android.text.TextUtils;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueueAgent;
-import com.lin1987www.common.util.concurrent.Result;
-import com.lin1987www.jackson.JacksonHelper;
-import com.lin1987www.jackson.JavaTypeRequest;
 import com.lin1987www.location.google.geocode.GoogleGeocodeResults;
 
 import java.util.Locale;
-import java.util.Map;
 
-import fix.java.util.concurrent.Take;
+import fix.java.util.concurrent.Duty;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * Created by Administrator on 2015/4/14.
  */
-public class GoogleGeocodeGet extends Take<GoogleGeocodeGet> {
+public class GoogleGeocodeGet extends Duty<GoogleGeocodeGet> implements Callback<GoogleGeocodeResults> {
     public final Double mLatitude;
     public final Double mLongitude;
     public final String mAddress;
@@ -57,34 +55,29 @@ public class GoogleGeocodeGet extends Take<GoogleGeocodeGet> {
         this.mLongitude = lng;
         this.mAddress = address;
         this.mLocale = locale;
+        setExecutorService(ExecutorSet.nonBlockExecutor);
+        setAsync(true);
     }
 
     @Override
-    public GoogleGeocodeGet take() throws Throwable {
-        JavaTypeRequest<GoogleGeocodeResults> request = new JavaTypeRequest<GoogleGeocodeResults>(
-                Request.Method.GET,
-                "https://maps.googleapis.com/maps/api/geocode/json?sensor=false",
-                JacksonHelper.GenericType(GoogleGeocodeResults.class)
-        );
-        Map<String, String> query = request.getQuery();
-        query.put("language", mLocale.toString());
+    public void doTask(GoogleGeocodeGet context, Duty previousDuty) throws Throwable {
+        Call<GoogleGeocodeResults> call = null;
         if (mLongitude != null && mLatitude != null) {
-            query.put("latlng", String.format("%1$s,%2$s", mLatitude, mLongitude));
+            call = ApiHelper.instance().googleGeocodeGet(false, mLocale.toString(), String.format("%1$s,%2$s", mLatitude, mLongitude));
         } else if (!TextUtils.isEmpty(mAddress)) {
-            query.put("address", mAddress);
+            call = ApiHelper.instance().googleGeocodeGetByAddress(false, mLocale.toString(), mAddress);
         }
-        RequestQueueAgent.getRequestQueue().add(request);
-        Result<GoogleGeocodeResults> result = request.getResultSync();
-        mGoogleGeocodeResults = result.result;
-        ex = result.error;
-        if (mGoogleGeocodeResults != null) {
-            mGoogleGeocodeResults.setResponseText(request.getResponseText());
-        }
-        return this;
+        call.enqueue(this);
     }
 
     @Override
-    public boolean handleException(Throwable ex) {
-        return false;
+    public void onResponse(Call<GoogleGeocodeResults> call, Response<GoogleGeocodeResults> response) {
+        mGoogleGeocodeResults = response.body();
+        done();
+    }
+
+    @Override
+    public void onFailure(Call<GoogleGeocodeResults> call, Throwable t) {
+        fail(t);
     }
 }

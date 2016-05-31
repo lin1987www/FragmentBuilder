@@ -36,12 +36,11 @@ public class F13Fragment extends FragmentFix {
             @Override
             public void onClick(View view) {
                 isFinish = true;
-                FragmentBuilder.popBackStack(
+                FragmentBuilder.popBackStackRecord(
                         getActivity(),
                         F11Fragment.BACK_STACK_NAME,
-                        FragmentManager.POP_BACK_STACK_INCLUSIVE,
-                        true
-                );
+                        FragmentManager.POP_BACK_STACK_INCLUSIVE
+                ).popBackStack();
             }
         });
         return view;

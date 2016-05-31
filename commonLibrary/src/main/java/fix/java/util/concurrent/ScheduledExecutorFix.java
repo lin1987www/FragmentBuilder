@@ -32,7 +32,7 @@ public class ScheduledExecutorFix extends ScheduledThreadPoolExecutor {
     }
 
     private void check(int corePoolSize) {
-        if(corePoolSize<=0){
+        if (corePoolSize <= 0) {
             throw new RuntimeException("ScheduledExecutorFix corePoolSize can't be less or equals 0.");
         }
     }

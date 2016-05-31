@@ -132,22 +132,32 @@ public class ContextHelper {
         return networkInfo != null && networkInfo.isConnected();
     }
 
+    public static void hideKeyboard(View view) {
+        if (view == null) {
+            return;
+        }
+        View contentView = view.getRootView().findViewById(android.R.id.content);
+        hideKeyboardContentView(contentView);
+    }
+
     public static void hideKeyboard(Activity activity) {
-        View currentFocusView = null;
         if (activity == null) {
             return;
         }
-        currentFocusView = activity.getCurrentFocus();
-        if (currentFocusView == null) {
-            currentFocusView = new View(activity);
+        View contentView = activity.getWindow().getDecorView().findViewById(android.R.id.content);
+        hideKeyboardContentView(contentView);
+    }
+
+    private static void hideKeyboardContentView(View contentView) {
+        if (contentView == null) {
+            return;
         }
-        // Don't need clearFocus!
-        //currentFocusView.clearFocus();
-        InputMethodManager imm = (InputMethodManager) activity
-                .getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(currentFocusView.getWindowToken(),
-                InputMethodManager.RESULT_UNCHANGED_SHOWN);
-        currentFocusView = null;
+        //
+        contentView.clearFocus();
+        InputMethodManager imm = (InputMethodManager) contentView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(contentView.getWindowToken(), InputMethodManager.RESULT_UNCHANGED_SHOWN);
+        //
+        contentView.requestFocus();
     }
 
     public static void showKeyboard(final Activity activity, final EditText editText) {

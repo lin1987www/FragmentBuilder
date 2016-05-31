@@ -79,7 +79,7 @@ public class ChoiceTextView<T> extends TextView {
             for (T item : list) {
                 nameList.add(choice.getItemName(item));
             }
-            String joinNameList = TextUtils.join(choice.getSeparator(),nameList);
+            String joinNameList = TextUtils.join(choice.getSeparator(), nameList);
             setText(joinNameList);
         } else {
             setText("(none)");

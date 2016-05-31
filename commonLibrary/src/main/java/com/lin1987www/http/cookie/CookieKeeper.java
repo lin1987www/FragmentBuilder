@@ -1,5 +1,7 @@
 package com.lin1987www.http.cookie;
 
+import android.content.Context;
+import android.support.v4.app.ContextHelper;
 import android.util.Log;
 
 import com.j256.ormlite.dao.Dao;
@@ -154,5 +156,20 @@ public class CookieKeeper {
             Log.e(TAG, e.toString());
         }
         cookieJar = new JavaNetCookieJar(manager);
+    }
+
+    private static CookieKeeper mCookieKeeper;
+
+    public static final CookieKeeper getInstance() {
+        if (mCookieKeeper == null) {
+            synchronized (CookieKeeper.class) {
+                if (mCookieKeeper == null) {
+                    // 建立 HttpStack
+                    Context context = ContextHelper.getApplication();
+                    mCookieKeeper = CookieHandlerFactory.openCookieHandler(context);
+                }
+            }
+        }
+        return mCookieKeeper;
     }
 }

@@ -5,22 +5,23 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import fix.java.util.concurrent.UncaughtExceptionHandlerWrapper;
-
 import java.util.List;
 import java.util.concurrent.AbstractExecutorService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import fix.java.util.concurrent.UncaughtExceptionHandlerWrapper;
+
 public class HandlerHelper {
-	private final static String TAG = HandlerHelper.class.getName();
+    private final static String TAG = HandlerHelper.class.getName();
 
     private static StartedHandler anotherThreadHandler;
+
     public static Handler getAnotherThreadHandler() {
         if (null == anotherThreadHandler) {
             synchronized (HandlerHelper.class) {
                 if (null == anotherThreadHandler) {
-                    anotherThreadHandler = StartedHandler.create("AnotherThreadHandler-"+TAG, null);
+                    anotherThreadHandler = StartedHandler.create("AnotherThreadHandler-" + TAG, null);
                 }
             }
         }
@@ -28,16 +29,17 @@ public class HandlerHelper {
     }
 
     private static Handler mMainThreadHandler = new Handler(Looper.getMainLooper());
-	public static Handler getMainThreadHandler() {
-		if (null == mMainThreadHandler) {
-			synchronized (HandlerHelper.class) {
-				if (null == mMainThreadHandler) {
-					mMainThreadHandler = new Handler(Looper.getMainLooper());
-				}
-			}
-		}
-		return mMainThreadHandler;
-	}
+
+    public static Handler getMainThreadHandler() {
+        if (null == mMainThreadHandler) {
+            synchronized (HandlerHelper.class) {
+                if (null == mMainThreadHandler) {
+                    mMainThreadHandler = new Handler(Looper.getMainLooper());
+                }
+            }
+        }
+        return mMainThreadHandler;
+    }
 
     static {
         getMainThreadExecutor().submit(new Runnable() {
@@ -50,8 +52,9 @@ public class HandlerHelper {
     }
 
     private static ExecutorService mMainThreadExecutor;
-    public static ExecutorService getMainThreadExecutor(){
-        if(mMainThreadExecutor==null){
+
+    public static ExecutorService getMainThreadExecutor() {
+        if (mMainThreadExecutor == null) {
             synchronized (HandlerHelper.class) {
                 if (mMainThreadExecutor == null) {
                     mMainThreadExecutor = new AbstractExecutorService() {
@@ -92,16 +95,17 @@ public class HandlerHelper {
         return mMainThreadExecutor;
     }
 
-	public static void runMainThread(Runnable pRunnable) {
+    public static void runMainThread(Runnable pRunnable) {
         getMainThreadHandler().post(pRunnable);
-	}
-    public static void runMainThreadDelayed(Runnable pRunnable,long delayMillis) {
-        getMainThreadHandler().postDelayed(pRunnable,delayMillis);
     }
 
-	public static void runAnotherThread(Runnable pRunnable) {
+    public static void runMainThreadDelayed(Runnable pRunnable, long delayMillis) {
+        getMainThreadHandler().postDelayed(pRunnable, delayMillis);
+    }
+
+    public static void runAnotherThread(Runnable pRunnable) {
         getAnotherThreadHandler().post(pRunnable);
-	}
+    }
 
     public static void assertMainThread() {
         if (Looper.myLooper() != Looper.getMainLooper()) {

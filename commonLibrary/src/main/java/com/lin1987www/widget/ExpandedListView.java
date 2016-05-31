@@ -61,7 +61,7 @@ public class ExpandedListView extends ListView {
     @Override
     public android.os.Parcelable onSaveInstanceState() {
         expandedViewGroupKeeper = new ExpandedAbsListViewKeeper();
-        expandedViewGroupKeeper.onSaveInstanceState(this,super.onSaveInstanceState());
+        expandedViewGroupKeeper.onSaveInstanceState(this, super.onSaveInstanceState());
         Bundle bundle = expandedViewGroupKeeper.bundle;
         // save bundle
         bundle.putBoolean(KEY_expanded, expanded);

@@ -1,4 +1,4 @@
-package fix.android.support.v4.widget;
+package android.support.v4.widget;
 
 import android.graphics.Matrix;
 import android.graphics.PointF;

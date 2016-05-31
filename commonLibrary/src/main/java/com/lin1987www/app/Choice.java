@@ -196,13 +196,13 @@ public abstract class Choice<T> implements Parcelable {
     }
 
     public String getCheckedItemIdCsv() {
-        List<String> itemIdList =new ArrayList<String>();
+        List<String> itemIdList = new ArrayList<String>();
         for (int i = 0; i < getItemArray().length; i++) {
             if (getCheckedItemArray()[i]) {
                 itemIdList.add(getItemId(getItemArray()[i]));
             }
         }
-        String itemIdCsv = TextUtils.join(separator,itemIdList);
+        String itemIdCsv = TextUtils.join(separator, itemIdList);
         return itemIdCsv;
     }
 
@@ -394,7 +394,7 @@ public abstract class Choice<T> implements Parcelable {
                     "( '%2$s' || %3$s || '%2$s' LIKE '%%%2$s%1$s%2$s%%' )",
                     getItemId(item), separator, columnName));
         }
-        String returnedValue = TextUtils.join(" OR ",patterns);
+        String returnedValue = TextUtils.join(" OR ", patterns);
         if (patterns.size() > 1) {
             returnedValue = " ( " + returnedValue + " ) ";
         }
@@ -408,7 +408,7 @@ public abstract class Choice<T> implements Parcelable {
                     .format("( %3$s REGEXP \"^(%1$s)%2$s|%2$s(%1$s)%2$s|%2$s(%1$s)$\" )",
                             getItemId(item), separator, columnName));
         }
-        String returnedValue =  TextUtils.join(" OR ",patterns);
+        String returnedValue = TextUtils.join(" OR ", patterns);
         if (patterns.size() > 1) {
             returnedValue = "( " + returnedValue + " )";
         }

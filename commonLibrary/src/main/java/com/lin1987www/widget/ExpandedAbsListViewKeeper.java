@@ -79,7 +79,7 @@ public class ExpandedAbsListViewKeeper {
             setScrollY(wrapperView.getScrollY());
         }
         // 如果全部顯示才進行儲存
-        if(absListView.getCount() == absListView.getChildCount()) {
+        if (absListView.getCount() == absListView.getChildCount()) {
             for (int index = 0; index < absListView.getChildCount(); index++) {
                 SparseArray<Parcelable> saveHierarchyStateSparseArray = new SparseArray<Parcelable>();
                 View view = absListView.getChildAt(index);
@@ -91,7 +91,7 @@ public class ExpandedAbsListViewKeeper {
         return bundle;
     }
 
-    private boolean isSameCountAndViewId(AbsListView  absListView) {
+    private boolean isSameCountAndViewId(AbsListView absListView) {
         if (absListView.getChildCount() == getChildViewIdMap().keySet().size()) {
             for (Integer index : getChildViewIdMap().keySet()) {
                 View view = absListView.getChildAt(index);
@@ -145,7 +145,7 @@ public class ExpandedAbsListViewKeeper {
             @Override
             public void run() {
                 restoreState(absListView);
-                if(isSameCountAndViewId(absListView)) {
+                if (isSameCountAndViewId(absListView)) {
                     absListView.post(restoreChildViewState);
                     absListView.post(restoreParentScroll);
                 }

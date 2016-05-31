@@ -10,141 +10,141 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GoogleGeocodeResult implements Parcelable {
-	public GoogleGeocodeResult() {
-	}
+    public GoogleGeocodeResult() {
+    }
 
     @JsonCreator
     public GoogleGeocodeResult(
-            @JsonProperty("formatted_address")String formatted_address,
-            @JsonProperty("types")List<String> types,
-            @JsonProperty("geometry")Geometry geometry,
-            @JsonProperty("address_components")List<AddressComponent> address_components
+            @JsonProperty("formatted_address") String formatted_address,
+            @JsonProperty("types") List<String> types,
+            @JsonProperty("geometry") Geometry geometry,
+            @JsonProperty("address_components") List<AddressComponent> address_components
     ) {
         this.formatted_address = formatted_address;
-        this.types=types;
+        this.types = types;
         this.geometry = geometry;
-        this.address_components =address_components;
+        this.address_components = address_components;
     }
 
-	public String formatted_address;
+    public String formatted_address;
 
-	public List<String> types;
+    public List<String> types;
 
-	public Geometry geometry;
+    public Geometry geometry;
 
-	public List<AddressComponent> address_components;
+    public List<AddressComponent> address_components;
 
-	protected String postal_code, country, administrative_area_level_1,
-			administrative_area_level_2, administrative_area_level_3, locality,
-			sublocality, route, street_number;
+    protected String postal_code, country, administrative_area_level_1,
+            administrative_area_level_2, administrative_area_level_3, locality,
+            sublocality, route, street_number;
 
-	protected void allocation() {
-		postal_code = "";
-		country = "";
-		administrative_area_level_1 = "";
-		administrative_area_level_2 = "";
-		administrative_area_level_3 = "";
-		locality = "";
-		sublocality = "";
-		route = "";
-		street_number = "";
-		for (AddressComponent component : address_components) {
-			if (component.types.contains("postal_code")) {
-				postal_code = component.long_name;
-			} else if (component.types.contains("country")) {
-				country = component.long_name;
-			} else if (component.types.contains("administrative_area_level_1")) {
-				administrative_area_level_1 = component.long_name;
-			} else if (component.types.contains("administrative_area_level_2")) {
-				administrative_area_level_2 = component.long_name;
-			} else if (component.types.contains("administrative_area_level_3")) {
-				administrative_area_level_3 = component.long_name;
-			} else if (component.types.contains("locality")) {
-				locality = component.long_name;
-			} else if (component.types.contains("sublocality")) {
-				sublocality = component.long_name;
-			} else if (component.types.contains("route")) {
-				route = component.long_name;
-			} else if (component.types.contains("street_number")) {
-				street_number = component.long_name;
-			}
-		}
-	}
+    protected void allocation() {
+        postal_code = "";
+        country = "";
+        administrative_area_level_1 = "";
+        administrative_area_level_2 = "";
+        administrative_area_level_3 = "";
+        locality = "";
+        sublocality = "";
+        route = "";
+        street_number = "";
+        for (AddressComponent component : address_components) {
+            if (component.types.contains("postal_code")) {
+                postal_code = component.long_name;
+            } else if (component.types.contains("country")) {
+                country = component.long_name;
+            } else if (component.types.contains("administrative_area_level_1")) {
+                administrative_area_level_1 = component.long_name;
+            } else if (component.types.contains("administrative_area_level_2")) {
+                administrative_area_level_2 = component.long_name;
+            } else if (component.types.contains("administrative_area_level_3")) {
+                administrative_area_level_3 = component.long_name;
+            } else if (component.types.contains("locality")) {
+                locality = component.long_name;
+            } else if (component.types.contains("sublocality")) {
+                sublocality = component.long_name;
+            } else if (component.types.contains("route")) {
+                route = component.long_name;
+            } else if (component.types.contains("street_number")) {
+                street_number = component.long_name;
+            }
+        }
+    }
 
-	public String getPostalCode() {
-		if (postal_code == null) {
-			allocation();
-		}
-		return postal_code;
-	}
+    public String getPostalCode() {
+        if (postal_code == null) {
+            allocation();
+        }
+        return postal_code;
+    }
 
-	public String getCountry() {
-		if (country == null) {
-			allocation();
-		}
-		return country;
-	}
+    public String getCountry() {
+        if (country == null) {
+            allocation();
+        }
+        return country;
+    }
 
-	public String getAdministrativeAreaLevel_1() {
-		if (administrative_area_level_1 == null) {
-			allocation();
-		}
-		return administrative_area_level_1;
-	}
+    public String getAdministrativeAreaLevel_1() {
+        if (administrative_area_level_1 == null) {
+            allocation();
+        }
+        return administrative_area_level_1;
+    }
 
-	public String getAdministrativeAreaLevel_2() {
-		if (administrative_area_level_2 == null) {
-			allocation();
-		}
-		return administrative_area_level_2;
-	}
+    public String getAdministrativeAreaLevel_2() {
+        if (administrative_area_level_2 == null) {
+            allocation();
+        }
+        return administrative_area_level_2;
+    }
 
-	public String getAdministrativeAreaLevel_3() {
-		if (administrative_area_level_3 == null) {
-			allocation();
-		}
-		return administrative_area_level_3;
-	}
+    public String getAdministrativeAreaLevel_3() {
+        if (administrative_area_level_3 == null) {
+            allocation();
+        }
+        return administrative_area_level_3;
+    }
 
-	public String getLocality() {
-		if (locality == null) {
-			allocation();
-		}
-		return locality;
-	}
+    public String getLocality() {
+        if (locality == null) {
+            allocation();
+        }
+        return locality;
+    }
 
-	public String getSubLocality() {
-		if (sublocality == null) {
-			allocation();
-		}
-		return sublocality;
-	}
+    public String getSubLocality() {
+        if (sublocality == null) {
+            allocation();
+        }
+        return sublocality;
+    }
 
-	public String getRoute() {
-		if (route == null) {
-			allocation();
-		}
-		return route;
-	}
+    public String getRoute() {
+        if (route == null) {
+            allocation();
+        }
+        return route;
+    }
 
-	public String getStreetNumber() {
-		if (street_number == null) {
-			allocation();
-		}
-		return street_number;
-	}
+    public String getStreetNumber() {
+        if (street_number == null) {
+            allocation();
+        }
+        return street_number;
+    }
 
-	/**
-	 * 用於區分不同區域的字串
-	 * 
-	 * @return
-	 */
-	public String getArea() {
-		return String.format("%1$s%2$s%3$s%4$s",
-				getAdministrativeAreaLevel_1(),
-				getAdministrativeAreaLevel_2(),
-				getAdministrativeAreaLevel_3(), getLocality());
-	}
+    /**
+     * 用於區分不同區域的字串
+     *
+     * @return
+     */
+    public String getArea() {
+        return String.format("%1$s%2$s%3$s%4$s",
+                getAdministrativeAreaLevel_1(),
+                getAdministrativeAreaLevel_2(),
+                getAdministrativeAreaLevel_3(), getLocality());
+    }
 
     @Override
     public int describeContents() {

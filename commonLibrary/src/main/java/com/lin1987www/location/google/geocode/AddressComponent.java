@@ -9,9 +9,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 
 public class AddressComponent implements Parcelable {
-	public String long_name;
-	public String short_name;
-	public ArrayList<String> types;
+    public String long_name;
+    public String short_name;
+    public ArrayList<String> types;
 
     @JsonCreator
     public AddressComponent(
@@ -19,7 +19,7 @@ public class AddressComponent implements Parcelable {
             @JsonProperty("short_name") String short_name,
             @JsonProperty("types") ArrayList<String> types) {
         this.long_name = long_name;
-        this.short_name =short_name;
+        this.short_name = short_name;
         this.types = types;
     }
 
