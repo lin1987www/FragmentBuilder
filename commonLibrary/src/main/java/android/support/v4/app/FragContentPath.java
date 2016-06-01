@@ -4,6 +4,8 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +13,7 @@ import java.util.List;
  * Created by Administrator on 2016/3/29.
  */
 public class FragContentPath {
+    @JsonIgnore
     private final static String delimiter = ",";
 
     public int viewId = View.NO_ID;
@@ -40,7 +43,7 @@ public class FragContentPath {
         return obj;
     }
 
-    public static View findViewByPath(View parent, ArrayList<Integer> viewPath, int index) {
+    private static View findViewByPath(View parent, ArrayList<Integer> viewPath, int index) {
         if (parent == null) {
             return null;
         }
@@ -73,16 +76,6 @@ public class FragContentPath {
             }
         }
         return fragment;
-    }
-
-    public static FragmentManager getFragmentManager(FragContent content, List<Integer> fragmentPath) {
-        FragmentManager fm;
-        if (fragmentPath.size() == 0) {
-            fm = content.getFragmentActivity().getSupportFragmentManager();
-        } else {
-            fm = findFragment(content.getFragmentActivity(), fragmentPath).getChildFragmentManager();
-        }
-        return fm;
     }
 
     public static String covert(List<Integer> path) {

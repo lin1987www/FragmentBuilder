@@ -297,6 +297,24 @@ public class FragContent {
         return mFragContentPath;
     }
 
+    private FragContentPath mParentFragContentPath = null;
+
+    public FragContentPath getParentFragContentPath() {
+        if (mParentFragContentPath == null) {
+            if (getSrcFragment() != null) {
+                if (getSrcFragment().getParentFragment() != null) {
+                    FragContent parentContent = new FragContent(getSrcFragment().getParentFragment());
+                    mParentFragContentPath = parentContent.getFragContentPath();
+                }
+            }
+            if (mParentFragContentPath == null) {
+                FragContent parentContent = new FragContent(getFragmentActivity());
+                mParentFragContentPath = parentContent.getFragContentPath();
+            }
+        }
+        return mFragContentPath;
+    }
+
     public ArrayList<Integer> getFragPath() {
         ArrayList<Integer> path = new ArrayList<>(getFragContentPath().fragPath);
         return path;
@@ -382,6 +400,18 @@ public class FragContent {
         BackStackRecord.Op op = backStackRecord.mHead;
         while (op != null) {
             if (op.cmd == BackStackRecord.OP_ADD) {
+                return op.fragment;
+            }
+            op = op.next;
+        }
+        return null;
+    }
+
+    public static Fragment findInBackStackFragment(BackStackRecord backStackRecord) {
+        // 未來可能會出現  一次把兩個以上 推入 InBackStack 的 Fragment
+        BackStackRecord.Op op = backStackRecord.mHead;
+        while (op != null) {
+            if (op.cmd == BackStackRecord.OP_REMOVE || op.cmd == BackStackRecord.OP_DETACH) {
                 return op.fragment;
             }
             op = op.next;
