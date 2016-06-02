@@ -209,7 +209,7 @@ public class FragContent {
         ArrayList<Fragment> fragmentArrayList = new ArrayList<>();
         for (int i = (getAllFragments().size() - 1); i > -1; i--) {
             Fragment f = getAllFragments().get(i);
-            if (f != null && f.mFragmentId == id) {
+            if (f != null && f.getId() == id && f.isAdded()) {
                 fragmentArrayList.add(f);
             }
         }
@@ -226,7 +226,7 @@ public class FragContent {
         mAllBackStackRecords = backStackRecords;
     }
 
-    public static void fillAllFragmentAndManagerAndRecord(FragmentManager fm, List<Fragment> fragmentList, List<FragmentManager> fragmentManagerList, ArrayList<BackStackRecord> backStackRecords) {
+    private static void fillAllFragmentAndManagerAndRecord(FragmentManager fm, List<Fragment> fragmentList, List<FragmentManager> fragmentManagerList, ArrayList<BackStackRecord> backStackRecords) {
         if (fm != null) {
             fragmentManagerList.add(fm);
             if (fm.getBackStackEntryCount() > 0) {
@@ -253,7 +253,7 @@ public class FragContent {
         return fragment;
     }
 
-    public static Fragment findFragmentByView(List<Fragment> fragmentList, View srcView, View contentView) {
+    private static Fragment findFragmentByView(List<Fragment> fragmentList, View srcView, View contentView) {
         if (fragmentList.size() == 0 || srcView == null) {
             return null;
         }
@@ -275,6 +275,19 @@ public class FragContent {
         } else {
             return null;
         }
+    }
+
+    public int getSafeContainerViewId() {
+        int containerViewId = 0;
+        View view = FragContentPath.findAncestorOrSelf(getSrcView(), ViewPager.class);
+        if (view != null) {
+            FragContent content = new FragContent(view);
+            Fragment fragment = content.getSrcFragment();
+            if (fragment != null) {
+                containerViewId = fragment.getId();
+            }
+        }
+        return containerViewId;
     }
 
     private FragContentPath mFragContentPath = null;
@@ -315,30 +328,7 @@ public class FragContent {
         return mFragContentPath;
     }
 
-    public ArrayList<Integer> getFragPath() {
-        ArrayList<Integer> path = new ArrayList<>(getFragContentPath().fragPath);
-        return path;
-    }
-
-    public ArrayList<Integer> getViewPath() {
-        ArrayList<Integer> path = new ArrayList<>(getFragContentPath().viewPath);
-        return path;
-    }
-
-    public int getSafeContainerViewId() {
-        int containerViewId = 0;
-        View view = FragContentPath.findAncestorOrSelf(getSrcView(), ViewPager.class);
-        if (view != null) {
-            FragContent content = new FragContent(view);
-            Fragment fragment = content.getSrcFragment();
-            if (fragment != null) {
-                containerViewId = fragment.getId();
-            }
-        }
-        return containerViewId;
-    }
-
-    public static void fillFragmentPath(ArrayList<Integer> path, Fragment frag) {
+    private static void fillFragmentPath(ArrayList<Integer> path, Fragment frag) {
         Fragment parentFrag = frag.getParentFragment();
         int index;
         if (parentFrag == null) {
@@ -355,7 +345,7 @@ public class FragContent {
         }
     }
 
-    public static void fillViewPath(ArrayList<Integer> path, View srcView, View contentView) {
+    private static void fillViewPath(ArrayList<Integer> path, View srcView, View contentView) {
         if (srcView == null || srcView.equals(contentView)) {
             return;
         }

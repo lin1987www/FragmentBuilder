@@ -9,18 +9,23 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.lin1987www.jackson.JacksonHelper;
+
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+
+import fix.java.util.concurrent.ExceptionHelper;
 
 
 public class FragmentActivityFix extends FragmentActivity {
     public static boolean DEBUG = true;
     public final static String TAG = FragmentActivityFix.class.getSimpleName();
-    public final static String key_startActivityFromFragmentPath = "key_startActivityFromFragmentPath";
+    public final static String key_startActivityFragContentPath = "key_startActivityFragContentPath";
     protected final String FORMAT = String.format("%s %s", toString(), "%s");
 
     public boolean enableDoubleBackPressed = true;
-    private String mStartActivityFromFragmentPath = null;
+    private String mStartActivityFromFragContentPath = null;
     private long mLastBackPressedTime = 0L;
     private ArrayList<WeakReference<OnBackPressedListener>> mOnPreBackPressedListenerList = new ArrayList<>();
     private WeakReference<OnBackPressedListener> mOnPostBackPressedListener;
@@ -49,9 +54,6 @@ public class FragmentActivityFix extends FragmentActivity {
         for (PuppetActivity puppetActivity : puppetActivities) {
             puppetActivity.onCreate(savedInstanceState);
         }
-        if (savedInstanceState != null) {
-            mStartActivityFromFragmentPath = savedInstanceState.getString(key_startActivityFromFragmentPath);
-        }
     }
 
     @Override
@@ -63,12 +65,35 @@ public class FragmentActivityFix extends FragmentActivity {
         for (PuppetActivity puppetActivity : puppetActivities) {
             puppetActivity.onActivityResult(requestCode, resultCode, data);
         }
-        if (null != mStartActivityFromFragmentPath) {
-            FragContentPath
-                    .findFragment(this, mStartActivityFromFragmentPath)
-                    .onActivityResult(requestCode, resultCode, data);
-            mStartActivityFromFragmentPath = null;
+        if (null != mStartActivityFromFragContentPath) {
+            try {
+                FragContentPath path = JacksonHelper.Parse(mStartActivityFromFragContentPath, JacksonHelper.GenericType(FragContentPath.class));
+                Object object = FragContentPath.findObject(this, path);
+                if (object instanceof Fragment) {
+                    ((Fragment) object).onActivityResult(requestCode, resultCode, data);
+                } else if (object instanceof onActivityResultListener) {
+                    ((onActivityResultListener) object).onActivityResult(requestCode, resultCode, data);
+                } else {
+                    Class<?> targetClass = object.getClass();
+                    try {
+                        Method method = targetClass.getDeclaredMethod("onActivityResult", int.class, int.class, Intent.class);
+                        if (method != null) {
+                            method.invoke(object, requestCode, resultCode, data);
+                            return;
+                        }
+                    } catch (Throwable ex) {
+                        System.err.println(String.format("Miss onActivityResult() on %s throwable:\n%s", object, ExceptionHelper.getPrintStackTraceString(ex)));
+                    }
+                }
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+            mStartActivityFromFragContentPath = null;
         }
+    }
+
+    public interface onActivityResultListener {
+        void onActivityResult(int requestCode, int resultCode, Intent data);
     }
 
     @Override
@@ -100,7 +125,7 @@ public class FragmentActivityFix extends FragmentActivity {
         }
         super.onRestoreInstanceState(savedInstanceState);
         if (null != savedInstanceState) {
-            mStartActivityFromFragmentPath = savedInstanceState.getString(key_startActivityFromFragmentPath);
+            mStartActivityFromFragContentPath = savedInstanceState.getString(key_startActivityFragContentPath);
         }
     }
 
@@ -135,8 +160,8 @@ public class FragmentActivityFix extends FragmentActivity {
         for (PuppetActivity puppetActivity : puppetActivities) {
             puppetActivity.onSaveInstanceState(outState);
         }
-        if (null != mStartActivityFromFragmentPath) {
-            outState.putString(key_startActivityFromFragmentPath, mStartActivityFromFragmentPath);
+        if (null != key_startActivityFragContentPath) {
+            outState.putString(key_startActivityFragContentPath, mStartActivityFromFragContentPath);
         }
     }
 
@@ -162,12 +187,18 @@ public class FragmentActivityFix extends FragmentActivity {
         }
     }
 
-
     @Override
-    public void startActivityFromFragment(Fragment fragment, Intent intent,
-                                          int requestCode) {
-        mStartActivityFromFragmentPath = FragContentPath.covert(new FragContent(fragment).getFragPath());
-        super.startActivityForResult(intent, requestCode);
+    public void startActivityFromFragment(Fragment fragment, Intent intent, int requestCode) {
+        startActivityForResult(fragment, intent, requestCode);
+    }
+
+    public void startActivityForResult(Object object, Intent intent, int requestCode) {
+        FragContent content = FragContent.create(object);
+        if (content != null) {
+            FragContentPath path = content.getFragContentPath();
+            mStartActivityFromFragContentPath = JacksonHelper.toJson(path);
+            super.startActivityForResult(intent, requestCode);
+        }
     }
 
     /**
@@ -264,5 +295,4 @@ public class FragmentActivityFix extends FragmentActivity {
         }
         return result;
     }
-
 }

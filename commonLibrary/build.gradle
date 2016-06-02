@@ -58,7 +58,7 @@ dependencies {
     compile ('com.google.android.gms:play-services:3.2.25'){
         exclude module: 'support-annotations'
     }
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.7.0'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.7.4'
     compile 'com.j256.ormlite:ormlite-android:4.48'
     compile 'com.github.johnkil.android-appmsg:appmsg:1.2.0'
     //

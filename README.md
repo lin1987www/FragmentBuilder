@@ -119,6 +119,74 @@ Wherever you call FragmentBuilder, it will find FragmentPath. ( FragmentActivity
 ## FragmentActivity Lifecycle
 ![](/images/FragmentActivityLifecycle.png)
 
+
+### FragmentActivity View Lifecycle
+
+#### System destory Activity
+ 
+onAttachedToWindow -> onRestoreInstanceState -> onActivityResult
+
+onAttachedToWindow -> onRestoreInstanceState -> FragmentManager.OnBackStackChangedListener
+
+#### Rotation screen
+
+onRestoreInstanceState -> onAttachedToWindow
+
+#### System didn't destory Activity
+
+onActivityResult
+
+FragmentManager.OnBackStackChangedListener
+
+#### Take image intent
+
+onRestoreInstanceState -> onActivityResult -> onAttachedToWindow
+
+為了處理不同的資料來源，所以使用 View.post 的方式來延遲，得到所有資料後再進行處理。 
+
+在所有可能觸發的地方使用延遲處理!
+
+    private boolean isPostRun = false;
+
+    private void delayRun() {
+        if (!isPostRun) {
+            isPostRun = true;
+            post(this);
+        }
+    }
+
+    @Override
+    public void run() {
+        isPostRun = false;
+        // handle data
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        delayRun();
+        super.onAttachedToWindow();
+		// if data is null set default data
+    }
+
+    @Override
+    public void onRestoreInstanceState(Parcelable state) {
+        delayRun();
+        super.onRestoreInstanceState(state);
+		// set data
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        delayRun();
+		// set data
+    }
+
+    public void onPopFragment(F11Fragment fragment) {
+        delayRun();
+		// set data
+    }
+
+
 ## Fragment detach/attach
 
 Detach cause fragment call onPause(),but attach cause fragment call onCreateView() expect onResume()

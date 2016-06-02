@@ -13,13 +13,11 @@ import android.view.animation.AnimationUtils;
 
 import com.lin1987www.common.Utility;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import fix.java.util.concurrent.Duty;
-import fix.java.util.concurrent.ExceptionHelper;
 
 
 /**
@@ -28,13 +26,11 @@ import fix.java.util.concurrent.ExceptionHelper;
 public class FragmentFix extends Fragment {
     public static boolean DEBUG = Utility.DEBUG;
     public final static String TAG = FragmentFix.class.getSimpleName();
-    public final static String key_startActivityFromViewId = "key_startActivityFromViewId";
     protected final String FORMAT = String.format("%s %s", toString(), "%s");
 
     protected ArrayList<Duty<?>> mDutyList = new ArrayList<>();
     protected final AtomicBoolean mIsEnterAnim = new AtomicBoolean();
 
-    protected int mStartActivityFromViewId = 0;
     protected FragmentArgs mFragmentArgs;
     Animation.AnimationListener mFragmentAnimListener;
 
@@ -167,11 +163,6 @@ public class FragmentFix extends Fragment {
         if (DEBUG) {
             Log.d(TAG, String.format(FORMAT, "onActivityResult"));
         }
-        if (0 != mStartActivityFromViewId) {
-            View view = getView().findViewById(mStartActivityFromViewId);
-            dispatchViewOnActivityResult(view, requestCode, resultCode, data);
-            mStartActivityFromViewId = 0;
-        }
     }
 
     @Override
@@ -180,9 +171,6 @@ public class FragmentFix extends Fragment {
             Log.d(TAG, String.format(FORMAT, "onViewStateRestored"));
         }
         super.onViewStateRestored(savedInstanceState);
-        if (null != savedInstanceState) {
-            mStartActivityFromViewId = savedInstanceState.getInt(key_startActivityFromViewId);
-        }
     }
 
     @Override
@@ -227,9 +215,6 @@ public class FragmentFix extends Fragment {
             Log.d(TAG, String.format(FORMAT, "onSaveInstanceState"));
         }
         super.onSaveInstanceState(outState);
-        if (0 != mStartActivityFromViewId) {
-            outState.putInt(key_startActivityFromViewId, mStartActivityFromViewId);
-        }
     }
 
     @Override
@@ -335,36 +320,9 @@ public class FragmentFix extends Fragment {
         }
     }
 
-    public void startActivityFromFragment(View view, Intent intent,
-                                          int requestCode) {
-        if (view.getId() == 0) {
-            String msg = String.format("%s's id must being set!", view);
-            Log.e(TAG, msg);
-            throw new RuntimeException(msg);
-        }
-        mStartActivityFromViewId = view.getId();
-        startActivityForResult(intent, requestCode);
-    }
-
-    public interface onActivityResultListener {
-        void onActivityResult(int requestCode, int resultCode, Intent data);
-    }
-
-    private void dispatchViewOnActivityResult(View view, int requestCode, int resultCode, Intent data) {
-        if (view instanceof onActivityResultListener) {
-            ((onActivityResultListener) view).onActivityResult(requestCode, resultCode, data);
-        } else {
-            Class<?> targetClass = view.getClass();
-            try {
-                Method method = targetClass.getDeclaredMethod("onActivityResult", int.class, int.class, Intent.class);
-                if (method != null) {
-                    method.invoke(view, requestCode, resultCode, data);
-                    return;
-                }
-            } catch (Throwable ex) {
-                System.err.println(String.format("Miss onActivityResult() on %s throwable:\n%s", view, ExceptionHelper.getPrintStackTraceString(ex)));
-            }
-        }
+    public void startActivityForResult(Object object, Intent intent, int requestCode) {
+        FragmentActivityFix fragmentActivity = (FragmentActivityFix) getContext();
+        fragmentActivity.startActivityForResult(object, intent, requestCode);
     }
 
     public void duty(Duty duty) {

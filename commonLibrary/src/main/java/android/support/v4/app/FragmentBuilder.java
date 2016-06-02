@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
+import fix.java.util.concurrent.Duty;
 import fix.java.util.concurrent.ExceptionHelper;
 
 import static android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_CLOSE;
@@ -69,6 +70,13 @@ public class FragmentBuilder {
     private boolean needToFindContainerFragment = true;
     @JsonIgnore
     private Fragment containerFragment;
+    @JsonIgnore
+    private Duty buildDuty = new Duty() {
+        @Override
+        public void doTask(Object context, Duty previousDuty) throws Throwable {
+            buildImmediate();
+        }
+    }.setExecutorService(ExecutorSet.nonBlockExecutor);
     //
     @JsonProperty
     private PreAction preAction = PreAction.none;
@@ -552,16 +560,22 @@ public class FragmentBuilder {
         ft.commit();
     }
 
+
     public void build() {
         if (content == null) {
             throw new RuntimeException("Forbid build!");
         }
-        content.getDecorView().post(new Runnable() {
-            @Override
-            public void run() {
-                buildImmediate();
-            }
-        });
+        if (content.getSrcFragment() == null) {
+            content.getDecorView().post(new Runnable() {
+                @Override
+                public void run() {
+                    buildImmediate();
+                }
+            });
+        } else {
+            FragmentFix fragmentFix = (FragmentFix) content.getSrcFragment();
+            fragmentFix.duty(buildDuty);
+        }
     }
 
     //  0b000 none
@@ -901,7 +915,7 @@ public class FragmentBuilder {
                 isPopBackStack = true;
             }
             if (popStackListener != null && isSent) {
-                // TODO 測試是不是有更早的時機點
+                // TODO  等狀態穩定在執行，先這樣做了
                 fragmentActivity.getWindow().getDecorView().postDelayed(new Runnable() {
                     @Override
                     public void run() {

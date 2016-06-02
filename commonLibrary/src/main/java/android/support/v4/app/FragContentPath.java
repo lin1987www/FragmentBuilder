@@ -1,10 +1,7 @@
 package android.support.v4.app;
 
-import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,55 +10,36 @@ import java.util.List;
  * Created by Administrator on 2016/3/29.
  */
 public class FragContentPath {
-    @JsonIgnore
-    private final static String delimiter = ",";
-
     public int viewId = View.NO_ID;
     public ArrayList<Integer> fragPath = new ArrayList<>();
     public ArrayList<Integer> viewPath = new ArrayList<>();
 
-    public static ArrayList<Integer> back(ArrayList<Integer> arrayList) {
-        if (arrayList.size() > 0) {
-            arrayList.remove(arrayList.size() - 1);
-        }
-        return arrayList;
-    }
-
     public static Object findObject(FragmentActivity activity, FragContentPath fragContentPath) {
+        if (fragContentPath == null) {
+            return null;
+        }
         Object obj = activity;
         FragContent content = new FragContent(activity);
         ViewGroup parent = (ViewGroup) content.getContentView();
         if (fragContentPath.fragPath.size() > 0) {
             Fragment frag = findFragment(activity, fragContentPath.fragPath);
+            if (frag == null) {
+                return null;
+            }
             obj = frag;
             parent = (ViewGroup) frag.getView();
         }
         if (fragContentPath.viewPath.size() > 0) {
             View view = findViewByPath(parent, fragContentPath.viewPath, 0);
+            if (view == null) {
+                return null;
+            }
             obj = view;
         }
         return obj;
     }
 
-    private static View findViewByPath(View parent, ArrayList<Integer> viewPath, int index) {
-        if (parent == null) {
-            return null;
-        }
-        int i = viewPath.get(index);
-        ViewGroup viewGroup = (ViewGroup) parent;
-        View view = viewGroup.getChildAt(i);
-        if (viewPath.size() == (index + 1)) {
-            return view;
-        } else {
-            return findViewByPath(view, viewPath, index + 1);
-        }
-    }
-
-    public static Fragment findFragment(FragmentActivity activity, String fragmentPathString) {
-        return findFragment(activity, covert(fragmentPathString));
-    }
-
-    public static Fragment findFragment(FragmentActivity activity, List<Integer> fragmentPath) {
+    private static Fragment findFragment(FragmentActivity activity, List<Integer> fragmentPath) {
         Fragment fragment = null;
         if (fragmentPath == null || fragmentPath.size() == 0) {
             fragment = null;
@@ -78,20 +56,18 @@ public class FragContentPath {
         return fragment;
     }
 
-    public static String covert(List<Integer> path) {
-        String fragmentPathString = "";
-        if (path.size() > 0) {
-            fragmentPathString = TextUtils.join(delimiter, path);
+    private static View findViewByPath(View parent, ArrayList<Integer> viewPath, int index) {
+        if (parent == null) {
+            return null;
         }
-        return fragmentPathString;
-    }
-
-    public static ArrayList<Integer> covert(String pathString) {
-        ArrayList<Integer> path = new ArrayList<>();
-        for (String index : TextUtils.split(pathString, delimiter)) {
-            path.add(Integer.parseInt(index));
+        int i = viewPath.get(index);
+        ViewGroup viewGroup = (ViewGroup) parent;
+        View view = viewGroup.getChildAt(i);
+        if (viewPath.size() == (index + 1)) {
+            return view;
+        } else {
+            return findViewByPath(view, viewPath, index + 1);
         }
-        return path;
     }
 
     /*
