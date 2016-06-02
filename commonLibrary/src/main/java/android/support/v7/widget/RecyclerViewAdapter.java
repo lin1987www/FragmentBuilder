@@ -128,11 +128,11 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
         recyclerView.addOnScrollListener(mOnScrollListener);
         if (getPageArrayList().getList().size() == 0) {
             getPageArrayList().init(pageSize, firstLoadPage);
-            loading = false;
             previousTotal = 0;
         } else {
             // Do nothing! if attach again, the data exist.
         }
+        loading = false;
         recyclerView.setAdapter(this);
         mOnScrollListener.onScrolled(recyclerView, 0, 0);
     }
