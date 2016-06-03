@@ -24,7 +24,7 @@ public class StatusFrag extends FragmentFix {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View contentView = inflater.inflate(R.layout.app_msg_loading, container, false);
+        View contentView = inflater.inflate(R.layout.fragment_status, container, false);
         progressBar = (ContentLoadingProgressBar) contentView.findViewById(R.id.progressBar);
         textView = (TextView) contentView.findViewById(android.R.id.message);
         progressBar.setVisibility(View.INVISIBLE);

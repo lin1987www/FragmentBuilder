@@ -522,10 +522,13 @@ public class FragmentBuilder {
             }
         }
 
+        ArrayList<Fragment> containerFragments;
         if (needToFindContainerFragment) {
-            // TODO 可能會出現多個 Fragment 在同一個 ContainerView 的情況! 但可能用不到
+            // TODO  登入切換有問題 可能會出現多個 Fragment 在同一個 ContainerView 的情況! 但可能用不到
             // 可能要檢查所有 fragment.isAdded()  fragment.getId()
             // If needToFindContainerFragment is false, containerFragment must be written by PreAction of reset
+            containerFragments = content.findFragmentById(containerViewId);
+            int size = containerFragments.size();
             containerFragment = fragmentManager.findFragmentById(containerViewId);
         }
         // Prepare transaction
