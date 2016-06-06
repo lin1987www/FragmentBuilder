@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <p/>
  * Created by Administrator on 2015/12/16.
  */
-public abstract class Duty<T> implements Callable<Duty<T>> {
+public abstract class Duty<T> implements Callable<Duty<T>>, Runnable {
     public static boolean DEBUG = Utility.DEBUG;
     protected Throwable mThrowable;
     protected WeakReference<ExecutorService> mExecutorService;
@@ -211,12 +211,16 @@ public abstract class Duty<T> implements Callable<Duty<T>> {
     }
 
     public Duty<T> submit(Duty previousDuty) {
+        setPreviousDuty(previousDuty);
+        return submit();
+    }
+
+    public Duty<T> submit() {
         ExecutorService es = getExecutorService();
         if (es != null) {
             init();
             mSubmitTimeMillis = System.currentTimeMillis();
-            setPreviousDuty(previousDuty);
-            es.submit(this);
+            es.submit((Callable<Duty<T>>) this);
         } else {
             if (DEBUG) {
                 System.err.println(String.format("Duty lose ExecutorService. %s", this));
@@ -225,8 +229,8 @@ public abstract class Duty<T> implements Callable<Duty<T>> {
         return this;
     }
 
-    public Duty<T> submit() {
-        return submit(null);
+    public void run() {
+        submit();
     }
 
     // 如果可以處理錯誤的話，就回傳null，不行就回傳Throwable

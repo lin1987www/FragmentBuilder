@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
+import fix.java.util.concurrent.Duty;
+
 /**
  * Provider
  */
@@ -161,7 +163,7 @@ public class FragContent {
     private View mDecorView = null;
 
     public View getDecorView() {
-        if (mDecorView == null) {
+        if (getFragmentActivity() != null && mDecorView == null) {
             mDecorView = getFragmentActivity().getWindow().getDecorView();
         }
         return mDecorView;
@@ -326,6 +328,26 @@ public class FragContent {
             }
         }
         return mFragContentPath;
+    }
+
+    public void post(Duty duty) {
+        Fragment fragment = getSrcFragment();
+        if (fragment != null && fragment instanceof FragmentFix) {
+            FragmentFix fragmentFix = (FragmentFix) fragment;
+            fragmentFix.duty(duty);
+        } else if (getFragmentActivity() != null) {
+            getDecorView().post(duty);
+        }
+    }
+
+    public boolean isResumed() {
+        boolean isResumed = false;
+        if (getSrcFragment() != null) {
+            isResumed = getSrcFragment().isResumed();
+        } else if (getFragmentActivity() != null) {
+            isResumed = getFragmentActivity().mResumed;
+        }
+        return isResumed;
     }
 
     private static void fillFragmentPath(ArrayList<Integer> path, Fragment frag) {

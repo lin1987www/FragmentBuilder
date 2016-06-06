@@ -1,6 +1,7 @@
 package android.support.v4.app;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,6 +37,12 @@ public class DialogFrag extends FragmentFix implements View.OnClickListener {
 
         okButton = (Button) view.findViewById(R.id.okButton);
         okButton.setOnClickListener(this);
+
+        if (TextUtils.isEmpty(fragArgs.getFragClassName())) {
+            cancelButton.setVisibility(View.GONE);
+        } else {
+            cancelButton.setVisibility(View.VISIBLE);
+        }
         return view;
     }
 
@@ -45,6 +52,10 @@ public class DialogFrag extends FragmentFix implements View.OnClickListener {
             FragmentBuilder.hasPopBackStack(getActivity());
         } else if (view == okButton) {
             try {
+                if (TextUtils.isEmpty(fragArgs.getFragClassName())) {
+                    FragmentBuilder.hasPopBackStack(getActivity());
+                    return;
+                }
                 final Class fragClass = Class.forName(fragArgs.getFragClassName(), false, getContext().getClassLoader());
                 final FragmentBuilder contentBuilder = FragmentBuilder.findFragmentBuilder(new FragContent(this));
                 FragmentBuilder.popBackStackRecord(getActivity())

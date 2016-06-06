@@ -568,16 +568,10 @@ public class FragmentBuilder {
         if (content == null) {
             throw new RuntimeException("Forbid build!");
         }
-        if (content.getSrcFragment() == null) {
-            content.getDecorView().post(new Runnable() {
-                @Override
-                public void run() {
-                    buildImmediate();
-                }
-            });
+        if (content.isResumed()) {
+            buildImmediate();
         } else {
-            FragmentFix fragmentFix = (FragmentFix) content.getSrcFragment();
-            fragmentFix.duty(buildDuty);
+            content.post(buildDuty);
         }
     }
 
@@ -605,31 +599,6 @@ public class FragmentBuilder {
     public static String generateFragmentBuilderText(FragmentBuilder builder) {
         String json = JacksonHelper.toJson(builder);
         return json;
-        /*
-        String fragmentBuilderText;
-        fragmentBuilderText = String.format("%s %s %s %s [%s][%s][%s][%s][%s] %s %s,%s,%s,%s,%s,%s [%s][%s][%s][%s]",
-                builder.containerViewId,
-                builder.action.toString(),
-                builder.hasAddToBackStack,
-                builder.ifExistPolicy.toString(),
-                //
-                builder.fragmentTag,
-                builder.srcFragmentTag,
-                builder.delegateViewId,
-                builder.srcViewId,
-                builder.assignBackStackName,
-                //
-                builder.builtTimeMillis,
-                //
-                builder.transition, builder.styleRes, builder.enter, builder.exit, builder.popEnter, builder.popExit,
-                //
-                builder.delegateFragmentPathString,
-                builder.delegateViewPathString,
-                builder.srcFragmentPathString,
-                builder.srcViewPathString
-        );
-        return fragmentBuilderText;
-        */
     }
 
     public static FragmentBuilder parse(BackStackEntry stackEntry) {
@@ -852,7 +821,7 @@ public class FragmentBuilder {
         }
     }
 
-    private static class PopFragmentSender implements FragmentManager.OnBackStackChangedListener {
+    private static class PopFragmentSender extends Duty implements FragmentManager.OnBackStackChangedListener {
         private BackStackRecord record;
 
         private FragmentActivity fragmentActivity;
@@ -882,18 +851,14 @@ public class FragmentBuilder {
             this.hookFragmentManager = popFragment.getFragmentManager();
             this.builder = builder;
             this.record = entry;
+            setExecutorService(ExecutorSet.mainThreadExecutor);
+            setAsync(false);
         }
 
         public void popBackStack() {
-            fragmentActivity.getWindow().getDecorView().post(
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            hookFragmentManager.addOnBackStackChangedListener(PopFragmentSender.this);
-                            hookFragmentManager.popBackStack();
-                        }
-                    }
-            );
+            // 不使用延遲
+            hookFragmentManager.addOnBackStackChangedListener(PopFragmentSender.this);
+            hookFragmentManager.popBackStack();
         }
 
         @Override
@@ -918,14 +883,9 @@ public class FragmentBuilder {
                 isPopBackStack = true;
             }
             if (popStackListener != null && isSent) {
-                // TODO  等狀態穩定在執行，先這樣做了
-                fragmentActivity.getWindow().getDecorView().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        popStackListener.onPopBackStack(onPopFragmentObject, popFragment);
-                        popStackListener = null;
-                    }
-                }, 0L);
+                // TODO  等狀態穩定再執行
+                FragContent content = FragContent.create(onPopFragmentObject);
+                content.post(this);
             }
         }
 
@@ -946,6 +906,12 @@ public class FragmentBuilder {
             if (onPopFragmentObject instanceof PopFragmentListener) {
                 ((PopFragmentListener) onPopFragmentObject).onPopFragment(popFragment);
             }
+        }
+
+        @Override
+        public void doTask(Object context, Duty previousDuty) throws Throwable {
+            popStackListener.onPopBackStack(onPopFragmentObject, popFragment);
+            popStackListener = null;
         }
     }
 
