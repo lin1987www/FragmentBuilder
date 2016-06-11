@@ -1,9 +1,11 @@
 package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
+import android.support.v4.app.FragContent;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivityFix;
 import android.support.v4.app.FragmentBuilder;
+import android.support.v4.app.FragmentManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -41,12 +43,16 @@ public class MainActivity extends FragmentActivityFix {
 
         FragmentBuilder.defaultContainerViewId = R.id.container;
 
-        FragmentBuilder
-                .create(this)
-                .add()
-                .setContainerViewId(R.id.container)
-                .setFragment(MainFragment.class)
-                .build();
+        FragContent content = new FragContent(this);
+        FragmentManager fragmentManager = content.getContainerFragmentManager(R.id.container);
+        if (fragmentManager.findFragmentById(R.id.container) == null) {
+            FragmentBuilder
+                    .create(this)
+                    .add()
+                    .setContainerViewId(R.id.container)
+                    .setFragment(MainFragment.class)
+                    .build();
+        }
     }
 
     public void onPopFragment(WizardStepsFragment fragment) {

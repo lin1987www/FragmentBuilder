@@ -46,11 +46,6 @@ public class F12Fragment extends FragmentFix {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    @Override
     public void onDestroyView() {
         result = String.format("F12:[%s]", mShowEnterTextView.getEnterName());
         super.onDestroyView();

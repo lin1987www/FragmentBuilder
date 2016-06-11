@@ -186,6 +186,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
                 mCurrentPrimaryItem.setMenuVisibility(false);
                 mCurrentPrimaryItem.setUserVisibleHint(false);
             }
+            // TODO Fragment mIndex -1 可能會發生還沒準備好的情況
             if (fragment != null) {
                 fragment.setMenuVisibility(true);
                 fragment.setUserVisibleHint(true);

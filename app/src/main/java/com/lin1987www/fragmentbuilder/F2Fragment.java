@@ -1,6 +1,7 @@
 package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
+import android.support.v4.app.FragmentArgs;
 import android.support.v4.app.FragmentBuilder;
 import android.support.v4.app.FragmentFix;
 import android.view.LayoutInflater;
@@ -21,6 +22,9 @@ public class F2Fragment extends FragmentFix {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f2, container, false);
+        FragmentArgs fragmentArgs = new FragmentArgs(getArguments());
+        fragmentArgs.userVisibleHintOnReady();
+
         mTextView = (TextView) view.findViewById(R.id.textView);
         mTextView.setText(String.format("%s", getTag()));
         mContainer = (FrameLayout) view.findViewById(R.id.container_f2);

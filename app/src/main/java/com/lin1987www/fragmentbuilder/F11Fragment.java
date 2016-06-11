@@ -68,8 +68,7 @@ public class F11Fragment extends FragmentFix {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onReady() {
         Duty duty = new GetUser().setExecutorService(ExecutorSet.nonBlockExecutor);
         duty.always(new DutyOn(this).setExecutorService(ExecutorSet.mainThreadExecutor));
         duty(duty);

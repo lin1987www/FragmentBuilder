@@ -76,8 +76,7 @@ public class PagerFragment extends FragmentFix {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onReady() {
         if (mPagerAdapter.getCount() == 0) {
             for (Class fragClass : mFragArray) {
                 String tag = fragClass.getSimpleName() + "_" + mPagerAdapter.getCount();

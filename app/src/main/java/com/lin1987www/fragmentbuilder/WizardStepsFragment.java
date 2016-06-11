@@ -40,7 +40,6 @@ public class WizardStepsFragment extends FragmentFix {
     @Override
     public void onResume() {
         super.onResume();
-        Log.e(TAG, String.format("WizardStepsFragment onResume. %s", isHidden()));
     }
 
     @Override

@@ -198,4 +198,25 @@ public class FragmentUtils {
         }
         return fragments;
     }
+
+    public static void log(Fragment fragment, String name) {
+        String text =
+                String.format("Method:%s\nFragment:%s\nState:%s\nisAdded:%s\nisResumed:%s\nisInLayout:%s\nisInBackStack:%s\nisDetached:%s\nisRemoving:%s\nisMenuVisible:%s\nisVisible:%s\nisHidden:%s\ngetFragmentManagerActivity(fragment.getChildFragmentManager())==null:%s\nfragment.getActivity() == null:%s\n",
+                        name,
+                        (fragment.getTag() == null) ? fragment.toString() : fragment.getTag(),
+                        fragment.mState,
+                        fragment.isAdded(),
+                        fragment.isResumed(),
+                        fragment.isInLayout(),
+                        fragment.isInBackStack(),
+                        fragment.isDetached(),
+                        fragment.isRemoving(),
+                        fragment.isMenuVisible(),
+                        fragment.isVisible(),
+                        fragment.isHidden(),
+                        getFragmentManagerActivity(fragment.getChildFragmentManager()) == null,
+                        fragment.getActivity() == null
+                );
+        Log.e(TAG, text);
+    }
 }
