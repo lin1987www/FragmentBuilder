@@ -23,7 +23,7 @@ public class F2Fragment extends FragmentFix {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f2, container, false);
         FragmentArgs fragmentArgs = new FragmentArgs(getArguments());
-        fragmentArgs.userVisibleHintOnReady();
+        fragmentArgs.userVisibleHintOnResume();
 
         mTextView = (TextView) view.findViewById(R.id.textView);
         mTextView.setText(String.format("%s", getTag()));

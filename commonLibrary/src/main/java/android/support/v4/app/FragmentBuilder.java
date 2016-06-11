@@ -698,7 +698,7 @@ public class FragmentBuilder {
             }
         }
         // 執行完後，某些Fragment只會出現一下又消失，因此SkipOnResume能使那些Fragment略過 OnResume 增進效能
-        skipOnReady(popList);
+        skipOnResume(popList);
         ArrayList<PopFragmentSender> popFragmentSenderList = new ArrayList<>();
         PopFragmentSender prevSender = null;
         for (int i = 0; i < popList.size(); i++) {
@@ -720,14 +720,14 @@ public class FragmentBuilder {
         return record;
     }
 
-    private static void skipOnReady(ArrayList<BackStackRecord> popList) {
+    private static void skipOnResume(ArrayList<BackStackRecord> popList) {
         /*
-        下列情況沒有需要 skipOnReady 的 Fragment
+        下列情況沒有需要 skipOnResume 的 Fragment
         a->A, b->B, c->C
         |a->A|
         |b->B|
         |c->C|
-        以下情況需要 skipOnReady
+        以下情況需要 skipOnResume
         a->A->b->B->c->C
         |a->A|
         |A->b|
@@ -736,7 +736,7 @@ public class FragmentBuilder {
         |c->C|
         需要skipOnResume的Fragment有 A,b,B,c
         令 Op.Add 或 Op.Attach 為 1 , Op.Remove 或 Op.Detach 為 -1
-        瀏覽所有 Op 統計以上值為 0 則 skipOnReady
+        瀏覽所有 Op 統計以上值為 0 則 skipOnResume
         */
         HashMap<Fragment, Integer> map = new HashMap<>();
         for (BackStackRecord record : popList) {
@@ -760,14 +760,14 @@ public class FragmentBuilder {
             int value = map.get(fragment);
             if (value == 0) {
                 FragmentArgs resumeFragmentArgs = new FragmentArgs(fragment.getArguments());
-                resumeFragmentArgs.skipPopOnReady();
-                // 其 Child Fragment 也要一併 skipOnReady
-                skipOnReady(fragment.getChildFragmentManager());
+                resumeFragmentArgs.skipPopOnResume();
+                // 其 Child Fragment 也要一併 skipOnResume
+                skipOnResume(fragment.getChildFragmentManager());
             }
         }
     }
 
-    private static void skipOnReady(FragmentManager childFragmentManager) {
+    private static void skipOnResume(FragmentManager childFragmentManager) {
         if (childFragmentManager == null) {
             return;
         }
@@ -776,8 +776,8 @@ public class FragmentBuilder {
             for (Fragment frag : fragList) {
                 if (frag != null) {
                     FragmentArgs resumeFragmentArgs = new FragmentArgs(frag.getArguments());
-                    resumeFragmentArgs.skipPopOnReady();
-                    skipOnReady(frag.getChildFragmentManager());
+                    resumeFragmentArgs.skipPopOnResume();
+                    skipOnResume(frag.getChildFragmentManager());
                 }
             }
         }

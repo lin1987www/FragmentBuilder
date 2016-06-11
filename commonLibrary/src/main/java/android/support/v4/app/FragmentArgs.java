@@ -7,8 +7,8 @@ import android.os.Bundle;
  */
 public class FragmentArgs {
     private final static String suffix = FragmentArgs.class.getName();
-    private final static String key_isSkipPopOnReady = key("key_isSkipPopOnReady");
-    private final static String key_userVisibleHintOnReady = key("key_userVisibleHintOnReady");
+    private final static String key_isSkipPopOnResume = key("key_isSkipPopOnResume");
+    private final static String key_userVisibleHintOnResume = key("key_userVisibleHintOnResume");
     private final static String key_fragmentBuilderText = key("key_fragmentBuilderText");
 
     private static String key(String name) {
@@ -27,10 +27,10 @@ public class FragmentArgs {
         this.bundle = bundle;
     }
 
-    boolean consumePopOnReady() {
-        boolean isConsumed = bundle.getBoolean(key_isSkipPopOnReady, false);
-        if (bundle.containsKey(key_isSkipPopOnReady)) {
-            bundle.remove(key_isSkipPopOnReady);
+    boolean consumePopOnResume() {
+        boolean isConsumed = bundle.getBoolean(key_isSkipPopOnResume, false);
+        if (bundle.containsKey(key_isSkipPopOnResume)) {
+            bundle.remove(key_isSkipPopOnResume);
         }
         return isConsumed;
     }
@@ -38,17 +38,17 @@ public class FragmentArgs {
     /**
      * Use Case: When  popBackState  all  detach Fragment will attach again, we ignore it onResume.
      */
-    void skipPopOnReady() {
-        bundle.putBoolean(key_isSkipPopOnReady, true);
+    void skipPopOnResume() {
+        bundle.putBoolean(key_isSkipPopOnResume, true);
     }
 
-    boolean isUserVisibleHintOnReady() {
-        boolean useNormalResume = bundle.getBoolean(key_userVisibleHintOnReady, false);
+    boolean isUserVisibleHintOnResume() {
+        boolean useNormalResume = bundle.getBoolean(key_userVisibleHintOnResume, false);
         return useNormalResume;
     }
 
-    public void userVisibleHintOnReady() {
-        bundle.putBoolean(key_userVisibleHintOnReady, true);
+    public void userVisibleHintOnResume() {
+        bundle.putBoolean(key_userVisibleHintOnResume, true);
     }
 
     public String getFragmentBuilderText() {
