@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.View;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 
 /**
  * Created by Administrator on 2015/7/5.
@@ -102,6 +101,16 @@ public class FragmentUtils {
         return fm.mHost;
     }
 
+
+    public static boolean isFragmentExist(Fragment fragment) {
+        if (fragment == null) {
+            return false;
+        }
+        // 顯示中判斷 isAdded
+        // 位於 BackStack 中 ( 但可能沒顯示 )
+        return fragment.isAdded() || fragment.isInBackStack();
+    }
+
     public static boolean isFragmentAvailable(View view) {
         FragContent content = new FragContent(view);
         Fragment fragment = content.getSrcFragment();
@@ -109,15 +118,10 @@ public class FragmentUtils {
     }
 
     public static boolean isFragmentAvailable(Fragment fragment) {
-        boolean isAvailable = true;
-        if (fragment == null) {
-            isAvailable = false;
-        } else {
-            if (fragment.isRemoving() || fragment.isDetached() || fragment.getActivity() == null) {
-                isAvailable = false;
-            } else if (getFragmentManagerActivity(fragment.getChildFragmentManager()) == null) {
-                isAvailable = false;
-            } else if (!fragment.isAdded()) {
+        boolean isAvailable = isFragmentExist(fragment);
+        if (isAvailable) {
+            // Fragment 存在於BackStack，但是因為 push exit 還沒被加入
+            if (!fragment.isAdded() || !fragment.isResumed() || fragment.isRemoving() || fragment.isDetached()) {
                 isAvailable = false;
             }
         }
@@ -137,21 +141,6 @@ public class FragmentUtils {
             }
         }
         return hasSaveState;
-    }
-
-    public static boolean isFragmentExist(Fragment fragment) {
-        if (fragment == null) {
-            return false;
-        }
-        return
-                // 轉至螢幕的瞬間 Fragment 會忘記 isRemoving，但依然在 backStack當中，且會在原位子上顯示
-                (!fragment.isRemoving() && fragment.isInBackStack())
-                        ||
-                        // 被遮住，且在 backStack
-                        (fragment.isRemoving() && fragment.isInBackStack())
-                        ||
-                        // 顯示中
-                        (!fragment.isRemoving() && !fragment.isInBackStack());
     }
 
     public static int getFragmentState(Fragment fragment) {
@@ -186,37 +175,46 @@ public class FragmentUtils {
         return fragment.isInBackStack();
     }
 
-    public static ArrayList<Fragment> getAllFragments(FragmentManager fragmentManager) {
-        // TODO 可能有錯誤 不需要加上 mAdded
-        FragmentManagerImpl fm = (FragmentManagerImpl) fragmentManager;
-        ArrayList<Fragment> fragments = new ArrayList<>();
-        if (fm.getFragments() != null) {
-            fragments.addAll(fm.getFragments());
-        }
-        if (fm.mAdded != null) {
-            fragments.addAll(fm.mAdded);
-        }
-        return fragments;
-    }
+    private static final String key_fragmentLog = "key_fragmentLog";
 
     public static void log(Fragment fragment, String name) {
-        String text =
-                String.format("Method:%s\nFragment:%s\nState:%s\nisAdded:%s\nisResumed:%s\nisInLayout:%s\nisInBackStack:%s\nisDetached:%s\nisRemoving:%s\nisMenuVisible:%s\nisVisible:%s\nisHidden:%s\ngetFragmentManagerActivity(fragment.getChildFragmentManager())==null:%s\nfragment.getActivity() == null:%s\n",
-                        name,
-                        (fragment.getTag() == null) ? fragment.toString() : fragment.getTag(),
-                        fragment.mState,
-                        fragment.isAdded(),
-                        fragment.isResumed(),
-                        fragment.isInLayout(),
-                        fragment.isInBackStack(),
-                        fragment.isDetached(),
-                        fragment.isRemoving(),
-                        fragment.isMenuVisible(),
-                        fragment.isVisible(),
-                        fragment.isHidden(),
-                        getFragmentManagerActivity(fragment.getChildFragmentManager()) == null,
-                        fragment.getActivity() == null
-                );
-        Log.e(TAG, text);
+        if (fragment.getArguments() == null) {
+            putArguments(fragment, new Bundle());
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+
+        if (fragment.getArguments().getBundle(key_fragmentLog) == null) {
+            fragment.getArguments().putBundle(key_fragmentLog, new Bundle());
+        }
+        Bundle logBundle = fragment.getArguments().getBundle(key_fragmentLog);
+
+        log(logBundle, stringBuilder, "State", String.valueOf(fragment.mState));
+        log(logBundle, stringBuilder, "isAdded", String.valueOf(fragment.isAdded()));
+        log(logBundle, stringBuilder, "isResumed", String.valueOf(fragment.isResumed()));
+        log(logBundle, stringBuilder, "isInBackStack", String.valueOf(fragment.isInBackStack()));
+        log(logBundle, stringBuilder, "isDetached", String.valueOf(fragment.isDetached()));
+        log(logBundle, stringBuilder, "isRemoving", String.valueOf(fragment.isRemoving()));
+        log(logBundle, stringBuilder, "isMenuVisible", String.valueOf(fragment.isMenuVisible()));
+        log(logBundle, stringBuilder, "isInLayout", String.valueOf(fragment.isInLayout()));
+        log(logBundle, stringBuilder, "isVisible", String.valueOf(fragment.isVisible()));
+        log(logBundle, stringBuilder, "isHidden", String.valueOf(fragment.isHidden()));
+        log(logBundle, stringBuilder, "getActivity is null", String.valueOf(fragment.getActivity() == null));
+        log(logBundle, stringBuilder, "getChildFragmentManager activity is null", String.valueOf(getFragmentManagerActivity(fragment.getChildFragmentManager()) == null));
+
+        if (stringBuilder.length() > 0) {
+            stringBuilder.insert(0, String.format("FragmentLog: %s\nMethod: %s\n", (fragment.getTag() == null) ? fragment.toString() : fragment.getTag(), name));
+            String log = stringBuilder.toString();
+            Log.d(TAG, log);
+        }
+    }
+
+    private static void log(Bundle logBundle, StringBuilder builder, String key, String value) {
+        key = "    " + key;
+        if (!logBundle.containsKey(key)
+                || !logBundle.getString(key).equals(value)
+                ) {
+            builder.append(String.format("%s: %s\n", key, value));
+            logBundle.putString(key, value);
+        }
     }
 }

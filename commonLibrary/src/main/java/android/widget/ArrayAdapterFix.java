@@ -1,4 +1,4 @@
-package fix.android.widget;
+package android.widget;
 
 /*
  * Copyright (C) 2006 The Android Open Source Project
@@ -21,10 +21,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.Filter;
-import android.widget.Filterable;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,7 +44,7 @@ import java.util.List;
  * or to have some of data besides toString() results fill the views,
  * override {@link #getView(int, View, ViewGroup)} to return the type of view you want.
  */
-public class ArrayAdapter<T> extends BaseAdapter implements Filterable {
+public class ArrayAdapterFix<T> extends BaseAdapter implements Filterable {
     /**
      * Lock used to modify the content of {@link #mObjects}. Any write operation
      * performed on the array should be synchronized on this lock. This lock is also
@@ -102,7 +98,7 @@ public class ArrayAdapter<T> extends BaseAdapter implements Filterable {
      * @param resource The resource ID for a layout file containing a TextView to use when
      *                 instantiating views.
      */
-    public ArrayAdapter(Context context, int resource) {
+    public ArrayAdapterFix(Context context, int resource) {
         init(context, resource, 0, new ArrayList<T>());
     }
 
@@ -114,7 +110,7 @@ public class ArrayAdapter<T> extends BaseAdapter implements Filterable {
      *                           instantiating views.
      * @param textViewResourceId The id of the TextView within the layout resource to be populated
      */
-    public ArrayAdapter(Context context, int resource, int textViewResourceId) {
+    public ArrayAdapterFix(Context context, int resource, int textViewResourceId) {
         init(context, resource, textViewResourceId, new ArrayList<T>());
     }
 
@@ -126,7 +122,7 @@ public class ArrayAdapter<T> extends BaseAdapter implements Filterable {
      *                 instantiating views.
      * @param objects  The objects to represent in the ListView.
      */
-    public ArrayAdapter(Context context, int resource, T[] objects) {
+    public ArrayAdapterFix(Context context, int resource, T[] objects) {
         init(context, resource, 0, Arrays.asList(objects));
     }
 
@@ -139,7 +135,7 @@ public class ArrayAdapter<T> extends BaseAdapter implements Filterable {
      * @param textViewResourceId The id of the TextView within the layout resource to be populated
      * @param objects            The objects to represent in the ListView.
      */
-    public ArrayAdapter(Context context, int resource, int textViewResourceId, T[] objects) {
+    public ArrayAdapterFix(Context context, int resource, int textViewResourceId, T[] objects) {
         init(context, resource, textViewResourceId, Arrays.asList(objects));
     }
 
@@ -151,7 +147,7 @@ public class ArrayAdapter<T> extends BaseAdapter implements Filterable {
      *                 instantiating views.
      * @param objects  The objects to represent in the ListView.
      */
-    public ArrayAdapter(Context context, int resource, List<T> objects) {
+    public ArrayAdapterFix(Context context, int resource, List<T> objects) {
         init(context, resource, 0, objects);
     }
 
@@ -164,7 +160,7 @@ public class ArrayAdapter<T> extends BaseAdapter implements Filterable {
      * @param textViewResourceId The id of the TextView within the layout resource to be populated
      * @param objects            The objects to represent in the ListView.
      */
-    public ArrayAdapter(Context context, int resource, int textViewResourceId, List<T> objects) {
+    public ArrayAdapterFix(Context context, int resource, int textViewResourceId, List<T> objects) {
         init(context, resource, textViewResourceId, objects);
     }
 
@@ -177,10 +173,10 @@ public class ArrayAdapter<T> extends BaseAdapter implements Filterable {
      * @param textViewResId  The identifier of the layout used to create views.
      * @return An ArrayAdapter<CharSequence>.
      */
-    public static ArrayAdapter<CharSequence> createFromResource(Context context,
-                                                                int textArrayResId, int textViewResId) {
+    public static ArrayAdapterFix<CharSequence> createFromResource(Context context,
+                                                                   int textArrayResId, int textViewResId) {
         CharSequence[] strings = context.getResources().getTextArray(textArrayResId);
-        return new ArrayAdapter<CharSequence>(context, textViewResId, strings);
+        return new ArrayAdapterFix<CharSequence>(context, textViewResId, strings);
     }
 
     /**

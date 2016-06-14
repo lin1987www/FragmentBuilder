@@ -327,7 +327,7 @@ public class FragContent {
                 mParentFragContentPath = parentContent.getFragContentPath();
             }
         }
-        return mFragContentPath;
+        return mParentFragContentPath;
     }
 
     public void post(Duty duty) {

@@ -187,6 +187,298 @@ onRestoreInstanceState -> onActivityResult -> onAttachedToWindow
     }
 
 
+##
+    
+    --------------- enter
+    performCreate before
+    	State:0
+    	isAdded:true
+    	isResumed:false
+    	isInLayout:false
+    	isInBackStack:false
+    	isDetached:false
+    	isRemoving:false
+    	isMenuVisible:true
+    	isVisible:false
+    	isHidden:false
+    performCreate after
+    	State:1
+    
+    performCreateView before
+    performCreateView after
+    
+    onCreateAnimation
+    
+    performActivityCreated before
+    	isVisible:true
+    performActivityCreated after
+    	State:2
+    
+    onViewStateRestored
+    
+    performStart before
+    onStart
+    	State:4
+    performStart after
+    
+    performResume before
+    onResume
+    	State:5
+    	isResumed:true
+    performResume after
+    
+    --------------- exit
+    
+    performPause before
+    	State:5
+    	isAdded:false
+    	isResumed:true
+    	isInBackStack:false
+    	isDetached:false
+    	isRemoving:true
+    	isVisible:false
+    onPause
+    	State:4
+    	isResumed:false
+    performPause after
+    
+    直接移除不用保存狀態
+    
+    performStop before
+    onStop
+    	State:3
+    performStop after
+    
+    performReallyStop before
+    performReallyStop after
+    	State:2
+    
+    performDestroyView before
+    onDestroyView
+    	State:1
+    performDestroyView after
+    
+    onCreateAnimation
+    
+    performDestroy before
+    onDestroy
+    	State:0
+    performDestroy after
+    	getFragmentManagerActivity(fragment.getChildFragmentManager())==null:true
+    
+    ---------------rotation exit then enter
+    performPause before
+    	State:5
+    	isAdded:true
+    	isResumed:true
+    	isInBackStack:false
+    	isDetached:false
+    	isRemoving:false
+    	isVisible:true
+    onPause
+    	State:4
+    	isResumed:false
+    performPause after
+    
+    performSaveInstanceState before
+    onSaveInstanceState
+    performSaveInstanceState after
+    
+    performStop before
+    onStop
+    	State:3
+    performStop after
+    
+    performReallyStop before
+    performReallyStop after
+    	State:2
+    
+    performDestroyView before
+    onDestroyView
+    	State:1
+    performDestroyView after
+    
+    onCreateAnimation
+    
+    performDestroy before
+    onDestroy
+    	State:0
+    performDestroy after
+    	getFragmentManagerActivity(fragment.getChildFragmentManager())==null:true
+    
+    performCreate before
+    	State:0
+    	isAdded:true
+    	isResumed:false
+    	isVisible:false * 
+    performCreate after
+    	State:1
+    
+    performCreateView before
+    performCreateView after
+    	State:2
+    
+    onCreateAnimation
+    
+    performActivityCreated before
+    	isVisible:false *
+    performActivityCreated after
+    
+    onViewStateRestored
+    
+    performStart before
+    onStart
+    	State:4
+    performStart after
+    
+    performResume before
+    onResume
+    	State:5
+    	isResumed:true
+    
+    
+    ---------------addBackStack push enter
+    performCreate before
+    	State:0
+    	isAdded:true
+    	isResumed:false
+    	isInBackStack:true
+    	isDetached:false
+    	isRemoving:false
+    	isVisible:false
+    performCreate after
+    	State:1
+    
+    performCreateView before
+    performCreateView after
+    
+    onCreateAnimation
+    
+    performActivityCreated before
+    	isVisible:true
+    performActivityCreated after
+    	State:2
+    
+    onViewStateRestored
+    
+    performStart before
+    onStart
+    	State:4
+    performStart after
+    
+    performResume before
+    onResume
+    	State:5
+    	isResumed:true
+    performResume after
+    
+    ---------------addBackStack push exit
+    
+    performPause before
+    	State:5
+    	isAdded:false
+    	isResumed:true
+    	isInBackStack:true
+    	isDetached or isRemoving:true
+    	isVisible:false
+    onPause
+    	State:4
+    	isResumed:false
+    performPause after
+    
+    performStop before
+    onStop
+    	State:3
+    performStop after
+    
+    performReallyStop before
+    performReallyStop after
+    	State:2
+    
+    performDestroyView before
+    onDestroyView
+    	State:1
+    performDestroyView after
+    
+    onCreateAnimation
+    
+    如果在接 Rotation 會進行 performSaveInstanceState, performDestroy, performCreate
+    因此保持 pop enter時步驟不變
+    
+    ---------------addBackStack pop enter
+    
+    performCreateView before
+    	State:1
+    	isAdded:true
+    	isResumed:false
+    	isInLayout:false
+    	isInBackStack:true
+    	isDetached:false
+    	isRemoving:false
+    	isMenuVisible:true
+    	isVisible:false
+    	isHidden:false
+    performCreateView after
+    
+    onCreateAnimation
+    
+    performActivityCreated before
+    	isVisible:true
+    performActivityCreated after
+    	State:2
+    
+    onViewStateRestored
+    
+    performStart before
+    onStart
+    	State:4
+    performStart after
+    
+    performResume before
+    onResume
+    	State:5
+    	isResumed:true
+    performResume after
+    
+    ---------------addBackStack pop exit
+    
+    performPause before
+    	State:5
+    	isAdded:false
+    	isResumed:true
+    	isInBackStack:false
+    	isDetached or isRemoving:true
+    	isVisible:false
+    
+    onPause
+    	State:4
+    	isResumed:false
+    performPause after
+    
+    performStop before
+    onStop
+    	State:3
+    performStop after
+    
+    performReallyStop before
+    performReallyStop after
+    	State:2
+    
+    performDestroyView before
+    onDestroyView
+    	State:1
+    performDestroyView after
+    
+    onCreateAnimation
+    
+    performDestroy before
+    onDestroy
+    	State:0
+    performDestroy after
+    	getFragmentManagerActivity(fragment.getChildFragmentManager())==null:true
+    
+    
+
 ## Fragment detach/attach
 
 Detach cause fragment call onPause(),but attach cause fragment call onCreateView() expect onResume()

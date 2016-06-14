@@ -37,6 +37,7 @@ public class F12Fragment extends FragmentFix {
                 FragmentBuilder
                         .create(F12Fragment.this)
                         .back()
+                        .attach()
                         .setFragment(F13Fragment.class, F13Fragment.class.getSimpleName())
                         .build();
             }

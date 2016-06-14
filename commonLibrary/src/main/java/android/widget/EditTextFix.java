@@ -1,4 +1,4 @@
-package fix.android.widget;
+package android.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;

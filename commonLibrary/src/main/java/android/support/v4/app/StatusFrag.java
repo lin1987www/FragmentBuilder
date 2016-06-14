@@ -11,6 +11,7 @@ import com.lin1987www.common.R;
 
 import java.lang.ref.WeakReference;
 
+import fix.java.util.concurrent.Duty;
 import okhttp3.OkHttpHelper;
 
 /**
