@@ -58,17 +58,17 @@ public class FragmentBuilder {
         }
     };
     @JsonIgnore
-    private final static LinkedList<BackStackRecord> backStackRecordQueue = new LinkedList<>();
+    private final static LinkedList<FragmentBuilder> fragmentBuilderQueue = new LinkedList<>();
     @JsonIgnore
-    public final static Runnable commitTransaction = new Runnable() {
+    public final static Runnable commitBuilderRunnable = new Runnable() {
         @Override
         public void run() {
-            synchronized (commitTransaction) {
-                backStackRecordQueue.poll();
-                BackStackRecord nextBackStackRecord = backStackRecordQueue.peek();
-                if (nextBackStackRecord != null && nextBackStackRecord.mCommitted == false) {
-                    nextBackStackRecord.commit();
-                    nextBackStackRecord.mManager.enqueueAction(this, false);
+            synchronized (commitBuilderRunnable) {
+                fragmentBuilderQueue.poll();
+                FragmentBuilder builder = fragmentBuilderQueue.peek();
+                if (builder != null) {
+                    builder.buildImmediate();
+                    ((FragmentManagerImpl) builder.getFragmentManager()).enqueueAction(this, false);
                 }
             }
         }
@@ -91,7 +91,7 @@ public class FragmentBuilder {
     private Duty buildDuty = new Duty() {
         @Override
         public void doTask(Object context, Duty previousDuty) throws Throwable {
-            buildImmediate();
+            commitBuilder(FragmentBuilder.this);
         }
     }.setExecutorService(ExecutorSet.nonBlockExecutor);
     //
@@ -546,7 +546,6 @@ public class FragmentBuilder {
             // 可能要檢查所有 fragment.isAdded()  fragment.getId()
             // If needToFindContainerFragment is false, containerFragment must be written by PreAction of reset
             containerFragments = content.findFragmentById(containerViewId);
-            int size = containerFragments.size();
             containerFragment = fragmentManager.findFragmentById(containerViewId);
         }
         // Prepare transaction
@@ -578,13 +577,7 @@ public class FragmentBuilder {
         }
         // Show fragment
         ft.add(containerViewId, fragment, fragmentTag);
-        synchronized (commitTransaction) {
-            backStackRecordQueue.offer(ft);
-            if (backStackRecordQueue.size() == 1) {
-                ft.commit();
-                ft.mManager.enqueueAction(commitTransaction, false);
-            }
-        }
+        ft.commit();
     }
 
 
@@ -592,11 +585,22 @@ public class FragmentBuilder {
         if (content == null) {
             throw new RuntimeException("Forbid build!");
         }
-        if (content.isResumed()) {
-            buildImmediate();
-        } else {
-            content.post(buildDuty);
+        synchronized (commitBuilderRunnable) {
+            fragmentBuilderQueue.offer(this);
+            if (fragmentBuilderQueue.size() == 1) {
+                if (content.isResumed()) {
+                    commitBuilder(this);
+                } else {
+                    content.post(buildDuty);
+                }
+            }
         }
+    }
+
+    private static void commitBuilder(FragmentBuilder builder) {
+        builder.buildImmediate();
+        ((FragmentManagerImpl) builder.getFragmentManager()).enqueueAction(commitBuilderRunnable, false);
+        return;
     }
 
     //  0b000 none
