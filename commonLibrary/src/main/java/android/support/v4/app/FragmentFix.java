@@ -393,6 +393,7 @@ public class FragmentFix extends Fragment {
 
     public void duty(Duty duty) {
         // If fragment will removed don't accept any duty.
+        // Don't care isResumed true or false. Because duty be pended and wait perform
         if (!isAdded()) {
             return;
         }

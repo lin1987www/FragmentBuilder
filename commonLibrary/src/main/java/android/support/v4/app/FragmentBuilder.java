@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import fix.java.util.concurrent.Duty;
@@ -56,6 +57,22 @@ public class FragmentBuilder {
             return (int) (parse(o2).builtTimeMillis - parse(o1).builtTimeMillis);
         }
     };
+    @JsonIgnore
+    private final static LinkedList<BackStackRecord> backStackRecordQueue = new LinkedList<>();
+    @JsonIgnore
+    public final static Runnable commitTransaction = new Runnable() {
+        @Override
+        public void run() {
+            synchronized (commitTransaction) {
+                backStackRecordQueue.poll();
+                BackStackRecord nextBackStackRecord = backStackRecordQueue.peek();
+                if (nextBackStackRecord != null && nextBackStackRecord.mCommitted == false) {
+                    nextBackStackRecord.commit();
+                    nextBackStackRecord.mManager.enqueueAction(this, false);
+                }
+            }
+        }
+    };
     //
     // Temp Object
     @JsonIgnore
@@ -77,6 +94,7 @@ public class FragmentBuilder {
             buildImmediate();
         }
     }.setExecutorService(ExecutorSet.nonBlockExecutor);
+    //
     //
     @JsonProperty
     private PreAction preAction = PreAction.none;
@@ -532,7 +550,7 @@ public class FragmentBuilder {
             containerFragment = fragmentManager.findFragmentById(containerViewId);
         }
         // Prepare transaction
-        FragmentTransaction ft = fragmentManager.beginTransaction();
+        BackStackRecord ft = (BackStackRecord) fragmentManager.beginTransaction();
         builtTimeMillis = System.currentTimeMillis();
         String fragmentBuilderText = generateFragmentBuilderText(this);
         FragmentArgs fragArgs = new FragmentArgs(fragmentArgs);
@@ -560,7 +578,13 @@ public class FragmentBuilder {
         }
         // Show fragment
         ft.add(containerViewId, fragment, fragmentTag);
-        ft.commit();
+        synchronized (commitTransaction) {
+            backStackRecordQueue.offer(ft);
+            if (backStackRecordQueue.size() == 1) {
+                ft.commit();
+                ft.mManager.enqueueAction(commitTransaction, false);
+            }
+        }
     }
 
 

@@ -118,14 +118,10 @@ public class FragmentUtils {
     }
 
     public static boolean isFragmentAvailable(Fragment fragment) {
-        boolean isAvailable = isFragmentExist(fragment);
-        if (isAvailable) {
-            // Fragment 存在於BackStack，但是因為 push exit 還沒被加入
-            if (!fragment.isAdded() || !fragment.isResumed() || fragment.isRemoving() || fragment.isDetached()) {
-                isAvailable = false;
-            }
+        if (fragment == null) {
+            return false;
         }
-        return isAvailable;
+        return fragment.isAdded() && fragment.isResumed();
     }
 
     public static boolean hasSavedViewState(View view) {
