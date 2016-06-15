@@ -409,12 +409,4 @@ public class FragmentFix extends Fragment {
             }
         }
     }
-
-    public static void duty(Duty duty, View view) {
-        FragContent content = new FragContent(view);
-        FragmentFix fragmentFix = (FragmentFix) content.getSrcFragment();
-        if (fragmentFix != null) {
-            fragmentFix.duty(duty);
-        }
-    }
 }
