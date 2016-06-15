@@ -29,7 +29,7 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
         return mPageArrayList;
     }
 
-    public List<VHD> getList() {
+    public ArrayList<VHD> getList() {
         return mPageArrayList.getList();
     }
 

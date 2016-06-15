@@ -2,7 +2,6 @@ package com.lin1987www.app;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Created by Administrator on 2015/5/22.
@@ -22,7 +21,7 @@ public class PageArrayList<T> {
 
     public boolean refreshFirstPageClearAll = true;
 
-    public List<T> getList() {
+    public ArrayList<T> getList() {
         return mList;
     }
 
