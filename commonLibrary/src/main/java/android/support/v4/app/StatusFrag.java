@@ -2,6 +2,7 @@ package android.support.v4.app;
 
 import android.os.Bundle;
 import android.support.v4.widget.ContentLoadingProgressBar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,9 +31,15 @@ public class StatusFrag extends FragmentFix {
         textView = (TextView) contentView.findViewById(android.R.id.message);
         progressBar.setVisibility(View.INVISIBLE);
         textView.setVisibility(View.GONE);
-        statusDuty = new StatusDuty(this);
-        container.postDelayed(statusDuty, 500L);
+
         return contentView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        statusDuty = new StatusDuty(this);
+        getView().postDelayed(statusDuty, 500L);
     }
 
     public static class StatusDuty implements Runnable {

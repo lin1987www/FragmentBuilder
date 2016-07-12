@@ -2,12 +2,9 @@ package android.support.v7.widget;
 
 import android.content.Context;
 import android.support.annotation.IntDef;
-import android.support.annotation.LayoutRes;
 import android.view.GestureDetector;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AbsListView;
 
 import com.lin1987www.app.PageArrayList;
@@ -18,6 +15,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Created by Administrator on 2016/2/15.
@@ -70,10 +68,27 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
         return mLastSelectedAdapterPosition;
     }
 
-    private final ArrayList<Integer> mSelectedAdapterPositionArray = new ArrayList<>();
+    private final ArrayList<Integer> mSelectedAdapterPositions = new ArrayList<>();
 
-    public ArrayList<Integer> getSelectedPositionArray() {
-        return mSelectedAdapterPositionArray;
+    public ArrayList<Integer> getSelectedPositions() {
+        return mSelectedAdapterPositions;
+    }
+
+    public void setSelectedPositions(ArrayList<Integer> value) {
+        mSelectedAdapterPositions.clear();
+        mSelectedAdapterPositions.addAll(value);
+        // 重新繪製
+        notifyDataSetChanged();
+    }
+
+    public ArrayList<VHD> getSelectedItems() {
+        ArrayList<VHD> vhdArrayList = new ArrayList<>();
+        ListIterator<Integer> iterator = getSelectedPositions().listIterator(0);
+        while (iterator.hasNext()) {
+            VHD item = getList().get(iterator.next());
+            vhdArrayList.add(item);
+        }
+        return vhdArrayList;
     }
 
     private OnItemClickListener mItemClickListener;
@@ -90,6 +105,9 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
 
         @Override
         public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            if (getRecyclerView() == null) {
+                return;
+            }
             RecyclerView.LayoutManager layoutManager = getRecyclerView().getLayoutManager();
             visibleItemCount = recyclerView.getChildCount();
             totalItemCount = layoutManager.getItemCount();
@@ -143,17 +161,17 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
 
     public boolean clickAdapterPositionIsSelected(Integer adapterPosition) {
         boolean isSelected = false;
-        if (mSelectedAdapterPositionArray.contains(adapterPosition)) {
-            mSelectedAdapterPositionArray.remove(adapterPosition);
+        if (mSelectedAdapterPositions.contains(adapterPosition)) {
+            mSelectedAdapterPositions.remove(adapterPosition);
             mLastSelectedAdapterPosition = -1;
         } else {
             if (mViewMode == AbsListView.CHOICE_MODE_SINGLE) {
-                if (mSelectedAdapterPositionArray.size() == 1) {
-                    mLastSelectedAdapterPosition = mSelectedAdapterPositionArray.get(0);
+                if (mSelectedAdapterPositions.size() == 1) {
+                    mLastSelectedAdapterPosition = mSelectedAdapterPositions.get(0);
                 }
-                mSelectedAdapterPositionArray.clear();
+                mSelectedAdapterPositions.clear();
             }
-            mSelectedAdapterPositionArray.add(adapterPosition);
+            mSelectedAdapterPositions.add(adapterPosition);
             isSelected = true;
         }
         return isSelected;
@@ -189,6 +207,25 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
         }
     }
 
+    private void adjustGridSpan() {
+        if (getRecyclerView() == null) {
+            return;
+        }
+        if (getRecyclerView().getLayoutManager() instanceof GridLayoutManager) {
+            GridLayoutManager gridLayoutManager = (GridLayoutManager) getRecyclerView().getLayoutManager();
+            if (gridLayoutManager.getSpanCount() == 1) {
+                RecyclerView.ViewHolder viewHolder = createViewHolder(getRecyclerView(), 0);
+                View view = viewHolder.itemView;
+                view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+                int itemWidth = view.getMeasuredWidth();
+                int gridWidth = getRecyclerView().getWidth();
+                int maxColumns = (int) Math.floor(gridWidth / (double) itemWidth);
+                int numColumns = getList().size() > maxColumns ? maxColumns : getList().size();
+                gridLayoutManager.setSpanCount(numColumns);
+            }
+        }
+    }
+
     private void addPageDataImmediately(Object data, final int page) {
         Collection<VHD> pageData = (Collection<VHD>) data;
         if (pageData == null) {
@@ -202,12 +239,17 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
             previousTotal = 0;
         }
         // fill all space
-        int pageSize = getPageArrayList().getPageSize();
         RecyclerView view = getRecyclerView();
+        int pageSize = getPageArrayList().getPageSize();
         if (pageSize > 0 && pageSize == pageData.size()) {
             if (view != null) {
                 view.post(mLoadMoreToFillSpaceRunnable);
             }
+        }
+        adjustGridSpan();
+        view.invalidate();
+        if (view.getParent() instanceof View) {
+            ((View) view.getParent()).invalidate();
         }
     }
 
@@ -237,7 +279,7 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
     @Override
     public void onBindViewHolder(VH holder, int position, List<Object> payloads) {
         onBindViewHolder(holder, position);
-        boolean isSelected = mSelectedAdapterPositionArray.contains(position);
+        boolean isSelected = mSelectedAdapterPositions.contains(position);
         if (isSelected) {
             holder.itemView.setSelected(isSelected);
         } else {
@@ -247,21 +289,6 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
             }
         }
     }
-
-    public abstract
-    @LayoutRes
-    int onCreateViewHolderLayoutResId(ViewGroup parent, int viewType);
-
-    @Override
-    public VH onCreateViewHolder(ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        int layoutResId = onCreateViewHolderLayoutResId(parent, viewType);
-        View view = inflater.inflate(layoutResId, parent, false);
-        VH viewHolder = onCreateViewHolder(parent, viewType, view);
-        return viewHolder;
-    }
-
-    public abstract VH onCreateViewHolder(ViewGroup parent, int viewType, View view);
 
     // Item click and item select
     @Override
@@ -302,5 +329,23 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
 
     public interface OnItemClickListener<VHD> {
         void onItemClick(View view, int position, VHD data);
+    }
+
+    public static
+    @ViewMode
+    int covertViewMode(int value) {
+        @ViewMode int result = AbsListView.CHOICE_MODE_NONE;
+        switch (value) {
+            case AbsListView.CHOICE_MODE_NONE:
+                result = AbsListView.CHOICE_MODE_NONE;
+                break;
+            case AbsListView.CHOICE_MODE_SINGLE:
+                result = AbsListView.CHOICE_MODE_SINGLE;
+                break;
+            case AbsListView.CHOICE_MODE_MULTIPLE:
+                result = AbsListView.CHOICE_MODE_MULTIPLE;
+                break;
+        }
+        return result;
     }
 }

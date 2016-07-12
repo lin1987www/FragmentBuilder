@@ -211,6 +211,7 @@ public class FragmentActivityFix extends FragmentActivity {
     @Override
     public void onBackPressed() {
         // 隱藏鍵盤
+
         ContextHelper.hideKeyboard(this);
 
         if (mOnPreBackPressedListenerList.size() > 0) {
@@ -257,11 +258,11 @@ public class FragmentActivityFix extends FragmentActivity {
     }
 
     @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
         boolean result;
-        result = super.onKeyUp(keyCode, event);
-        if ((event.getAction() == KeyEvent.ACTION_UP) &&
-                ((keyCode == KeyEvent.KEYCODE_ENTER) || (keyCode == KeyEvent.KEYCODE_ESCAPE))) {
+        result = super.onKeyDown(keyCode, event);
+        if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                ((keyCode == KeyEvent.KEYCODE_ENTER) || (keyCode == KeyEvent.KEYCODE_ESCAPE || (keyCode == KeyEvent.KEYCODE_BACK)))) {
             boolean needHideKeyboard = true;
             if (getCurrentFocus() instanceof EditText) {
                 EditText editText = (EditText) getCurrentFocus();
@@ -276,23 +277,4 @@ public class FragmentActivityFix extends FragmentActivity {
         return result;
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        boolean result;
-        result = super.onKeyDown(keyCode, event);
-        if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                ((keyCode == KeyEvent.KEYCODE_ENTER) || (keyCode == KeyEvent.KEYCODE_ESCAPE))) {
-            boolean needHideKeyboard = true;
-            if (getCurrentFocus() instanceof EditText) {
-                EditText editText = (EditText) getCurrentFocus();
-                int inputType = editText.getInputType();
-                boolean isMultiLine = (inputType & InputType.TYPE_TEXT_FLAG_MULTI_LINE) == InputType.TYPE_TEXT_FLAG_MULTI_LINE || (inputType & InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE) == InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE;
-                needHideKeyboard = !isMultiLine;
-            }
-            if (needHideKeyboard) {
-                ContextHelper.hideKeyboard(this);
-            }
-        }
-        return result;
-    }
 }

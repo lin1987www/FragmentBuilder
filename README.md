@@ -157,8 +157,8 @@ onRestoreInstanceState -> onActivityResult -> onAttachedToWindow
 
     @Override
     public void run() {
+ 		//after handle data
         isPostRun = false;
-        // handle data
     }
 
     @Override

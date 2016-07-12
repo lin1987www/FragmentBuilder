@@ -172,6 +172,20 @@ public abstract class Duty<T> implements Callable<Duty<T>>, Runnable {
     }
 
     public void fail(Throwable ex) {
+        if (!isCancelled()) {
+            if (null == handleThrowable(ex)) {
+                submit();
+            } else {
+                ExceptionHelper.printException(this.toString(), ex);
+                failFinish(ex);
+            }
+        } else {
+            setThrowable(ex);
+            always();
+        }
+    }
+
+    public void failFinish(Throwable ex) {
         setThrowable(ex);
         mIsFinished.set(true);
         mStopTimeMillis = System.currentTimeMillis();
@@ -252,31 +266,21 @@ public abstract class Duty<T> implements Callable<Duty<T>>, Runnable {
         mIsRan = true;
         mStartTimeMillis = System.currentTimeMillis();
         onPreExecute();
-        while (true) {
-            try {
-                if (!isCancelled()) {
-                    doTask(getContext(), getPreviousDuty());
-                    if (isSync()) {
-                        done();
-                    }
-                } else {
-                    always();
+        //while (true) {
+        try {
+            if (!isCancelled()) {
+                doTask(getContext(), getPreviousDuty());
+                if (isSync()) {
+                    done();
                 }
-            } catch (Throwable ex) {
-                if (!isCancelled()) {
-                    if (null == handleThrowable(ex)) {
-                        continue;
-                    } else {
-                        ExceptionHelper.printException(this.toString(), ex);
-                        fail(ex);
-                    }
-                } else {
-                    setThrowable(ex);
-                    always();
-                }
+            } else {
+                always();
             }
-            break;
+        } catch (Throwable ex) {
+            fail(ex);
         }
+        //    break;
+        //}
         return this;
     }
 }
