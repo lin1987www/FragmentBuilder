@@ -1,7 +1,12 @@
 package android.support.v7.widget;
 
 import android.content.Context;
+import android.os.Bundle;
+import android.os.Parcelable;
+import android.support.annotation.CallSuper;
 import android.support.annotation.IntDef;
+import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.SparseArray;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -14,21 +19,51 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
 /**
  * Created by Administrator on 2016/2/15.
  */
-public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> implements RecyclerView.OnItemTouchListener {
-    private final PageArrayList<VHD> mPageArrayList = new PageArrayList<>();
+public abstract class RecyclerViewAdapter<VHD extends Parcelable, VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> implements RecyclerView.OnItemTouchListener, ItemTouchHelperAdapter {
+    public final static String KEY_RecyclerViewAdapter = "KEY_RecyclerViewAdapter";
+    private final static String KEY_page = "KEY_page";
+    private final static String KEY_viewIdList = "KEY_viewIdList";
+    private final static String KEY_savedStateList = "KEY_savedStateList";
+    private final static String KEY_viewMode = "KEY_viewMode";
+    private final static String KEY_recyclerViewSavedState = "KEY_recyclerViewSavedState";
+    private final static String KEY_selectedPositions = "KEY_selectedPositions";
 
-    public PageArrayList<VHD> getPageArrayList() {
-        return mPageArrayList;
+
+    private PageArrayList<VHD> mPageArrayList = new PageArrayList<>();
+
+    public <T extends VHD> PageArrayList<T> getPageArrayList() {
+        return (PageArrayList<T>) mPageArrayList;
     }
 
-    public ArrayList<VHD> getList() {
-        return mPageArrayList.getList();
+    public <T extends VHD> ArrayList<T> getList() {
+        return (ArrayList<T>) mPageArrayList.getList();
+    }
+
+    private ArrayList<Integer> mViewIdList = new ArrayList<>();
+
+    public ArrayList<Integer> getViewIdList() {
+        return mViewIdList;
+    }
+
+    public void setViewIdList(ArrayList<Integer> value) {
+        mViewIdList = value;
+    }
+
+    private ArrayList<SparseArray<Parcelable>> mSavedStateList = new ArrayList<>();
+
+    public ArrayList<SparseArray<Parcelable>> getSaveHierarchyState() {
+        return mSavedStateList;
+    }
+
+    public void setSaveHierarchyState(ArrayList<SparseArray<Parcelable>> value) {
+        mSavedStateList = value;
     }
 
     private WeakReference<Context> mContextWeak = new WeakReference<>(null);
@@ -68,7 +103,7 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
         return mLastSelectedAdapterPosition;
     }
 
-    private final ArrayList<Integer> mSelectedAdapterPositions = new ArrayList<>();
+    private ArrayList<Integer> mSelectedAdapterPositions = new ArrayList<>();
 
     public ArrayList<Integer> getSelectedPositions() {
         return mSelectedAdapterPositions;
@@ -81,14 +116,60 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
         notifyDataSetChanged();
     }
 
-    public ArrayList<VHD> getSelectedItems() {
-        ArrayList<VHD> vhdArrayList = new ArrayList<>();
+    public <T extends VHD> ArrayList<T> getSelectedItems() {
+        ArrayList<T> arrayList = new ArrayList<>();
         ListIterator<Integer> iterator = getSelectedPositions().listIterator(0);
         while (iterator.hasNext()) {
             VHD item = getList().get(iterator.next());
-            vhdArrayList.add(item);
+            arrayList.add((T) item);
         }
-        return vhdArrayList;
+        return arrayList;
+    }
+
+    @Override
+    public boolean onItemMove(int fromPosition, int toPosition) {
+        // TODO  測試
+        int maxIndex = fromPosition > toPosition ? fromPosition : toPosition;
+
+        Collections.swap(getList(), fromPosition, toPosition);
+        if (maxIndex < getSaveHierarchyState().size()) {
+            Collections.swap(getSaveHierarchyState(), fromPosition, toPosition);
+        }
+        if (maxIndex < getViewIdList().size()) {
+            Collections.swap(getViewIdList(), fromPosition, toPosition);
+        }
+        if (getSelectedPositions().contains(fromPosition) && !getSelectedPositions().contains(toPosition)) {
+            int index = getSelectedPositions().indexOf(fromPosition);
+            int newPosition = toPosition;
+            getSelectedPositions().set(index, newPosition);
+        } else if (!getSelectedPositions().contains(fromPosition) && getSelectedPositions().contains(toPosition)) {
+            int index = getSelectedPositions().indexOf(toPosition);
+            int newPosition = toPosition;
+            if (fromPosition < toPosition) {
+                newPosition--;
+            } else {
+                newPosition++;
+            }
+            getSelectedPositions().set(index, newPosition);
+        }
+        notifyItemMoved(fromPosition, toPosition);
+        return true;
+    }
+
+    @Override
+    public void onItemDismiss(int position) {
+        int maxIndex = position;
+        getList().remove(position);
+        if (maxIndex < getSaveHierarchyState().size()) {
+            getSaveHierarchyState().remove(position);
+        }
+        if (maxIndex < getViewIdList().size()) {
+            getViewIdList().remove(position);
+        }
+        if (getSelectedPositions().contains(position)) {
+            getSelectedPositions().remove((Integer) position);
+        }
+        notifyItemRemoved(position);
     }
 
     private OnItemClickListener mItemClickListener;
@@ -105,10 +186,10 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
 
         @Override
         public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-            if (getRecyclerView() == null) {
+            if (recyclerView == null) {
                 return;
             }
-            RecyclerView.LayoutManager layoutManager = getRecyclerView().getLayoutManager();
+            RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
             visibleItemCount = recyclerView.getChildCount();
             totalItemCount = layoutManager.getItemCount();
             if (layoutManager instanceof LinearLayoutManager) {
@@ -129,6 +210,14 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
             }
         }
     };
+
+    private ItemTouchHelperCallback itemTouchHelperCallback;
+
+    public void init(Context context, RecyclerView recyclerView, int firstLoadPage, int pageSize, Bundle bundle) {
+        mRecyclerViewWeak = new WeakReference<>(recyclerView);
+        loadSavedState(bundle);
+        init(context, recyclerView, firstLoadPage, pageSize);
+    }
 
     public void init(Context context, RecyclerView recyclerView, int firstLoadPage, int pageSize) {
         mContextWeak = new WeakReference<>(context);
@@ -153,6 +242,10 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
         loading = false;
         recyclerView.setAdapter(this);
         mOnScrollListener.onScrolled(recyclerView, 0, 0);
+
+        itemTouchHelperCallback = new ItemTouchHelperCallback(this);
+        ItemTouchHelper helper = new ItemTouchHelper(itemTouchHelperCallback);
+        helper.attachToRecyclerView(recyclerView);
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {
@@ -187,51 +280,11 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
         }
     };
 
-    private static class AddPageDataRunnable implements Runnable {
-        WeakReference<RecyclerViewAdapter> adapterWeakReference;
-        int page;
-        Object pageData;
-
-        public AddPageDataRunnable(RecyclerViewAdapter adapter, Object pageData, int page) {
-            adapterWeakReference = new WeakReference<>(adapter);
-            this.pageData = pageData;
-            this.page = page;
-        }
-
-        @Override
-        public void run() {
-            RecyclerViewAdapter adapter = adapterWeakReference.get();
-            if (adapter != null && adapter.getRecyclerView() != null) {
-                adapter.addPageDataImmediately(pageData, page);
-            }
-        }
-    }
-
-    private void adjustGridSpan() {
-        if (getRecyclerView() == null) {
-            return;
-        }
-        if (getRecyclerView().getLayoutManager() instanceof GridLayoutManager) {
-            GridLayoutManager gridLayoutManager = (GridLayoutManager) getRecyclerView().getLayoutManager();
-            if (gridLayoutManager.getSpanCount() == 1) {
-                RecyclerView.ViewHolder viewHolder = createViewHolder(getRecyclerView(), 0);
-                View view = viewHolder.itemView;
-                view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-                int itemWidth = view.getMeasuredWidth();
-                int gridWidth = getRecyclerView().getWidth();
-                int maxColumns = (int) Math.floor(gridWidth / (double) itemWidth);
-                int numColumns = getList().size() > maxColumns ? maxColumns : getList().size();
-                gridLayoutManager.setSpanCount(numColumns);
-            }
-        }
-    }
-
-    private void addPageDataImmediately(Object data, final int page) {
-        Collection<VHD> pageData = (Collection<VHD>) data;
+    private void addPageDataImmediately(Collection<? extends VHD> pageData, final int page) {
         if (pageData == null) {
             pageData = new ArrayList<>();
         }
-        int selection = getPageArrayList().setDataAndGetCurrentIndex(pageData, page);
+        int selection = getPageArrayList().setDataAndGetCurrentIndex((Collection<VHD>) pageData, page);
         notifyDataSetChanged();
         //
         if (page == 1) {
@@ -253,15 +306,27 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
         }
     }
 
-    public void addPageDataPost(final Collection<VHD> pageData, final int page) {
-        final RecyclerView view = getRecyclerView();
-        if (view != null) {
-            view.post(new AddPageDataRunnable(this, pageData, page));
-        }
+    public void addPageData(Collection<? extends VHD> pageData, final int page) {
+        addPageDataImmediately(pageData, page);
     }
 
-    public void addPageData(final Collection<VHD> pageData, final int page) {
-        addPageDataImmediately(pageData, page);
+    private void adjustGridSpan() {
+        if (getRecyclerView() == null) {
+            return;
+        }
+        if (getRecyclerView().getLayoutManager() instanceof GridLayoutManager) {
+            GridLayoutManager gridLayoutManager = (GridLayoutManager) getRecyclerView().getLayoutManager();
+            if (gridLayoutManager.getSpanCount() == 1) {
+                RecyclerView.ViewHolder viewHolder = createViewHolder(getRecyclerView(), getItemViewType(0));
+                View view = viewHolder.itemView;
+                view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+                int itemWidth = view.getMeasuredWidth();
+                int gridWidth = getRecyclerView().getWidth();
+                int maxColumns = (int) Math.floor(gridWidth / (double) itemWidth);
+                int numColumns = getList().size() > maxColumns ? maxColumns : getList().size();
+                gridLayoutManager.setSpanCount(numColumns);
+            }
+        }
     }
 
     public void clear() {
@@ -269,6 +334,89 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
         loading = false;
         previousTotal = 0;
         notifyDataSetChanged();
+    }
+
+    private void saveState(VH holder) {
+        if (holder == null) {
+            return;
+        }
+        SparseArray<Parcelable> savedState = new SparseArray<>();
+        View view = holder.itemView;
+        int position = holder.getAdapterPosition();
+        if (position < 0) {
+            return;
+        }
+        int viewId = view.getId();
+        if (viewId == View.NO_ID) {
+            view.setId(position);
+        }
+        view.saveHierarchyState(savedState);
+        view.setId(viewId);
+        while (mSavedStateList.size() <= position) {
+            mSavedStateList.add(null);
+        }
+        mSavedStateList.set(position, savedState);
+        while (mViewIdList.size() <= position) {
+            mViewIdList.add(null);
+        }
+        mViewIdList.set(position, viewId);
+    }
+
+    public void saveState(Bundle outState) {
+        int firstPosition = -1;
+        int lastPosition = -1;
+        if (getRecyclerView() != null) {
+            int visibleItemCount = getRecyclerView().getChildCount();
+            if (getRecyclerView().getLayoutManager() instanceof LinearLayoutManager) {
+                LinearLayoutManager manager = (LinearLayoutManager) getRecyclerView().getLayoutManager();
+                firstPosition = manager.findFirstVisibleItemPosition();
+                lastPosition = manager.findLastVisibleItemPosition();
+            } else if (getRecyclerView().getLayoutManager() instanceof StaggeredGridLayoutManager) {
+                StaggeredGridLayoutManager manager = (StaggeredGridLayoutManager) getRecyclerView().getLayoutManager();
+                firstPosition = manager.findFirstVisibleItemPositionInt();
+            }
+            lastPosition = firstPosition + visibleItemCount;
+        }
+        for (int i = firstPosition; i <= lastPosition; i++) {
+            VH holder = (VH) getRecyclerView().findViewHolderForAdapterPosition(i);
+            saveState(holder);
+        }
+        Bundle bundle = new Bundle();
+
+        bundle.putParcelable(KEY_page, getPageArrayList());
+        bundle.putIntegerArrayList(KEY_selectedPositions, getSelectedPositions());
+        bundle.putIntegerArrayList(KEY_viewIdList, getViewIdList());
+        bundle.putSerializable(KEY_savedStateList, getSaveHierarchyState());
+        bundle.putInt(KEY_viewMode, mViewMode);
+        SparseArray<Parcelable> savedState = new SparseArray<>();
+        getRecyclerView().saveHierarchyState(savedState);
+        bundle.putSparseParcelableArray(KEY_recyclerViewSavedState, savedState);
+
+
+        outState.putParcelable(KEY_RecyclerViewAdapter, bundle);
+    }
+
+    public void loadSavedState(Bundle savedInstanceState) {
+        if (savedInstanceState == null) {
+            return;
+        }
+        if (!savedInstanceState.containsKey(KEY_RecyclerViewAdapter)) {
+            return;
+        }
+        Bundle bundle = savedInstanceState.getParcelable(KEY_RecyclerViewAdapter);
+        mPageArrayList = bundle.getParcelable(KEY_page);
+        mSelectedAdapterPositions = bundle.getIntegerArrayList(KEY_selectedPositions);
+        mViewIdList = bundle.getIntegerArrayList(KEY_viewIdList);
+        mSavedStateList = (ArrayList<SparseArray<Parcelable>>) bundle.getSerializable(KEY_savedStateList);
+        setViewMode(covertViewMode(bundle.getInt(KEY_viewMode)));
+        SparseArray<Parcelable> savedState = bundle.getSparseParcelableArray(KEY_recyclerViewSavedState);
+        getRecyclerView().restoreHierarchyState(savedState);
+    }
+
+    @CallSuper
+    @Override
+    public void onViewRecycled(VH holder) {
+        saveState(holder);
     }
 
     @Override
@@ -288,12 +436,36 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
                 clickAdapterPositionIsSelected(position);
             }
         }
+        // restore state
+        SparseArray<Parcelable> savedState = null;
+        if (position < mSavedStateList.size()) {
+            savedState = mSavedStateList.get(position);
+        }
+        if (savedState != null) {
+            View view = holder.itemView;
+            Integer viewId = mViewIdList.get(position);
+            if (viewId == View.NO_ID) {
+                view.setId(position);
+            }
+            view.restoreHierarchyState(savedState);
+            view.setId(viewId);
+        }
     }
 
     // Item click and item select
     @Override
     public boolean onInterceptTouchEvent(RecyclerView view, MotionEvent e) {
         View childView = view.findChildViewUnder(e.getX(), e.getY());
+        if (childView != null) {
+            // For trigger  ChildView  Button or Checkbox or something else.
+            boolean origin = childView.isClickable();
+            childView.setClickable(false);
+            boolean isHandled = childView.dispatchTouchEvent(e);
+            if (isHandled) {
+                return false;
+            }
+            childView.setClickable(origin);
+        }
         if (childView != null
                 //&& childView.isEnabled()
                 && mGestureDetector.onTouchEvent(e)) {
@@ -348,4 +520,33 @@ public abstract class RecyclerViewAdapter<VHD, VH extends RecyclerView.ViewHolde
         }
         return result;
     }
+
+    /*
+    public void addPageDataPost(Collection<? extends VHD> pageData, final int page) {
+        final RecyclerView view = getRecyclerView();
+        if (view != null) {
+            view.post(new AddPageDataRunnable(this, pageData, page));
+        }
+    }
+
+    private static class AddPageDataRunnable implements Runnable {
+        WeakReference<RecyclerViewAdapter> adapterWeakReference;
+        int page;
+        Collection<? extends Parcelable> pageData;
+
+        public AddPageDataRunnable(RecyclerViewAdapter adapter, Collection<? extends Parcelable> pageData, int page) {
+            adapterWeakReference = new WeakReference<>(adapter);
+            this.pageData = pageData;
+            this.page = page;
+        }
+
+        @Override
+        public void run() {
+            RecyclerViewAdapter adapter = adapterWeakReference.get();
+            if (adapter != null && adapter.getRecyclerView() != null) {
+                adapter.addPageDataImmediately(pageData, page);
+            }
+        }
+    }
+    */
 }

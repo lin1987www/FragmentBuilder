@@ -10,6 +10,24 @@ import java.util.HashMap;
 
 /**
  * Created by Administrator on 2016/2/16.
+ *
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        viewGroupKeeper = new ViewGroupKeeper();
+        // save data
+        // viewGroupKeeper.bundle.putString(KEY_data, JacksonHelper.toJson(data));
+        viewGroupKeeper.onSaveInstanceState(this, super.onSaveInstanceState());
+        return viewGroupKeeper.bundle;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        viewGroupKeeper = new ViewGroupKeeper(state);
+        //restore data
+        super.onRestoreInstanceState(viewGroupKeeper.getState());
+        viewGroupKeeper.restore(this);
+    }
+ *
  */
 public class ViewGroupKeeper {
     private static final String KEY_ViewGroupState = "KEY_ViewGroupState";
@@ -50,6 +68,7 @@ public class ViewGroupKeeper {
         bundle.putSerializable(KEY_ChildViewIdMap, childViewIdMap);
     }
 
+//
     public Parcelable onSaveInstanceState(ViewGroup viewGroup, Parcelable absListViewState) {
         setState(absListViewState);
         setChildStateMap(new HashMap<Integer, SparseArray<Parcelable>>());

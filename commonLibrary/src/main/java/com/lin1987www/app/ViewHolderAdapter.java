@@ -14,8 +14,8 @@ import java.util.List;
 /**
  * Created by Administrator on 2015/5/22.
  */
-public class ViewHolderAdapter<T, VH extends ViewHolder<T>> implements ListAdapter, AbsListView.OnScrollListener {
-    private final PageArrayList<T> mPageArrayList = new PageArrayList<T>();
+public class ViewHolderAdapter<T extends Parcelable, VH extends ViewHolder<T>> implements ListAdapter, AbsListView.OnScrollListener {
+    private final PageArrayList<T> mPageArrayList = new PageArrayList<>();
     private final DataSetObservable mDataSetObservable = new DataSetObservable();
     private final VH mViewHolder;
 

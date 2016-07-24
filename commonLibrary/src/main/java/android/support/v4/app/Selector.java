@@ -4,7 +4,9 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v7.widget.RecyclerViewAdapter;
+import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AbsListView;
@@ -25,7 +27,9 @@ public class Selector<T extends Selector.Item> extends TextView implements View.
     public final static String KEY_selectedPositions = "KEY_selectedPositions";
     public final static String KEY_viewMode = "KEY_viewMode";
     public final static String KEY_isDisableTouch = "KEY_isDisableTouch";
+    public final static String KEY_name = "KEY_name";
 
+    private String mName = null;
     private String mSeparator = ", ";
     private final ArrayList<T> mSelections = new ArrayList<>();
     private final ArrayList<Integer> mSelectedPositions = new ArrayList<>();
@@ -54,6 +58,16 @@ public class Selector<T extends Selector.Item> extends TextView implements View.
         this.mViewMode = value;
     }
 
+    public void setName(String value) {
+        mName = value;
+        delayRun();
+    }
+
+    public void setName(int resId) {
+        String name = getResources().getString(resId);
+        setName(name);
+    }
+
     public void setSeparator(String value) {
         mSeparator = value;
         delayRun();
@@ -65,7 +79,7 @@ public class Selector<T extends Selector.Item> extends TextView implements View.
         return temp;
     }
 
-    public void setSelections(ArrayList<T> value) {
+    public void setSelections(ArrayList<? extends T> value) {
         mSelections.clear();
         mSelections.addAll(value);
         delayRun();
@@ -93,6 +107,19 @@ public class Selector<T extends Selector.Item> extends TextView implements View.
         return temp;
     }
 
+    public void getSelectionItems(ArrayList<T> items) {
+        ArrayList<Integer> temp = new ArrayList<>();
+        ListIterator<T> iterator = items.listIterator();
+        while (iterator.hasNext()) {
+            T item = iterator.next();
+            int index = mSelections.indexOf(item);
+            if (index > -1) {
+                temp.add(index);
+            }
+        }
+        setSelectedPositions(temp);
+    }
+
     private void bindData() {
         ListIterator<Integer> iterator = mSelectedPositions.listIterator(0);
         while (iterator.hasNext()) {
@@ -104,10 +131,12 @@ public class Selector<T extends Selector.Item> extends TextView implements View.
         }
 
         if (mSelectedPositions.size() == 0) {
-            setText(null);
+            setText(mName);
         } else {
             iterator = mSelectedPositions.listIterator(0);
             StringBuilder builder = new StringBuilder();
+            builder.append(mName);
+            builder.append(":");
             if (iterator.hasNext()) {
                 Item item = mSelections.get(iterator.next());
                 builder.append(item.selectItemName());
@@ -132,6 +161,7 @@ public class Selector<T extends Selector.Item> extends TextView implements View.
 
     private void init(Context context) {
         setOnClickListener(this);
+        setEllipsize(TextUtils.TruncateAt.MARQUEE);
     }
 
     @Override
@@ -139,6 +169,7 @@ public class Selector<T extends Selector.Item> extends TextView implements View.
         Bundle bundle = (Bundle) state;
         state = bundle.getParcelable(KEY_ON_SAVE_INSTANCE_STATE);
         super.onRestoreInstanceState(state);
+        setName(bundle.getString(KEY_name));
         setSeparator(bundle.getString(KEY_separator));
         ArrayList<T> temp = bundle.getParcelableArrayList(KEY_selections);
         setSelections(temp);
@@ -150,6 +181,7 @@ public class Selector<T extends Selector.Item> extends TextView implements View.
     @Override
     public Parcelable onSaveInstanceState() {
         Bundle bundle = new Bundle();
+        bundle.putString(KEY_name, mName);
         bundle.putParcelable(KEY_ON_SAVE_INSTANCE_STATE, super.onSaveInstanceState());
         bundle.putString(KEY_separator, mSeparator);
         bundle.putParcelableArrayList(KEY_selections, mSelections);

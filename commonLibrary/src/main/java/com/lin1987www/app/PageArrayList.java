@@ -1,18 +1,21 @@
 package com.lin1987www.app;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
 /**
  * Created by Administrator on 2015/5/22.
  */
-public class PageArrayList<T> {
+public class PageArrayList<T extends Parcelable> implements Parcelable {
     private static final int NONE = -1;
 
     private int mFloorPage = 1;
     private int mCeilingPage = Integer.MAX_VALUE;
 
-    private final ArrayList<T> mList = new ArrayList<>();
+    private ArrayList<T> mList = new ArrayList<>();
     private int mPageSize;
     private int mDefaultLoadPage = mFloorPage;
     private int mStartPage = NONE;
@@ -113,7 +116,7 @@ public class PageArrayList<T> {
         mList.clear();
     }
 
-    private void refreshPageData(int page, Collection<T> pageData) {
+    private void refreshPageData(int page, Collection<? extends T> pageData) {
         if (refreshFirstPageClearAll && page == 1) {
             mList.clear();
             mList.addAll(pageData);
@@ -160,7 +163,7 @@ public class PageArrayList<T> {
         return position % mPageSize;
     }
 
-    public int setDataAndGetCurrentIndex(Collection<T> pageData, int page) {
+    public int setDataAndGetCurrentIndex(Collection<? extends T> pageData, int page) {
         boolean isRefreshPage = false;
         // True if it is next page, false if it is prev page
         Boolean isNextPage = null;
@@ -205,4 +208,47 @@ public class PageArrayList<T> {
         }
         return selection;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(this.mFloorPage);
+        dest.writeInt(this.mCeilingPage);
+        dest.writeList(this.mList);
+        dest.writeInt(this.mPageSize);
+        dest.writeInt(this.mDefaultLoadPage);
+        dest.writeInt(this.mStartPage);
+        dest.writeInt(this.mEndPage);
+        dest.writeInt(this.mLastRecordPage);
+    }
+
+    public PageArrayList() {
+    }
+
+    protected PageArrayList(Parcel in) {
+        this.mFloorPage = in.readInt();
+        this.mCeilingPage = in.readInt();
+        this.mList = in.readArrayList(null);
+        this.mPageSize = in.readInt();
+        this.mDefaultLoadPage = in.readInt();
+        this.mStartPage = in.readInt();
+        this.mEndPage = in.readInt();
+        this.mLastRecordPage = in.readInt();
+    }
+
+    public static final Creator<PageArrayList> CREATOR = new Creator<PageArrayList>() {
+        @Override
+        public PageArrayList createFromParcel(Parcel source) {
+            return new PageArrayList(source);
+        }
+
+        @Override
+        public PageArrayList[] newArray(int size) {
+            return new PageArrayList[size];
+        }
+    };
 }

@@ -48,11 +48,15 @@ public class SelectorFrag extends FragmentFix implements RecyclerViewAdapter.OnI
         mRecyclerView.setLayoutManager(mLayoutManager);
         if (mAdapter == null) {
             mAdapter = new SelectorItemAdapter();
-            mAdapter.setViewMode(fragArgs.getViewMode());
-            mAdapter.init(getActivity(), mRecyclerView, 1, 0);
-            mAdapter.addPageData((ArrayList<Selector.Item>) fragArgs.getSelections(), 1);
-            mAdapter.setSelectedPositions(fragArgs.getSelectedPositions());
-            mAdapter.setOnItemClickListener(this);
+            if (fragArgs.bundle.containsKey(RecyclerViewAdapter.KEY_RecyclerViewAdapter)) {
+                mAdapter.init(getActivity(), mRecyclerView, 1, 0, fragArgs.bundle);
+            } else {
+                mAdapter.setViewMode(fragArgs.getViewMode());
+                mAdapter.init(getActivity(), mRecyclerView, 1, 0, null);
+                mAdapter.addPageData((ArrayList<Selector.Item>) fragArgs.getSelections(), 1);
+                mAdapter.setSelectedPositions(fragArgs.getSelectedPositions());
+                mAdapter.setOnItemClickListener(this);
+            }
         }
 
         switch (fragArgs.getViewMode()) {
@@ -65,6 +69,12 @@ public class SelectorFrag extends FragmentFix implements RecyclerViewAdapter.OnI
         }
 
         return mContentView;
+    }
+
+    @Override
+    public void onDestroyView() {
+        mAdapter.saveState(fragArgs.bundle);
+        super.onDestroyView();
     }
 
     @Override
