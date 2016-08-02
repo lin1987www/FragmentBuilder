@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--reds-->
+    <color name="highlight_blue">#6633B5E5</color>
+    <color name="highlight_gray">#66EEEEEE</color>
+    <color name="highlight_orange">#66FFBD3C</color>
+</resources>

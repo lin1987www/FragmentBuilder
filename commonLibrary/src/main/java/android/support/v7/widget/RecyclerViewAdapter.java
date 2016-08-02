@@ -382,17 +382,16 @@ public abstract class RecyclerViewAdapter<VHD extends Parcelable, VH extends Rec
             saveState(holder);
         }
         Bundle bundle = new Bundle();
-
         bundle.putParcelable(KEY_page, getPageArrayList());
         bundle.putIntegerArrayList(KEY_selectedPositions, getSelectedPositions());
         bundle.putIntegerArrayList(KEY_viewIdList, getViewIdList());
         bundle.putSerializable(KEY_savedStateList, getSaveHierarchyState());
         bundle.putInt(KEY_viewMode, mViewMode);
+        //
         SparseArray<Parcelable> savedState = new SparseArray<>();
         getRecyclerView().saveHierarchyState(savedState);
         bundle.putSparseParcelableArray(KEY_recyclerViewSavedState, savedState);
-
-
+        //
         outState.putParcelable(KEY_RecyclerViewAdapter, bundle);
     }
 
