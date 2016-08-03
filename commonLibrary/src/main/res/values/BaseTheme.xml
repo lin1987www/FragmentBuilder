@@ -1,28 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Base application theme. -->
-    <style name="BaseTheme" parent="Theme.AppCompat">
+    <style name="BaseTheme" parent="Theme.AppCompat.NoActionBar">
         <!-- 全螢幕 -->
-        <item name="windowFullscreen">true</item>
+        <item name="android:windowFullscreen">false</item>
         <!-- NoTitleBar -->
-        <item name="windowContentOverlay">@null</item>
-
+        <item name="android:windowContentOverlay">@null</item>
 
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/legacy_primary</item>
-        <item name="colorPrimaryDark">@color/legacy_primary_dark</item>
+        <item name="colorPrimary">@color/md_black_1000</item>
+        <item name="colorPrimaryDark">@color/md_amber_100</item>
 
-        <item name="textColorPrimary">@color/primary_text_dark</item>
-        <item name="textColorSecondary">@color/secondary_text_dark</item>
+        <item name="android:textColorPrimary">?attr/colorPrimary</item>
+        <item name="android:textColorSecondary">?attr/colorPrimaryDark</item>
 
         <!-- 背景底色 -->
-        <item name="windowBackground">@drawable/screen_background_selector_dark</item>
-        <item name="colorBackground">@android:color/white</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:colorBackground">@android:color/white</item>
 
-        <item name="textColorHint">@color/hint_foreground_dark</item>
-        <item name="textColorPrimaryDisableOnly">@color/primary_text_dark_disable_only</item>
+        <item name="android:textColorHint">?attr/colorPrimary</item>
+        <item name="android:textColorPrimaryDisableOnly">?attr/colorPrimary</item>
 
-        <item name="selectableItemBackground">@drawable/item_background</item>
+        <item name="selectableItemBackground">?android:attr/windowBackground</item>
         <item name="selectableItemBackgroundBorderless">?attr/selectableItemBackground</item>
 
     </style>
