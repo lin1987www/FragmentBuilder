@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.ViewParent;
 
 import com.lin1987www.app.SwipeHelper;
 
@@ -21,6 +22,10 @@ public class ViewPagerFix extends ViewPager {
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         boolean result;
         result = super.onInterceptTouchEvent(ev);
+        final ViewParent parent = getParent();
+        if (parent != null) {
+            parent.requestDisallowInterceptTouchEvent(false);
+        }
         return result;
     }
 

@@ -12,7 +12,7 @@ import android.widget.Button;
 /**
  * Created by Administrator on 2015/7/8.
  */
-public class PagerFragment extends FragmentFix {
+public class Pager2Fragment extends FragmentFix {
     ViewPager mPager;
 
     FragmentStatePagerAdapterFix mPagerAdapter;
@@ -23,7 +23,6 @@ public class PagerFragment extends FragmentFix {
     Class<?>[] mFragArray = new Class[]{
             F1Fragment.class,
             F2Fragment.class,
-            Pager2Fragment.class,
             F3Fragment.class,
             F4Fragment.class,
             F5Fragment.class
@@ -32,7 +31,7 @@ public class PagerFragment extends FragmentFix {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_pager, container, false);
+        View view = inflater.inflate(R.layout.fragment_pager2, container, false);
         mPager = (ViewPager) view.findViewById(R.id.pager);
         mAppendPageButton = (Button) view.findViewById(R.id.appendPageButton);
         mRemoveLastPageButton = (Button) view.findViewById(R.id.removeLastPageButton);
