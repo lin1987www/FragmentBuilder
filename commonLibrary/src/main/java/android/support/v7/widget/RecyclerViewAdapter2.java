@@ -21,7 +21,7 @@ import java.util.List;
  */
 
 public abstract class RecyclerViewAdapter2 extends RecyclerView.Adapter<ViewHolder> implements ItemTouchHelperAdapter, RecyclerViewOnItemClickListener {
-    
+
     @IntDef({AbsListView.CHOICE_MODE_NONE, AbsListView.CHOICE_MODE_SINGLE, AbsListView.CHOICE_MODE_MULTIPLE})
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
