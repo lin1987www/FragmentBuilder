@@ -35,7 +35,6 @@ public abstract class RecyclerViewAdapter<VHD extends Parcelable, VH extends Rec
     private final static String KEY_recyclerViewSavedState = "KEY_recyclerViewSavedState";
     private final static String KEY_selectedPositions = "KEY_selectedPositions";
 
-
     private PageArrayList<VHD> mPageArrayList = new PageArrayList<>();
 
     public <T extends VHD> PageArrayList<T> getPageArrayList() {

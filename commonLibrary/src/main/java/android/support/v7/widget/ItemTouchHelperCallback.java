@@ -24,8 +24,17 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     @Override
     public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-        int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
-        int swipeFlags = ItemTouchHelper.START | ItemTouchHelper.END;
+        int dragFlags = 0;
+        int swipeFlags = 0;
+        RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+        if (layoutManager != null) {
+            if (layoutManager instanceof LinearLayoutManager) {
+                dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
+                swipeFlags = ItemTouchHelper.START | ItemTouchHelper.END;
+            } else if (layoutManager instanceof GridLayoutManager) {
+                dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.START | ItemTouchHelper.END;
+            }
+        }
         return makeMovementFlags(dragFlags, swipeFlags);
     }
 

@@ -101,6 +101,10 @@ public class FragmentUtils {
         return fm.mHost;
     }
 
+    public static FragmentManagerNonConfig getFragmentManagerNonConfig(FragmentManager fragmentManager) {
+        FragmentManagerImpl fm = (FragmentManagerImpl) fragmentManager;
+        return fm.retainNonConfig();
+    }
 
     public static boolean isFragmentExist(Fragment fragment) {
         if (fragment == null) {
@@ -195,8 +199,10 @@ public class FragmentUtils {
         log(logBundle, stringBuilder, "isVisible", String.valueOf(fragment.isVisible()));
         log(logBundle, stringBuilder, "isHidden", String.valueOf(fragment.isHidden()));
         log(logBundle, stringBuilder, "getActivity is null", String.valueOf(fragment.getActivity() == null));
-        log(logBundle, stringBuilder, "getChildFragmentManager activity is null", String.valueOf(getFragmentManagerActivity(fragment.getChildFragmentManager()) == null));
-
+        log(logBundle, stringBuilder, "mChildFragmentManager is null", String.valueOf(fragment.mChildFragmentManager == null));
+        if (fragment.mChildFragmentManager != null) {
+            log(logBundle, stringBuilder, "getChildFragmentManager activity is null", String.valueOf(getFragmentManagerActivity(fragment.mChildFragmentManager) == null));
+        }
         if (stringBuilder.length() > 0) {
             stringBuilder.insert(0, String.format("FragmentLog: %s\nMethod: %s\n", (fragment.getTag() == null) ? fragment.toString() : fragment.getTag(), name));
             String log = stringBuilder.toString();

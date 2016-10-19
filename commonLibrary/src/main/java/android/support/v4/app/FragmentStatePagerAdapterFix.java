@@ -128,7 +128,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             // http://stackoverflow.com/questions/24355838/cant-change-tag-of-fragment-error-trying-to-use-a-pageradapter-for-switching
             if ((fs.mTag != null && fs.mTag.equals(mFragmentTags.get(position))) ||
                     (fs.mTag == null && mFragmentTags.get(position) == null)) {
-                fragment = fs.instantiate(FragmentUtils.getFragmentHostCallback(fragmentManager), getParentFragment());
+                fragment = fs.instantiate(FragmentUtils.getFragmentHostCallback(fragmentManager), getParentFragment(), FragmentUtils.getFragmentManagerNonConfig(fragmentManager));
                 // Fix bug
                 // http://stackoverflow.com/questions/11381470/classnotfoundexception-when-unmarshalling-android-support-v4-view-viewpagersav
                 if (fragment.mSavedFragmentState != null) {
