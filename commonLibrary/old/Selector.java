@@ -6,7 +6,6 @@ import android.os.Parcelable;
 import android.support.v7.widget.RecyclerViewAdapter;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AbsListView;

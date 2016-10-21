@@ -30,6 +30,23 @@ public abstract class ViewHolder extends RecyclerView.ViewHolder {
      */
     public abstract void init();
 
+    public void onBindViewToData(Parcelable data){
+    }
+
+    public void bindViewToData() {
+        RecyclerView recyclerView = mOwnerRecyclerView;
+        RecyclerViewAdapter adapter = null;
+        if (recyclerView != null) {
+            adapter = (RecyclerViewAdapter) recyclerView.getAdapter();
+        }
+        if (adapter != null) {
+            int position = getAdapterPosition();
+            Parcelable data = adapter.getItem(position);
+            onBindViewToData(data);
+            adapter.notifyItemChanged(position);
+        }
+    }
+
     /**
      */
     @Documented

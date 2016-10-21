@@ -1,10 +1,12 @@
 package com.lin1987www.fragmentbuilder;
 
+import android.os.Parcelable;
 import android.support.v7.widget.ViewHolder;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+@ViewHolder.LayoutResId(id = R.layout.list_item)
 public class ListItemHolder extends ViewHolder {
     private ImageView image;
     private TextView name;
@@ -16,13 +18,17 @@ public class ListItemHolder extends ViewHolder {
     }
 
     @Override
-    public int viewResId() {
-        return R.layout.list_item;
+    public void onBind(Parcelable data) {
+        if (data instanceof RecyclePanelFrag.NumberSeat) {
+            RecyclePanelFrag.NumberSeat numberSeat = (RecyclePanelFrag.NumberSeat) data;
+            name.setText(String.format("Number %s", numberSeat.number));
+        }
     }
 
     @Override
-    public ViewHolder newViewHolder(View itemView) {
-        return new ListItemHolder(itemView);
+    public void init() {
+        name.setText(null);
+        image.setImageResource(android.R.drawable.ic_menu_gallery);
     }
 
     public ImageView getImage() {

@@ -50,7 +50,7 @@ public class MainActivity extends FragmentActivityFix {
                     .create(this)
                     .add()
                     .setContainerViewId(R.id.container)
-                    .setFragment(MainFragment.class)
+                    .setFragment(RecyclePanelFrag.class)
                     .build();
         }
     }

@@ -1,10 +1,8 @@
 package android.support.v7.widget;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
@@ -35,19 +33,24 @@ public class RecyclerPanel extends FrameLayout {
         mHeader = (LinearLayout) mLayout.findViewById(R.id.header);
         mRecyclerView = (RecyclerView) mLayout.findViewById(R.id.recyclerView);
         mFooter = (LinearLayout) mLayout.findViewById(R.id.footer);
+        if (isInEditMode()) {
+            return;
+        }
         //
-        doSameHeight();
+        //doSameHeight();
         addView(mLayout);
     }
-
+/*
     private void doSameHeight() {
-        int height = getHeight();
-        mLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, height));
+        if (mLayout != null) {
+            int height = getHeight();
+            mLayout.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        }
     }
-
+*/
     @Override
     public void requestLayout() {
         super.requestLayout();
-        doSameHeight();
+        //doSameHeight();
     }
 }

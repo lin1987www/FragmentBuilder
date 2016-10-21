@@ -73,7 +73,7 @@ public class PageArrayList<T extends Parcelable> implements Parcelable {
         return mLastRecordPage;
     }
 
-    private int getPrevPageNonRecord() {
+    public int getPrevPageNonRecord() {
         int page;
         if (mStartPage == NONE) {
             page = getDefaultLoadPage();

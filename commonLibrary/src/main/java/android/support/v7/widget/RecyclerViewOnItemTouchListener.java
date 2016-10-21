@@ -4,7 +4,6 @@ import android.content.Context;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.AbsListView;
 
 /**
  * Created by Administrator on 2016/10/19.
@@ -28,12 +27,12 @@ public class RecyclerViewOnItemTouchListener implements RecyclerView.OnItemTouch
 
     @Override
     public boolean onInterceptTouchEvent(RecyclerView recyclerView, MotionEvent e) {
-        if (!(recyclerView.getAdapter() instanceof RecyclerViewAdapter2)) {
-            String message = String.format("%s only must apply %s!", getClass().getSimpleName(), RecyclerViewAdapter2.class.getSimpleName());
+        if (!(recyclerView.getAdapter() instanceof RecyclerViewAdapter)) {
+            String message = String.format("%s only must apply %s!", getClass().getSimpleName(), RecyclerViewAdapter.class.getSimpleName());
             throw new RuntimeException(message);
         }
-        RecyclerViewAdapter2 adapter = (RecyclerViewAdapter2) recyclerView.getAdapter();
-        @RecyclerViewAdapter2.ViewMode int viewMode = adapter.getViewMode();
+        RecyclerViewAdapter adapter = (RecyclerViewAdapter) recyclerView.getAdapter();
+        @RecyclerViewAdapter.ViewMode int viewMode = adapter.getViewMode();
         View childView = recyclerView.findChildViewUnder(e.getX(), e.getY());
         if (childView != null) {
             // For trigger  ChildView  Button or Checkbox or something else.
@@ -46,12 +45,9 @@ public class RecyclerViewOnItemTouchListener implements RecyclerView.OnItemTouch
             childView.setClickable(origin);
         }
 
-        if (childView != null
-                //&& childView.isEnabled()
-                && getGestureDetector().onTouchEvent(e)) {
-            if (viewMode != AbsListView.CHOICE_MODE_NONE) {
-                adapter.clickItem(recyclerView, childView);
-            }
+        if (childView != null && getGestureDetector().onTouchEvent(e)) {
+            /* && childView.isEnabled() */
+            adapter.clickItem(recyclerView, childView);
             return true;
         }
         return false;
@@ -63,5 +59,12 @@ public class RecyclerViewOnItemTouchListener implements RecyclerView.OnItemTouch
 
     @Override
     public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+    }
+
+    /**
+     * Created by Administrator on 2016/10/19.
+     */
+    public interface OnItemClickListener {
+        void onItemClick(RecyclerView recyclerView, int position);
     }
 }

@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Base application theme. -->
-    <style name="BaseTheme" parent="Theme.AppCompat.NoActionBar">
+    <style name="BaseTheme" parent="Theme.AppCompat">
         <!-- 全螢幕 -->
-        <item name="android:windowFullscreen">false</item>
         <!-- NoTitleBar -->
+        <item name="android:windowFullscreen">false</item>
         <item name="android:windowContentOverlay">@null</item>
 
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/md_black_1000</item>
-        <item name="colorPrimaryDark">@color/md_amber_100</item>
 
-        <item name="android:textColorPrimary">?attr/colorPrimary</item>
-        <item name="android:textColorSecondary">?attr/colorPrimaryDark</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+
+        <item name="android:textColorPrimary">@color/textColorPrimary</item>
+        <item name="android:textColorSecondary">@color/textColorSecondary</item>
 
         <!-- 背景底色 -->
-        <item name="android:windowBackground">@android:color/white</item>
-        <item name="android:colorBackground">@android:color/white</item>
+        <item name="android:windowBackground">@color/windowBackground</item>
+        <item name="android:colorBackground">@color/windowBackground</item>
 
-        <item name="android:textColorHint">?attr/colorPrimary</item>
-        <item name="android:textColorPrimaryDisableOnly">?attr/colorPrimary</item>
+        <item name="android:textColorHint">@color/md_grey_700</item>
+        <item name="android:textColorPrimaryDisableOnly">@color/md_grey_700</item>
 
-        <item name="selectableItemBackground">?android:attr/windowBackground</item>
-        <item name="selectableItemBackgroundBorderless">?attr/selectableItemBackground</item>
-
+        <item name="selectableItemBackground">@drawable/highlight</item>
+        <item name="selectableItemBackgroundBorderless">@drawable/highlight</item>
     </style>
 </resources>

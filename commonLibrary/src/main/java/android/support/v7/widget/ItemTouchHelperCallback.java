@@ -3,27 +3,42 @@ package android.support.v7.widget;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
 /**
+ * 用於 Move 與 Drag 是 ItemTouchHelper　的建立參數
  * Created by Administrator on 2016/7/17.
  */
 public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
-    public ItemTouchHelperAdapter adapter;
+    public Delegate mDelegate;
 
-    public ItemTouchHelperCallback(ItemTouchHelperAdapter adapter) {
-        this.adapter = adapter;
+    public ItemTouchHelperCallback(Delegate adapter) {
+        this.mDelegate = adapter;
     }
 
     @Override
     public boolean isLongPressDragEnabled() {
-        return true;
+        return mDelegate.isLongPressDragEnabled();
     }
 
     @Override
     public boolean isItemViewSwipeEnabled() {
-        return true;
+        return mDelegate.isItemViewSwipeEnabled();
     }
 
     @Override
     public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+        return mDelegate.getMovementFlags(recyclerView, viewHolder);
+    }
+
+    @Override
+    public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+        return mDelegate.onMove(recyclerView, viewHolder, target);
+    }
+
+    @Override
+    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+        mDelegate.onSwiped(viewHolder, direction);
+    }
+
+    public static int getDefaultMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
         int dragFlags = 0;
         int swipeFlags = 0;
         RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
@@ -38,16 +53,26 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
         return makeMovementFlags(dragFlags, swipeFlags);
     }
 
-    @Override
-    public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-        int from = viewHolder.getAdapterPosition();
-        int to = target.getAdapterPosition();
-        return adapter.onItemMove(from, to);
-    }
+    /*
+    * 將功能抽象化
+    * */
+    public interface Delegate {
+        boolean isItemViewSwipeEnabled();
 
-    @Override
-    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-        int position = viewHolder.getAdapterPosition();
-        adapter.onItemDismiss(position);
+        boolean isLongPressDragEnabled();
+
+        int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder);
+
+        /**
+         * @see RecyclerView#getAdapterPositionFor(RecyclerView.ViewHolder)
+         * @see RecyclerView.ViewHolder#getAdapterPosition()
+         */
+        boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target);
+
+        /**
+         * @see RecyclerView#getAdapterPositionFor(RecyclerView.ViewHolder)
+         * @see RecyclerView.ViewHolder#getAdapterPosition()
+         */
+        void onSwiped(RecyclerView.ViewHolder viewHolder, int direction);
     }
 }
