@@ -10,9 +10,12 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by Administrator on 2016/10/20.
+ * Created by John Lin on 2016/10/20.
+ * 雖然同一個 Adapter 可以被多個 RecyclerView 所連接
+ * 但是關鍵的ViewHolder 會因為 getItemViewType(int position) 被資料所綁定
+ * 跟所使用的 RecyclerView 沒有關聯，而RecyclerView會根據使用LayoutManager不同，而影響 ViewHolder
+ * 因此只能用於 RecyclerView 對應一個 Adapter 的情況
  */
-
 public abstract class ModelRecyclerViewAdapter extends RecyclerViewAdapter {
     public final static String KEY_ModelRecyclerViewAdapter = "KEY_ModelRecyclerViewAdapter";
     private final static String KEY_page = "KEY_page";
@@ -53,15 +56,24 @@ public abstract class ModelRecyclerViewAdapter extends RecyclerViewAdapter {
         return mIsLoading;
     }
 
+    private int mLoadingPage = -1;
+
+    public boolean isOnLoadPageDuringScrollCallback = false;
+
     @Override
     public void onScrolled(RecyclerView recyclerView, int firstVisibleItem, int visibleItemCount, int itemCount) {
-        int visibleThreshold = visibleItemCount;
+        int visibleThreshold = visibleItemCount / 2;
+        //if ((getItemCount() - visibleItemCount) <= (firstVisibleItem + visibleThreshold))
+        int remain = (getItemCount() - firstVisibleItem - 1) - visibleItemCount - visibleThreshold;
         if (!isLoading()) {
-            //if ((getItemCount() - visibleItemCount) <= (firstVisibleItem + visibleThreshold))
-            int remain = (getItemCount() - firstVisibleItem - 1) - visibleItemCount - visibleThreshold;
             if (remain <= 0) {
-                onLoadPage(getPageArrayList().getNextPage());
                 mIsLoading = true;
+                mLoadingPage = getPageArrayList().getNextPage();
+                isOnLoadPageDuringScrollCallback = true;
+                onLoadPage(mLoadingPage);
+                isOnLoadPageDuringScrollCallback = false;
+            } else {
+                recyclerView.requestLayout();
             }
         }
     }
@@ -74,18 +86,20 @@ public abstract class ModelRecyclerViewAdapter extends RecyclerViewAdapter {
         }
         int selection = getPageArrayList().setDataAndGetCurrentIndex(pageData, page);
         mIsLoading = false;
-        if (page == getPageArrayList().getNextPageNonRecord()) {
+        if (isOnLoadPageDuringScrollCallback) {
+            //Fix: Cannot call this method in a scroll callback. Scroll callbacks might be run during a measure & layout pass where you cannot change the RecyclerView data. Any method call that might change the structure of the RecyclerView or the adapter contents should be postponed to the next frame.
+        } else if (page == mLoadingPage) {
             notifyItemRangeInserted(selection, pageData.size());
         } else {
             notifyDataSetChanged();
         }
+        // Auto adjust grid span
+        recyclerViewHolder.adjustGridSpan();
         // Fill all RecyclerView space
         int pageSize = getPageArrayList().getPageSize();
         if (pageSize > 0 && pageSize == pageData.size()) {
             recyclerViewHolder.scrollForFillSpace();
         }
-        // Auto adjust grid span
-        recyclerViewHolder.adjustGridSpan();
     }
 
     public void saveState(Bundle outState) {

@@ -212,16 +212,6 @@ public abstract class RecyclerViewAdapter extends RecyclerView.Adapter<ViewHolde
 
         boolean isSelected = getSelectedPositions().contains(position);
         holder.itemView.setSelected(isSelected);
-        /* TODO 這段應該可以移除
-        if (isSelected) {
-            holder.itemView.setSelected(isSelected);
-        } else {
-            boolean isViewSelected = holder.itemView.isSelected();
-            if (isViewSelected) {
-                clickAdapterPositionIsSelected(position);
-            }
-        }
-        */
 
         // restore state
         RecyclerViewState recyclerViewState = recyclerViewHolder.getRecyclerViewState(holder.mOwnerRecyclerView);
@@ -262,6 +252,7 @@ public abstract class RecyclerViewAdapter extends RecyclerView.Adapter<ViewHolde
             RecyclerViewState recyclerViewState = mRecyclerViewStateSparseArray.get(id);
             if (recyclerViewState == null) {
                 recyclerViewState = RecyclerViewState.newRecyclerViewState(recyclerView);
+                mRecyclerViewStateSparseArray.put(id, recyclerViewState);
             }
             return recyclerViewState;
         }
@@ -275,7 +266,7 @@ public abstract class RecyclerViewAdapter extends RecyclerView.Adapter<ViewHolde
         }
 
         private void saveViewHolder(ViewHolder viewHolder, RecyclerView recyclerView) {
-            if (recyclerView != null) {
+            if (viewHolder != null && recyclerView != null) {
                 RecyclerViewState recyclerViewState = getRecyclerViewState(recyclerView);
                 recyclerViewState.saveViewHolderState(viewHolder);
             }
@@ -429,7 +420,7 @@ public abstract class RecyclerViewAdapter extends RecyclerView.Adapter<ViewHolde
         }
 
         public void save(RecyclerView recyclerView) {
-            SparseArray<Parcelable> savedState = new SparseArray<>();
+            savedState = new SparseArray<>();
             recyclerView.saveHierarchyState(savedState);
         }
 
@@ -462,7 +453,7 @@ public abstract class RecyclerViewAdapter extends RecyclerView.Adapter<ViewHolde
 
         protected RecyclerViewState(Parcel in) {
             this.viewId = in.readInt();
-            this.savedState = in.readSparseArray(Parcelable.class.getClassLoader());
+            this.savedState = in.readSparseArray(getClass().getClassLoader());
             this.viewHolderStateList = in.createTypedArrayList(ViewHolderState.CREATOR);
         }
 
@@ -533,7 +524,7 @@ public abstract class RecyclerViewAdapter extends RecyclerView.Adapter<ViewHolde
         protected ViewHolderState(Parcel in) {
             this.adapterPosition = in.readInt();
             this.viewId = in.readInt();
-            this.savedState = in.readSparseArray(Parcelable.class.getClassLoader());
+            this.savedState = in.readSparseArray(getClass().getClassLoader());
         }
 
         public static final Parcelable.Creator<ViewHolderState> CREATOR = new Parcelable.Creator<ViewHolderState>() {

@@ -33,24 +33,9 @@ public class RecyclerPanel extends FrameLayout {
         mHeader = (LinearLayout) mLayout.findViewById(R.id.header);
         mRecyclerView = (RecyclerView) mLayout.findViewById(R.id.recyclerView);
         mFooter = (LinearLayout) mLayout.findViewById(R.id.footer);
+        addView(mLayout);
         if (isInEditMode()) {
             return;
         }
-        //
-        //doSameHeight();
-        addView(mLayout);
-    }
-/*
-    private void doSameHeight() {
-        if (mLayout != null) {
-            int height = getHeight();
-            mLayout.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-        }
-    }
-*/
-    @Override
-    public void requestLayout() {
-        super.requestLayout();
-        //doSameHeight();
     }
 }

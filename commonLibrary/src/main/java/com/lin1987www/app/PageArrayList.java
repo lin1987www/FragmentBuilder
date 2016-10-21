@@ -232,7 +232,7 @@ public class PageArrayList<T extends Parcelable> implements Parcelable {
     protected PageArrayList(Parcel in) {
         this.mFloorPage = in.readInt();
         this.mCeilingPage = in.readInt();
-        this.mList = in.readArrayList(null);
+        this.mList = in.readArrayList(getClass().getClassLoader());
         this.mPageSize = in.readInt();
         this.mDefaultLoadPage = in.readInt();
         this.mStartPage = in.readInt();

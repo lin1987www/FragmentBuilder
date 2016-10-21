@@ -9,7 +9,6 @@ import android.support.v7.widget.LinearLayoutManagerFix;
 import android.support.v7.widget.ModelRecyclerViewAdapter;
 import android.support.v7.widget.RecyclerPanel;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerViewAdapter;
 import android.support.v7.widget.ViewHolder;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,31 +25,49 @@ import java.util.ArrayList;
 public class RecyclePanelFrag extends FragmentFix {
     private ModelViewAdapter modelViewAdapter;
     private RecyclerView.LayoutManager layoutManager;
+    private RecyclerView.LayoutManager layoutManager2;
 
-    private android.support.v7.widget.RecyclerPanel recyclerPanel;
+    private RecyclerPanel recyclerPanel;
+    private RecyclerPanel recyclerPanel2;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_recyclepanel, container, false);
+        this.recyclerPanel2 = (RecyclerPanel) view.findViewById(R.id.recyclerPanel2);
         this.recyclerPanel = (RecyclerPanel) view.findViewById(R.id.recyclerPanel);
         layoutManager = new LinearLayoutManagerFix(getContext(), RecyclerView.VERTICAL, false);
+        layoutManager2 = new LinearLayoutManagerFix(getContext(), RecyclerView.VERTICAL, false);
         recyclerPanel.getRecyclerView().setLayoutManager(layoutManager);
+        recyclerPanel2.getRecyclerView().setLayoutManager(layoutManager2);
         //
-        modelViewAdapter = new ModelViewAdapter();
-        modelViewAdapter.setViewMode(AbsListView.CHOICE_MODE_SINGLE);
-        modelViewAdapter.getPageArrayList().setDefaultLoadPage(1);
-        modelViewAdapter.getPageArrayList().setPageSize(10);
+        if (modelViewAdapter == null) {
+            modelViewAdapter = new ModelViewAdapter();
+            modelViewAdapter.setViewMode(AbsListView.CHOICE_MODE_SINGLE);
+            modelViewAdapter.getPageArrayList().setDefaultLoadPage(1);
+            modelViewAdapter.getPageArrayList().setPageSize(10);
+        }
         //
         recyclerPanel.getRecyclerView().setAdapter(modelViewAdapter);
+        recyclerPanel2.getRecyclerView().setAdapter(modelViewAdapter);
+        //
+        modelViewAdapter.restoreState(savedInstanceState);
         return view;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        modelViewAdapter.saveState(outState);
+        super.onSaveInstanceState(outState);
     }
 
     public static class ModelViewAdapter extends ModelRecyclerViewAdapter {
         @Override
         public void onLoadPage(final int page) {
+            /*
             ExecutorSet.mainThreadExecutor.submit(new Runnable() {
                 @Override
                 public void run() {
+                    */
                     int startNumber = (page - 1) * getPageArrayList().getPageSize() + 1;
                     int endNumber = startNumber + getPageArrayList().getPageSize();
                     ArrayList<NumberSeat> numberSeats = new ArrayList<>();
@@ -59,8 +76,10 @@ public class RecyclePanelFrag extends FragmentFix {
                         numberSeats.add(numberSeat);
                     }
                     addPageData(numberSeats, page);
+                    /*
                 }
             });
+            */
         }
 
         @Override
