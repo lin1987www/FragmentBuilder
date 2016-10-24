@@ -23,8 +23,7 @@ public class MainFragment extends FragmentFix {
     Button mTestCodeButton;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
 
         FragmentBuilder
@@ -85,7 +84,6 @@ public class MainFragment extends FragmentFix {
                 Log.e(TAG, String.format("BackStackEntry: %s", builder));
             }
         });
-
         return view;
     }
 

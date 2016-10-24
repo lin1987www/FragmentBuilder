@@ -1,7 +1,7 @@
-package android.support.v4.app;
+package android.support.v7.widget;
 
 import android.os.Bundle;
-import android.support.v7.widget.RecyclerViewAdapter;
+import android.support.v4.app.FragmentArgs;
 
 import java.util.ArrayList;
 

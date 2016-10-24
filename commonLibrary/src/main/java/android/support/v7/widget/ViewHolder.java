@@ -13,6 +13,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 
 /**
  * Created by Administrator on 2016/10/17.
@@ -30,7 +31,7 @@ public abstract class ViewHolder extends RecyclerView.ViewHolder {
      */
     public abstract void init();
 
-    public void onBindViewToData(Parcelable data){
+    public void onBindViewToData(Parcelable data) {
     }
 
     public void bindViewToData() {
@@ -56,12 +57,39 @@ public abstract class ViewHolder extends RecyclerView.ViewHolder {
         @LayoutRes int id();
     }
 
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.TYPE})
+    public @interface LayoutResName {
+        Class<?> layout();
+
+        String name();
+    }
+
+    public static int getResId(String resName, Class<?> c) {
+        try {
+            Field idField = c.getDeclaredField(resName);
+            return idField.getInt(idField);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
     @LayoutRes
     public static int getLayoutResId(Class<? extends ViewHolder> viewHolderClass) {
         int resId = 0;
         ViewHolder.LayoutResId layoutResIdAnnotation = viewHolderClass.getAnnotation(ViewHolder.LayoutResId.class);
         if (null != layoutResIdAnnotation) {
             resId = layoutResIdAnnotation.id();
+        }
+        if (resId == 0) {
+            ViewHolder.LayoutResName layoutResNameAnnotation = viewHolderClass.getAnnotation(ViewHolder.LayoutResName.class);
+            if (null != layoutResNameAnnotation) {
+                String resName = layoutResNameAnnotation.name();
+                Class<?> layoutClass = layoutResNameAnnotation.layout();
+                resId = getResId(resName, layoutClass);
+            }
         }
         return resId;
     }

@@ -19,8 +19,7 @@ public class F4Fragment extends FragmentFix {
     EditText mNumberEditText;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f4, container, false);
         mTextView = (TextView) view.findViewById(R.id.textView);
         mTextView.setText(String.format("%s", getTag()));

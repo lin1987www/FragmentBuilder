@@ -26,8 +26,7 @@ public class F1Fragment extends FragmentFix {
     private String f13text = "";
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f1, container, false);
         mTextView = (TextView) view.findViewById(R.id.textView);
         mTextView.setText(String.format("%s", getTag()));

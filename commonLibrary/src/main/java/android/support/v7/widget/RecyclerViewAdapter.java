@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.WeakHashMap;
 
 /**
@@ -27,7 +28,7 @@ import java.util.WeakHashMap;
  * View<--->Adapter<--->Model
  * ItemTouchHelper.Callback  on Adapter
  */
-public abstract class RecyclerViewAdapter extends RecyclerView.Adapter<ViewHolder> implements ItemTouchHelperCallback.Delegate, RecyclerViewOnScrollListener.Delegate, RecyclerViewOnItemTouchListener.OnItemClickListener {
+public abstract class RecyclerViewAdapter<T extends Parcelable> extends RecyclerView.Adapter<ViewHolder> implements ItemTouchHelperCallback.Delegate, RecyclerViewOnScrollListener.Delegate, RecyclerViewOnItemTouchListener.OnItemClickListener {
     @IntDef({AbsListView.CHOICE_MODE_NONE, AbsListView.CHOICE_MODE_SINGLE, AbsListView.CHOICE_MODE_MULTIPLE})
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
@@ -55,6 +56,16 @@ public abstract class RecyclerViewAdapter extends RecyclerView.Adapter<ViewHolde
     * */
 
     public abstract List<Integer> getSelectedPositions();
+
+    public <ITEM extends T> ArrayList<ITEM> getSelectedItems() {
+        ArrayList<ITEM> arrayList = new ArrayList<>();
+        ListIterator<Integer> iterator = getSelectedPositions().listIterator(0);
+        while (iterator.hasNext()) {
+            ITEM item = (ITEM) getItemList().get(iterator.next());
+            arrayList.add(item);
+        }
+        return arrayList;
+    }
 
     protected RecyclerViewHolder recyclerViewHolder = new RecyclerViewHolder(this);
 
@@ -113,29 +124,14 @@ public abstract class RecyclerViewAdapter extends RecyclerView.Adapter<ViewHolde
                         lastSelectedPosition = getSelectedPositions().get(0);
                     }
                     getSelectedPositions().clear();
-                    // TODO 改成通知
                     notifyItemChanged(lastSelectedPosition);
                 }
                 getSelectedPositions().add(adapterPosition);
-
                 isSelected = true;
             }
-            // TODO 改成通知
             notifyItemChanged(adapterPosition);
         }
-        /* TODO 改成通知變更的方式更新
-        RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
-        if (getViewMode() == AbsListView.CHOICE_MODE_SINGLE) {
-            if (lastSelectedPosition > -1) {
-                View lastSelectedView = layoutManager.findViewByPosition(lastSelectedPosition);
-                if (lastSelectedView != null) {
-                    lastSelectedView.setSelected(false);
-                }
-            }
-        }
-        itemView.setSelected(isSelected);
-        */
-        onItemClick(recyclerView, adapterPosition);
+        onItemClick(recyclerView, adapterPosition, isSelected);
     }
 
     @Override
@@ -157,18 +153,18 @@ public abstract class RecyclerViewAdapter extends RecyclerView.Adapter<ViewHolde
     *
     * */
 
-    public abstract <T extends Parcelable> List<T> getItemList();
+    public abstract <ITEM extends T> List<ITEM> getItemList();
 
-    public <T extends Parcelable> T getItem(int position) {
-        T item = (T) getItemList().get(position);
+    public <ITEM extends T> ITEM getItem(int position) {
+        ITEM item = (ITEM) getItemList().get(position);
         return item;
     }
 
     protected HashMap<Integer, Class<? extends ViewHolder>> mResId2ViewHolderClassMap = new HashMap<>();
 
-    public <T extends ViewHolder> T newViewHolder(ViewGroup parent, int resId) {
+    public <VH extends ViewHolder> VH newViewHolder(ViewGroup parent, int resId) {
         Class<? extends ViewHolder> viewHolderClass = mResId2ViewHolderClassMap.get(resId);
-        T viewHolder = (T) ViewHolder.create(parent, viewHolderClass);
+        VH viewHolder = (VH) ViewHolder.create(parent, viewHolderClass);
         return viewHolder;
     }
 

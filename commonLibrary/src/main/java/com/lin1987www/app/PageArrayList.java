@@ -163,7 +163,7 @@ public class PageArrayList<T extends Parcelable> implements Parcelable {
         return position % mPageSize;
     }
 
-    public int setDataAndGetCurrentIndex(Collection<? extends T> pageData, int page) {
+    public <ITEM extends T> int setDataAndGetCurrentIndex(Collection<ITEM> pageData, int page) {
         boolean isRefreshPage = false;
         // True if it is next page, false if it is prev page
         Boolean isNextPage = null;

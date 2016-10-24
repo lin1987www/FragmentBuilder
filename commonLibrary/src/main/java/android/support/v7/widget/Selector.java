@@ -1,9 +1,9 @@
-package android.support.v4.app;
+package android.support.v7.widget;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.v7.widget.RecyclerViewAdapter;
+import android.support.v4.app.FragmentBuilder;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.lin1987www.common.R;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.ListIterator;
 
 /**
@@ -90,25 +91,25 @@ public class Selector<T extends Selector.Item> extends TextView implements View.
         return temp;
     }
 
-    public void setSelectedPositions(ArrayList<Integer> value) {
+    public void setSelectedPositions(Collection<Integer> value) {
         mSelectedPositions.clear();
         mSelectedPositions.addAll(value);
         delayRun();
     }
 
-    public ArrayList<T> getSelectionItems() {
-        ArrayList<T> temp = new ArrayList<>();
+    public <ITEM extends T> ArrayList<ITEM> getSelectionItems() {
+        ArrayList<ITEM> temp = new ArrayList<>();
         ListIterator<Integer> iterator = mSelectedPositions.listIterator(0);
         while (iterator.hasNext()) {
-            T item = mSelections.get(iterator.next());
+            ITEM item = (ITEM) mSelections.get(iterator.next());
             temp.add(item);
         }
         return temp;
     }
 
-    public void getSelectionItems(ArrayList<T> items) {
+    public <ITEM extends T> void setSelectionItems(ArrayList<ITEM> items) {
         ArrayList<Integer> temp = new ArrayList<>();
-        ListIterator<T> iterator = items.listIterator();
+        ListIterator<ITEM> iterator = items.listIterator();
         while (iterator.hasNext()) {
             T item = iterator.next();
             int index = mSelections.indexOf(item);
@@ -206,8 +207,8 @@ public class Selector<T extends Selector.Item> extends TextView implements View.
         args.setViewMode(getViewMode());
         // TODO set FragmentTag
         FragmentBuilder.create(this)
-                .addToBackStack()
                 .add()
+                .addToBackStack()
                 .setFragment(SelectorFrag.class)
                 .setArgs(args.bundle)
                 .setCustomAnimations(R.anim.zoom_in, R.anim.zoom_out, R.anim.zoom_in, R.anim.zoom_out)

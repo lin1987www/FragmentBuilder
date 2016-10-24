@@ -23,8 +23,7 @@ public class F3Fragment extends FragmentFix implements View.OnClickListener {
     final static int request_code_ask_question = 100;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f3, container, false);
         mTextView = (TextView) view.findViewById(R.id.textView);
         mTextView.setText(String.format("%s", getTag()));

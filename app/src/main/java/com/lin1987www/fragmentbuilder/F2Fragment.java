@@ -19,8 +19,7 @@ public class F2Fragment extends FragmentFix {
     FrameLayout mContainer;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f2, container, false);
         FragmentArgs fragmentArgs = new FragmentArgs(getArguments());
         fragmentArgs.userVisibleHintOnResume();

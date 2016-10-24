@@ -3,12 +3,12 @@ package com.lin1987www.fragmentbuilder;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.v4.app.ExecutorSet;
 import android.support.v4.app.FragmentFix;
 import android.support.v7.widget.LinearLayoutManagerFix;
 import android.support.v7.widget.ModelRecyclerViewAdapter;
 import android.support.v7.widget.RecyclerPanel;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.ViewHolder;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +32,7 @@ public class RecyclePanelFrag extends FragmentFix {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         View view = inflater.inflate(R.layout.fragment_recyclepanel, container, false);
         this.recyclerPanel2 = (RecyclerPanel) view.findViewById(R.id.recyclerPanel2);
         this.recyclerPanel = (RecyclerPanel) view.findViewById(R.id.recyclerPanel);
@@ -42,7 +43,7 @@ public class RecyclePanelFrag extends FragmentFix {
         //
         if (modelViewAdapter == null) {
             modelViewAdapter = new ModelViewAdapter();
-            modelViewAdapter.setViewMode(AbsListView.CHOICE_MODE_SINGLE);
+            modelViewAdapter.setViewMode(AbsListView.CHOICE_MODE_MULTIPLE);
             modelViewAdapter.getPageArrayList().setDefaultLoadPage(1);
             modelViewAdapter.getPageArrayList().setPageSize(10);
         }
@@ -51,6 +52,18 @@ public class RecyclePanelFrag extends FragmentFix {
         recyclerPanel2.getRecyclerView().setAdapter(modelViewAdapter);
         //
         modelViewAdapter.restoreState(savedInstanceState);
+        //
+
+        Toolbar mToolbar = (Toolbar) view.findViewById(R.id.toolbar);
+        // App Logo
+        mToolbar.setLogo(android.R.drawable.ic_menu_gallery);
+        // Title
+        mToolbar.setTitle("My Title");
+        // Sub Title
+        mToolbar.setSubtitle("Sub title");
+        mToolbar.setNavigationIcon(android.R.drawable.ic_delete);
+        mToolbar.inflateMenu(R.menu.menu_recycler_panel);
+
         return view;
     }
 
@@ -68,14 +81,14 @@ public class RecyclePanelFrag extends FragmentFix {
                 @Override
                 public void run() {
                     */
-                    int startNumber = (page - 1) * getPageArrayList().getPageSize() + 1;
-                    int endNumber = startNumber + getPageArrayList().getPageSize();
-                    ArrayList<NumberSeat> numberSeats = new ArrayList<>();
-                    for (int i = startNumber; i < endNumber; i++) {
-                        NumberSeat numberSeat = new NumberSeat(i);
-                        numberSeats.add(numberSeat);
-                    }
-                    addPageData(numberSeats, page);
+            int startNumber = (page - 1) * getPageArrayList().getPageSize() + 1;
+            int endNumber = startNumber + getPageArrayList().getPageSize();
+            ArrayList<NumberSeat> numberSeats = new ArrayList<>();
+            for (int i = startNumber; i < endNumber; i++) {
+                NumberSeat numberSeat = new NumberSeat(i);
+                numberSeats.add(numberSeat);
+            }
+            addPageData(numberSeats, page);
                     /*
                 }
             });
@@ -102,7 +115,7 @@ public class RecyclePanelFrag extends FragmentFix {
         }
 
         @Override
-        public void onItemClick(RecyclerView recyclerView, int position) {
+        public void onItemClick(RecyclerView recyclerView, int position, boolean isSelected) {
             String message = String.format("Click position %s", position);
             Toast.makeText(recyclerView.getContext(), message, Toast.LENGTH_SHORT).show();
         }

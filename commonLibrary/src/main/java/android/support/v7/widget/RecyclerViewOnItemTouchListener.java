@@ -65,6 +65,6 @@ public class RecyclerViewOnItemTouchListener implements RecyclerView.OnItemTouch
      * Created by Administrator on 2016/10/19.
      */
     public interface OnItemClickListener {
-        void onItemClick(RecyclerView recyclerView, int position);
+        void onItemClick(RecyclerView recyclerView, int position, boolean isSelected);
     }
 }

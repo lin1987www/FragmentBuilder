@@ -16,7 +16,7 @@ import java.util.List;
  * 跟所使用的 RecyclerView 沒有關聯，而RecyclerView會根據使用LayoutManager不同，而影響 ViewHolder
  * 因此只能用於 RecyclerView 對應一個 Adapter 的情況
  */
-public abstract class ModelRecyclerViewAdapter extends RecyclerViewAdapter {
+public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends RecyclerViewAdapter<T> {
     public final static String KEY_ModelRecyclerViewAdapter = "KEY_ModelRecyclerViewAdapter";
     private final static String KEY_page = "KEY_page";
     private final static String KEY_viewMode = "KEY_viewMode";
@@ -24,13 +24,13 @@ public abstract class ModelRecyclerViewAdapter extends RecyclerViewAdapter {
 
     private PageArrayList mPageArrayList = new PageArrayList();
 
-    public <T extends Parcelable> PageArrayList<T> getPageArrayList() {
-        return (PageArrayList<T>) mPageArrayList;
+    public <ITEM extends T> PageArrayList<ITEM> getPageArrayList() {
+        return (PageArrayList<ITEM>) mPageArrayList;
     }
 
     @Override
-    public <T extends Parcelable> List<T> getItemList() {
-        return (List<T>) getPageArrayList().getList();
+    public <ITEM extends T> List<ITEM> getItemList() {
+        return (List<ITEM>) getPageArrayList().getList();
     }
 
     private ArrayList<Integer> mSelectedAdapterPositions = new ArrayList<>();
@@ -80,18 +80,19 @@ public abstract class ModelRecyclerViewAdapter extends RecyclerViewAdapter {
 
     public abstract void onLoadPage(int page);
 
-    public void addPageData(Collection<? extends Parcelable> pageData, int page) {
+    public void addPageData(Collection<? extends T> pageData, int page) {
         if (pageData == null) {
             pageData = new ArrayList<>();
         }
         int selection = getPageArrayList().setDataAndGetCurrentIndex(pageData, page);
         mIsLoading = false;
         if (isOnLoadPageDuringScrollCallback) {
-            //Fix: Cannot call this method in a scroll callback. Scroll callbacks might be run during a measure & layout pass where you cannot change the RecyclerView data. Any method call that might change the structure of the RecyclerView or the adapter contents should be postponed to the next frame.
+            // Skip notify to fix: Cannot call this method in a scroll callback. Scroll callbacks might be run during a measure & layout pass where you cannot change the RecyclerView data. Any method call that might change the structure of the RecyclerView or the adapter contents should be postponed to the next frame.
         } else if (page == mLoadingPage) {
             notifyItemRangeInserted(selection, pageData.size());
         } else {
             notifyDataSetChanged();
+            return;
         }
         // Auto adjust grid span
         recyclerViewHolder.adjustGridSpan();
@@ -100,6 +101,12 @@ public abstract class ModelRecyclerViewAdapter extends RecyclerViewAdapter {
         if (pageSize > 0 && pageSize == pageData.size()) {
             recyclerViewHolder.scrollForFillSpace();
         }
+    }
+
+    public void clear() {
+        getPageArrayList().clear();
+        mIsLoading = false;
+        notifyDataSetChanged();
     }
 
     public void saveState(Bundle outState) {
