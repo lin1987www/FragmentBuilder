@@ -133,9 +133,11 @@ public class FragmentFix extends Fragment {
 
     @Override
     void performCreate(Bundle savedInstanceState) {
-        FragmentUtils.log(this, "performCreate before");
-        super.performCreate(savedInstanceState);
-        FragmentUtils.log(this, "performCreate after");
+        if (getContext() != null) {
+            FragmentUtils.log(this, "performCreate before");
+            super.performCreate(savedInstanceState);
+            FragmentUtils.log(this, "performCreate after");
+        }
     }
 
     @Override

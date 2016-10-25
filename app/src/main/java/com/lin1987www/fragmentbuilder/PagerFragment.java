@@ -22,6 +22,7 @@ public class PagerFragment extends FragmentFix {
 
     Class<?>[] mFragArray = new Class[]{
             F1Fragment.class,
+            RecyclePanelFrag.class,
             F2Fragment.class,
             Pager2Fragment.class,
             F3Fragment.class,

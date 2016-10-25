@@ -31,7 +31,7 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
 
-public class DividerItemDecoration extends RecyclerView.ItemDecoration {
+public class DividerItemDecorationOld extends RecyclerView.ItemDecoration {
 
     private Drawable divider;
     private int dividerHeight;
@@ -40,7 +40,7 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
     private boolean last = false;
 
     @SuppressWarnings("UnusedDeclaration")
-    public DividerItemDecoration(Context context, AttributeSet attrs) {
+    public DividerItemDecorationOld(Context context, AttributeSet attrs) {
         final TypedArray a = context.obtainStyledAttributes(attrs, new int[]{android.R.attr.listDivider});
         setDivider(a.getDrawable(0));
         a.recycle();
@@ -53,21 +53,21 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
     }
 
     @SuppressWarnings("UnusedDeclaration")
-    public DividerItemDecoration(Context context, AttributeSet attrs, boolean showFirstDivider,
-                                 boolean showLastDivider) {
+    public DividerItemDecorationOld(Context context, AttributeSet attrs, boolean showFirstDivider,
+                                    boolean showLastDivider) {
         this(context, attrs);
         first = showFirstDivider;
         last = showLastDivider;
     }
 
     @SuppressWarnings("UnusedDeclaration")
-    public DividerItemDecoration(Drawable divider) {
+    public DividerItemDecorationOld(Drawable divider) {
         setDivider(divider);
     }
 
     @SuppressWarnings("UnusedDeclaration")
-    public DividerItemDecoration(Drawable divider, boolean showFirstDivider,
-                                 boolean showLastDivider) {
+    public DividerItemDecorationOld(Drawable divider, boolean showFirstDivider,
+                                    boolean showLastDivider) {
         this(divider);
         first = showFirstDivider;
         last = showLastDivider;
