@@ -35,7 +35,7 @@ dependencies {
     compile 'com.android.support:support-v4:25.0.0'
     compile 'com.android.support:recyclerview-v7:25.0.0'
     compile 'com.android.support:design:25.0.0'
-    /*
+
     compile('com.github.rey5137:material:1.2.2') {
         exclude module: 'appcompat-v7'
         exclude module: 'cardview-v7'
@@ -43,7 +43,7 @@ dependencies {
         exclude module: 'support-annotations'
         exclude module: 'support-v4'
     }
-    */
+
     compile('com.squareup.retrofit2:retrofit:2.0.2') {
         exclude module: 'okhttp'
     }
@@ -58,7 +58,7 @@ dependencies {
     compile 'com.github.bumptech.glide:okhttp3-integration:1.4.0@aar'
     //
     compile('com.google.android.gms:play-services:3.2.25') {
-        exclude module: 'support-annotations'
+        exclude module: 'support-v4'
     }
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.4'
     compile 'com.j256.ormlite:ormlite-android:4.48'

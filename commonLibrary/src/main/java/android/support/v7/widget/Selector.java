@@ -97,7 +97,7 @@ public class Selector<T extends Selector.Item> extends TextView implements View.
         delayRun();
     }
 
-    public <ITEM extends T> ArrayList<ITEM> getSelectionItems() {
+    public <ITEM extends T> ArrayList<ITEM> getSelectedItems() {
         ArrayList<ITEM> temp = new ArrayList<>();
         ListIterator<Integer> iterator = mSelectedPositions.listIterator(0);
         while (iterator.hasNext()) {
@@ -107,7 +107,7 @@ public class Selector<T extends Selector.Item> extends TextView implements View.
         return temp;
     }
 
-    public <ITEM extends T> void setSelectionItems(ArrayList<ITEM> items) {
+    public <ITEM extends T> void setSelectedItems(ArrayList<ITEM> items) {
         ArrayList<Integer> temp = new ArrayList<>();
         ListIterator<ITEM> iterator = items.listIterator();
         while (iterator.hasNext()) {
@@ -217,9 +217,7 @@ public class Selector<T extends Selector.Item> extends TextView implements View.
     }
 
     public void onPopFragment(SelectorFrag frag) {
-        if (frag.selectedPositions.size() > 0) {
-            setSelectedPositions(frag.selectedPositions);
-        }
+        setSelectedPositions(frag.selectedPositions);
     }
 
     private boolean isPostRun = false;

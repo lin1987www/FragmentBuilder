@@ -113,6 +113,7 @@
     <orderEntry type="library" exported="" name="okhttp3-integration-1.4.0" level="project" />
     <orderEntry type="library" exported="" name="jsoup-1.8.3" level="project" />
     <orderEntry type="library" exported="" name="haha-2.0.2" level="project" />
+    <orderEntry type="library" exported="" name="material-1.2.2" level="project" />
     <orderEntry type="library" exported="" name="okhttp-urlconnection-3.2.0" level="project" />
     <orderEntry type="library" exported="" name="ormlite-android-4.48" level="project" />
     <orderEntry type="library" exported="" name="support-fragment-25.0.0" level="project" />
@@ -138,8 +139,8 @@
     <orderEntry type="library" exported="" name="support-compat-25.0.0" level="project" />
     <orderEntry type="library" exported="" name="animated-vector-drawable-25.0.0" level="project" />
     <orderEntry type="library" exported="" name="ormlite-core-4.48" level="project" />
-    <orderEntry type="library" exported="" scope="TEST" name="hamcrest-core-1.3" level="project" />
     <orderEntry type="library" exported="" name="multidex-1.0.0" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="hamcrest-core-1.3" level="project" />
     <orderEntry type="library" exported="" name="okhttp-3.2.0" level="project" />
     <orderEntry type="library" exported="" name="appcompat-v7-25.0.0" level="project" />
     <orderEntry type="library" exported="" name="support-vector-drawable-25.0.0" level="project" />
