@@ -155,7 +155,7 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
 
     public abstract <ITEM extends T> List<ITEM> getItemList();
 
-    public <ITEM extends T> ITEM getItem(int position) {
+    public <ITEM extends Parcelable> ITEM getItem(int position) {
         ITEM item = (ITEM) getItemList().get(position);
         return item;
     }

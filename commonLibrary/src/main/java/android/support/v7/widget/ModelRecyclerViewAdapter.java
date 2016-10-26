@@ -24,7 +24,7 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
 
     private PageArrayList mPageArrayList = new PageArrayList();
 
-    public <ITEM extends T> PageArrayList<ITEM> getPageArrayList() {
+    public <ITEM extends Parcelable> PageArrayList<ITEM> getPageArrayList() {
         return (PageArrayList<ITEM>) mPageArrayList;
     }
 
