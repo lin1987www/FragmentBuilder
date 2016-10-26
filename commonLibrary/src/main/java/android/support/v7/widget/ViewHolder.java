@@ -24,7 +24,7 @@ public abstract class ViewHolder extends RecyclerView.ViewHolder {
         super(itemView);
     }
 
-    public abstract void onBind(RecyclerViewAdapter adapter, int position);
+    public abstract void onBind(RecyclerViewAdapter<? extends Parcelable> adapter, int position);
 
     /**
      * Reset ViewHolder

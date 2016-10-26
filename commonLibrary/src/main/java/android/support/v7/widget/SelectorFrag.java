@@ -1,6 +1,7 @@
 package android.support.v7.widget;
 
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.FragmentBuilder;
 import android.support.v4.app.FragmentFix;
 import android.view.LayoutInflater;
@@ -141,8 +142,8 @@ public class SelectorFrag extends FragmentFix implements View.OnClickListener {
         }
 
         @Override
-        public void onBind(RecyclerViewAdapter adapter, int position) {
-            Selector.Item item = (Selector.Item) adapter.getItem(position);
+        public void onBind(RecyclerViewAdapter<? extends Parcelable> adapter, int position) {
+            Selector.Item item = adapter.getItem(position);
             mName.setText(item.selectItemName());
         }
 
