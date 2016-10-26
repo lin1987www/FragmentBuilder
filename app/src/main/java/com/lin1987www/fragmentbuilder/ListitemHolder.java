@@ -1,6 +1,7 @@
 package com.lin1987www.fragmentbuilder;
 
 import android.os.Parcelable;
+import android.support.v7.widget.RecyclerViewAdapter;
 import android.support.v7.widget.ViewHolder;
 import android.view.View;
 import android.widget.ImageView;
@@ -18,7 +19,8 @@ public class ListItemHolder extends ViewHolder {
     }
 
     @Override
-    public void onBind(Parcelable data) {
+    public void onBind(RecyclerViewAdapter adapter, int position) {
+        Parcelable data = adapter.getItem(position);
         if (data instanceof RecyclePanelFrag.NumberSeat) {
             RecyclePanelFrag.NumberSeat numberSeat = (RecyclePanelFrag.NumberSeat) data;
             name.setText(String.format("Number %s", numberSeat.number));

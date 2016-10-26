@@ -204,7 +204,7 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
     public void onBindViewHolder(ViewHolder holder, int position) {
         Parcelable data = getItem(position);
         holder.init();
-        holder.onBind(data);
+        holder.onBind(this, position);
 
         boolean isSelected = getSelectedPositions().contains(position);
         holder.itemView.setSelected(isSelected);

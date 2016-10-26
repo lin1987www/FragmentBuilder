@@ -67,6 +67,22 @@ dependencies {
     // compile 'com.jakewharton:butterknife:7.0.1'
     //
     compile 'org.jsoup:jsoup:1.8.3'
+    // 表單驗證
+    compile('com.andreabaccega:android-form-edittext:1.2.1@aar') {
+        exclude module: 'appcompat-v7'
+        exclude module: 'design'
+        exclude module: 'support-annotations'
+        exclude module: 'support-v4'
+    }
+    //
+    compile 'cn.aigestudio.wheelpicker:WheelPicker:1.0.3'
+    //
+    compile ('de.hdodenhof:circleimageview:2.1.0')
+    //
+    compile ('com.ogaclejapan.smarttablayout:library:1.6.0@aar'){
+        exclude module: 'support-annotations'
+        exclude module: 'support-v4'
+    }
     //
     debugCompile 'com.squareup.leakcanary:leakcanary-android:1.4-beta2'
     releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.4-beta2'
