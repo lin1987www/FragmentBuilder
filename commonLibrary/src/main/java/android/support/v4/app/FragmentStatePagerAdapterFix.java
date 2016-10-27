@@ -209,7 +209,8 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
                         if (FragmentUtils.isStateLoss(fragment.getFragmentManager())) {
                             continue;
                         }
-                        fragment.getFragmentManager().beginTransaction().detach(fragment).attach(fragment).commit();
+                        // Test move to fixActiveFragment(mFragmentManager, fragment);
+                        // fragment.getFragmentManager().beginTransaction().detach(fragment).attach(fragment).commit();
                     }
                     // Fix sdk 22.0.1 : Fragment is added by transaction. BUT didn't add to FragmentManager's mActive. If you Rotation.
                     fixActiveFragment(mFragmentManager, fragment);
@@ -348,8 +349,14 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
                 // 瀏覽所有Fragment後，轉至後瀏覽其他Fragment會產生衝突
                 fm.mAdded.remove(willRemoveFrag);
             }
-            // v25.0.0 Fix fragment didn't run
-            fm.startPendingDeferredFragments();
+            // 如往回跳的話會發現沒有執行
+            // 1~5 is Fragment
+            // 1 2 3 4 5 -> 3
+            // 1 2 3 -> 1
+            // v25.0.0 Fix fragment didn't run, if through step 1, 2, 3 then go back to 1, step 1 fragment didn't run
+            if (fragment.getUserVisibleHint() && !fragment.isResumed()) {
+                fragment.getFragmentManager().beginTransaction().detach(fragment).attach(fragment).commit();
+            }
         }
     }
 

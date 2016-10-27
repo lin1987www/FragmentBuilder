@@ -97,7 +97,7 @@ public abstract class ViewHolder extends RecyclerView.ViewHolder {
     public static <T extends ViewHolder> T create(ViewGroup parent, Class<T> viewHolderClass) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(getLayoutResId(viewHolderClass), parent, false);
-        view = wrap(view);
+        //view = wrap(view);
         T viewHolder;
         try {
             Constructor constructor = viewHolderClass.getConstructor(View.class);
