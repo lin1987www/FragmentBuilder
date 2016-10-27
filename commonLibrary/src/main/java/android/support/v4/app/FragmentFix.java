@@ -132,12 +132,18 @@ public class FragmentFix extends Fragment {
     }
 
     @Override
-    void performCreate(Bundle savedInstanceState) {
-        if (getContext() != null) {
-            FragmentUtils.log(this, "performCreate before");
-            super.performCreate(savedInstanceState);
-            FragmentUtils.log(this, "performCreate after");
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        if (FragmentUtils.getFragmentHostCallback(getChildFragmentManager()) == null) {
+            instantiateChildFragmentManager();
         }
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    void performCreate(Bundle savedInstanceState) {
+        FragmentUtils.log(this, "performCreate before");
+        super.performCreate(savedInstanceState);
+        FragmentUtils.log(this, "performCreate after");
     }
 
     @Override
@@ -308,6 +314,17 @@ public class FragmentFix extends Fragment {
         FragmentUtils.log(this, "performDestroy before");
         super.performDestroy();
         FragmentUtils.log(this, "performDestroy after");
+    }
+
+    private boolean mUserVisibleHint = true;
+
+    @Override
+    public boolean getUserVisibleHint() {
+        boolean superUserVisibleHint = super.getUserVisibleHint();
+        if (superUserVisibleHint != mUserVisibleHint) {
+            super.setUserVisibleHint(mUserVisibleHint);
+        }
+        return mUserVisibleHint;
     }
 
     @Override
