@@ -329,10 +329,10 @@ public class FragmentFix extends Fragment {
 
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
-        if (DEBUG) {
-            Log.d(TAG, String.format(FORMAT, String.format("setUserVisibleHint %s -> %s", getUserVisibleHint(), isVisibleToUser)));
-        }
         boolean lastUserVisibleHint = getUserVisibleHint();
+        if (DEBUG) {
+            Log.d(TAG, String.format(FORMAT, String.format("setUserVisibleHint %s -> %s", lastUserVisibleHint, isVisibleToUser)));
+        }
         super.setUserVisibleHint(isVisibleToUser);
         if (isVisibleToUser && isResumed()) {
             performPendingDuty("setUserVisibleHint");

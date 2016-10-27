@@ -348,6 +348,8 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
                 // 瀏覽所有Fragment後，轉至後瀏覽其他Fragment會產生衝突
                 fm.mAdded.remove(willRemoveFrag);
             }
+            // v25.0.0 Fix fragment didn't run
+            fm.startPendingDeferredFragments();
         }
     }
 
