@@ -321,8 +321,8 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
         if (fm.mActive != null) {
             int index = fragment.mIndex;
             if (index < 0) {
-                Log.e(TAG,
-                        String.format("Fragment mIndex %s < 0 ! Origin: %s", fragment.mIndex, fragment));
+                Log.e(TAG, String.format("Fragment mIndex %s < 0 ! Origin: %s", fragment.mIndex, fragment));
+                fragment.getFragmentManager().beginTransaction().remove(fragment).commit();
                 return;
             }
             Fragment origin = fm.mActive.get(index);
