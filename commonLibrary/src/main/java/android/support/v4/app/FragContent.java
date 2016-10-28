@@ -222,6 +222,9 @@ public class FragContent {
         ArrayList<Fragment> fragments = new ArrayList<>();
         ArrayList<FragmentManager> fragmentManagers = new ArrayList<>();
         ArrayList<BackStackRecord> backStackRecords = new ArrayList<>();
+        if (getFragmentActivity() == null) {
+            return;
+        }
         fillAllFragmentAndManagerAndRecord(getFragmentActivity().getSupportFragmentManager(), fragments, fragmentManagers, backStackRecords);
         mAllFragments = fragments;
         mAllFragmentManagers = fragmentManagers;
