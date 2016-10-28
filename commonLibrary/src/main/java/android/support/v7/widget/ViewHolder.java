@@ -31,15 +31,35 @@ public abstract class ViewHolder extends RecyclerView.ViewHolder {
      */
     public abstract void init();
 
+
     public void onBindViewToData(Parcelable data) {
     }
 
-    public void bindViewToData() {
-        RecyclerView recyclerView = mOwnerRecyclerView;
-        RecyclerViewAdapter adapter = null;
+    public RecyclerView getRecyclerView() {
+        return mOwnerRecyclerView;
+    }
+
+    public <T extends RecyclerViewAdapter> T getAdapter() {
+        RecyclerView recyclerView = getRecyclerView();
+        T adapter = null;
         if (recyclerView != null) {
-            adapter = (RecyclerViewAdapter) recyclerView.getAdapter();
+            adapter = (T) recyclerView.getAdapter();
         }
+        return adapter;
+    }
+
+    public <T extends Parcelable> T getItem() {
+        T data = null;
+        RecyclerViewAdapter adapter = getAdapter();
+        if (adapter != null) {
+            int position = getAdapterPosition();
+            data = (T) adapter.getItem(position);
+        }
+        return data;
+    }
+
+    public void bindViewToData() {
+        RecyclerViewAdapter adapter = getAdapter();
         if (adapter != null) {
             int position = getAdapterPosition();
             Parcelable data = adapter.getItem(position);
@@ -94,10 +114,13 @@ public abstract class ViewHolder extends RecyclerView.ViewHolder {
         return resId;
     }
 
-    public static <T extends ViewHolder> T create(ViewGroup parent, Class<T> viewHolderClass) {
+    public static <T extends ViewHolder> T create(Class<T> viewHolderClass, ViewGroup parent) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(getLayoutResId(viewHolderClass), parent, false);
-        //view = wrap(view);
+        return create(viewHolderClass, view);
+    }
+
+    public static <T extends ViewHolder> T create(Class<T> viewHolderClass, View view) {
         T viewHolder;
         try {
             Constructor constructor = viewHolderClass.getConstructor(View.class);
@@ -107,6 +130,7 @@ public abstract class ViewHolder extends RecyclerView.ViewHolder {
         }
         return viewHolder;
     }
+
 
     public static View wrap(View itemView) {
         View view;

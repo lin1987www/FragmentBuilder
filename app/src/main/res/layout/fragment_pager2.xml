@@ -19,18 +19,18 @@
             android:id="@+id/appendPageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Append Page" />
+            android:text="Append" />
 
         <Button
             android:id="@+id/removeLastPageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Remove Last Page" />
+            android:text="Remove Last" />
 
         <Button
             android:id="@+id/clearPageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Clear Page" />
+            android:text="Clear" />
     </LinearLayout>
 </LinearLayout>

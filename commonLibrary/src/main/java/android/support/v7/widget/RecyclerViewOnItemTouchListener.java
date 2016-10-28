@@ -39,10 +39,10 @@ public class RecyclerViewOnItemTouchListener implements RecyclerView.OnItemTouch
             boolean origin = childView.isClickable();
             childView.setClickable(false);
             boolean isHandled = childView.dispatchTouchEvent(e);
+            childView.setClickable(origin);
             if (isHandled) {
                 return false;
             }
-            childView.setClickable(origin);
         }
 
         if (childView != null && getGestureDetector().onTouchEvent(e)) {

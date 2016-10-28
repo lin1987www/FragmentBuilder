@@ -14,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -43,7 +42,7 @@ public class RecyclePanelFrag extends FragmentFix {
         //
         if (modelViewAdapter == null) {
             modelViewAdapter = new ModelViewAdapter();
-            modelViewAdapter.setViewMode(AbsListView.CHOICE_MODE_MULTIPLE);
+            modelViewAdapter.setViewMode(AbsListView.CHOICE_MODE_SINGLE);
             modelViewAdapter.getPageArrayList().setDefaultLoadPage(1);
             modelViewAdapter.getPageArrayList().setPageSize(10);
         }
@@ -73,7 +72,7 @@ public class RecyclePanelFrag extends FragmentFix {
         super.onSaveInstanceState(outState);
     }
 
-    public static class ModelViewAdapter extends ModelRecyclerViewAdapter {
+    public static class ModelViewAdapter extends ModelRecyclerViewAdapter<NumberSeat> {
         @Override
         public void onLoadPage(final int page) {
             /*
@@ -116,13 +115,17 @@ public class RecyclePanelFrag extends FragmentFix {
 
         @Override
         public void onItemClick(RecyclerView recyclerView, int position, boolean isSelected) {
-            String message = String.format("Click position %s", position);
-            Toast.makeText(recyclerView.getContext(), message, Toast.LENGTH_SHORT).show();
+            if (isSelected) {
+                NumberSeat numberSeat = getItem(position);
+                numberSeat.clickCount++;
+                notifyItemChanged(position);
+            }
         }
     }
 
     public static class NumberSeat implements Parcelable {
         public int number;
+        public int clickCount;
 
         public NumberSeat(int number) {
             this.number = number;
@@ -136,13 +139,15 @@ public class RecyclePanelFrag extends FragmentFix {
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeInt(this.number);
+            dest.writeInt(this.clickCount);
         }
 
         protected NumberSeat(Parcel in) {
             this.number = in.readInt();
+            this.clickCount = in.readInt();
         }
 
-        public static final Parcelable.Creator<NumberSeat> CREATOR = new Parcelable.Creator<NumberSeat>() {
+        public static final Creator<NumberSeat> CREATOR = new Creator<NumberSeat>() {
             @Override
             public NumberSeat createFromParcel(Parcel source) {
                 return new NumberSeat(source);

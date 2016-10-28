@@ -8,9 +8,12 @@ import android.support.annotation.IntDef;
 import android.support.annotation.LayoutRes;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.SparseArray;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+
+import com.lin1987www.common.R;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -164,8 +167,39 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
 
     public <VH extends ViewHolder> VH newViewHolder(ViewGroup parent, int resId) {
         Class<? extends ViewHolder> viewHolderClass = mResId2ViewHolderClassMap.get(resId);
-        VH viewHolder = (VH) ViewHolder.create(parent, viewHolderClass);
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        View itemView = inflater.inflate(ViewHolder.getLayoutResId(viewHolderClass), parent, false);
+        itemView = wrapViewHolderItemView(parent, itemView, resId);
+        VH viewHolder = (VH) ViewHolder.create(viewHolderClass, itemView);
         return viewHolder;
+    }
+
+    public View wrapViewHolderItemView(ViewGroup parent, View itemView, int resId) {
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        ViewGroup wrapper = null;
+        int wrapperResId = 0;
+        switch (getViewMode()) {
+            case AbsListView.CHOICE_MODE_MULTIPLE:
+                wrapperResId = R.layout.viewholder_wrapper_multiple;
+                break;
+            default:
+                wrapperResId = R.layout.viewholder_wrapper_single;
+                break;
+        }
+        if (wrapperResId != 0) {
+            wrapper = (ViewGroup) inflater.inflate(wrapperResId, parent, false);
+            ViewGroup.LayoutParams viewLayoutParams = itemView.getLayoutParams();
+            ViewGroup.LayoutParams wrapperLayoutParams = wrapper.getLayoutParams();
+            if (viewLayoutParams.width < 0) {
+                wrapperLayoutParams.width = viewLayoutParams.width;
+            }
+            if (viewLayoutParams.height < 0) {
+                wrapperLayoutParams.height = viewLayoutParams.height;
+            }
+            ViewGroup viewHolderContainer = (ViewGroup) wrapper.findViewById(R.id.viewHolderContainer);
+            viewHolderContainer.addView(itemView);
+        }
+        return (wrapper != null) ? wrapper : itemView;
     }
 
     /*
