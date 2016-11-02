@@ -22,3 +22,5 @@
 -keepclassmembers class ** {
     public boolean onDuty(**);
 }
+
+-keep class * extends android.support.v7.widget.ViewHolder{*;}

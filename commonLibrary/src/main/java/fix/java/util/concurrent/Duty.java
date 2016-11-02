@@ -39,7 +39,11 @@ public abstract class Duty<T> implements Callable<Duty<T>>, Runnable {
     private List<Duty> mAlwaysDutyList;
 
     public Throwable getThrowable() {
-        return mThrowable;
+        Throwable throwable = mThrowable;
+        if (throwable == null && mPreviousDuty != null) {
+            throwable = mPreviousDuty.getThrowable();
+        }
+        return throwable;
     }
 
     protected void setThrowable(Throwable throwable) {

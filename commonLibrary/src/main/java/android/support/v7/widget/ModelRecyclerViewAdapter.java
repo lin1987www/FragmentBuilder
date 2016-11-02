@@ -90,6 +90,7 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
             // Skip notify to fix: Cannot call this method in a scroll callback. Scroll callbacks might be run during a measure & layout pass where you cannot change the RecyclerView data. Any method call that might change the structure of the RecyclerView or the adapter contents should be postponed to the next frame.
         } else if (page == mLoadingPage) {
             notifyItemRangeInserted(selection, pageData.size());
+            mLoadingPage = -1;
         } else {
             notifyDataSetChanged();
             return;

@@ -15,7 +15,7 @@ public class FragContentPath {
     public ArrayList<Integer> viewPath = new ArrayList<>();
 
     public static Object findObject(FragmentActivity activity, FragContentPath fragContentPath) {
-        if (fragContentPath == null) {
+        if (fragContentPath == null || activity == null) {
             return null;
         }
         Object obj = activity;

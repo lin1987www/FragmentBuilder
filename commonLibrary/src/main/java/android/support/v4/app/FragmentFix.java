@@ -35,6 +35,10 @@ public class FragmentFix extends Fragment {
 
     private boolean mIsReady = false;
 
+    public boolean isReady() {
+        return mIsReady;
+    }
+
     protected void prepareAnim() {
         if (DEBUG) {
             Log.d(TAG, String.format(FORMAT, "onCreateAnimation prepareAnim state: " + mState));

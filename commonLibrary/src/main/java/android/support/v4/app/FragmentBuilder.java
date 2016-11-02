@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import fix.java.util.concurrent.Duty;
 import fix.java.util.concurrent.ExceptionHelper;
@@ -57,8 +58,10 @@ public class FragmentBuilder {
             return (int) (parse(o2).builtTimeMillis - parse(o1).builtTimeMillis);
         }
     };
-    @JsonIgnore
-    private final static LinkedList<FragmentBuilder> fragmentBuilderQueue = new LinkedList<>();
+
+
+    // TODO
+    /*
     @JsonIgnore
     public final static Runnable commitBuilderRunnable = new Runnable() {
         @Override
@@ -66,13 +69,88 @@ public class FragmentBuilder {
             synchronized (commitBuilderRunnable) {
                 fragmentBuilderQueue.poll();
                 FragmentBuilder builder = fragmentBuilderQueue.peek();
-                if (builder != null) {
+                if (builder != null && builder.isAvailable()) {
                     builder.buildImmediate();
                     ((FragmentManagerImpl) builder.getFragmentManager()).enqueueAction(this, false);
                 }
             }
         }
     };
+
+    @JsonIgnore
+    private Duty buildDuty = new Duty() {
+        @Override
+        public void doTask(Object context, Duty previousDuty) throws Throwable {
+            commitBuilder(FragmentBuilder.this);
+        }
+    }.setExecutorService(ExecutorSet.nonBlockExecutor);
+    */
+    @JsonIgnore
+    private final static Executor fragmentBuilderExecutor = new Executor();
+
+    public static class Executor implements Runnable {
+        @JsonIgnore
+        public final LinkedList<FragmentBuilder> fragmentBuilderQueue = new LinkedList<>();
+
+        public FragmentBuilder getAvailableFragmentBuilder() {
+            FragmentBuilder fragmentBuilder = fragmentBuilderQueue.peek();
+            for (; fragmentBuilderQueue.size() > 0 && ((fragmentBuilder == null) || (fragmentBuilder != null && !fragmentBuilder.isAvailable())); fragmentBuilder = fragmentBuilderQueue.peek()) {
+                fragmentBuilderQueue.poll();
+            }
+            return fragmentBuilder;
+        }
+
+        @JsonIgnore
+        private final Duty runDuty = new Duty() {
+            @Override
+            public void doTask(Object context, Duty previousDuty) throws Throwable {
+                Executor.this.run();
+            }
+        }.setExecutorService(ExecutorSet.nonBlockExecutor);
+
+        @Override
+        public void run() {
+            synchronized (Executor.class) {
+                FragmentBuilder builder = getAvailableFragmentBuilder();
+                if (builder != null) {
+                    builder.buildImmediate();
+                    fragmentBuilderQueue.poll();
+                    if (fragmentBuilderQueue.size() == 0) {
+                        isPending.set(false);
+                    } else {
+                        if (FragmentUtils.isStateLoss(builder.getFragmentManager())) {
+                            Log.e(TAG, String.format("FragmentBuilder.Executor isStateLoss [%s] %s", builder.fragmentClass, builder.getFragmentTag()));
+                            run();
+                        } else {
+                            ((FragmentManagerImpl) builder.getFragmentManager()).enqueueAction(this, false);
+                        }
+                    }
+                }
+                Log.d(TAG, String.format("FragmentBuilderQueue.run size %s", fragmentBuilderQueue.size()));
+            }
+        }
+
+        @JsonIgnore
+        private final AtomicBoolean isPending = new AtomicBoolean(false);
+
+        public void queue(FragmentBuilder queueBuilder) {
+            synchronized (Executor.class) {
+                fragmentBuilderQueue.offer(queueBuilder);
+                FragmentBuilder fragmentBuilder = getAvailableFragmentBuilder();
+                if (fragmentBuilder != null) {
+                    if (!isPending.getAndSet(true)) {
+                        if (fragmentBuilder.content.isResumed()) {
+                            run();
+                        } else {
+                            fragmentBuilder.content.getDecorView().post(runDuty);
+                        }
+                    }
+                }
+                Log.d(TAG, String.format("FragmentBuilderQueue.queue size %s", fragmentBuilderQueue.size()));
+            }
+        }
+    }
+
     //
     // Temp Object
     @JsonIgnore
@@ -87,13 +165,7 @@ public class FragmentBuilder {
     private boolean needToFindContainerFragment = true;
     @JsonIgnore
     private Fragment containerFragment;
-    @JsonIgnore
-    private Duty buildDuty = new Duty() {
-        @Override
-        public void doTask(Object context, Duty previousDuty) throws Throwable {
-            commitBuilder(FragmentBuilder.this);
-        }
-    }.setExecutorService(ExecutorSet.nonBlockExecutor);
+
     //
     //
     @JsonProperty
@@ -481,9 +553,22 @@ public class FragmentBuilder {
         }
     }
 
-    public void buildImmediate() {
+    public boolean isAvailable() {
         if (content == null) {
-            throw new RuntimeException("Forbid build!");
+            Log.e(TAG, String.format("FragmentBuilder FragContent is null [%s] %s", fragmentClass, getFragmentTag()));
+            return false;
+        }
+        if (content.getFragmentActivity() == null) {
+            Log.e(TAG, String.format("FragmentBuilder lose FragmentActivity [%s] %s", fragmentClass, getFragmentTag()));
+            return false;
+        }
+        return true;
+    }
+
+    public void buildImmediate() {
+        // TODO 將 content.getFragContentPath() 整合到 isAvailable
+        if (!isAvailable()) {
+            return;
         }
         srcFragContentPath = content.getFragContentPath();
         delegateFragContentPath = srcFragContentPath;
@@ -498,12 +583,15 @@ public class FragmentBuilder {
                 containerViewId = defaultContainerViewId;
             }
         }
-        FragmentManager fragmentManager = getFragmentManager();
+        FragmentManagerImpl fragmentManager = (FragmentManagerImpl) getFragmentManager();
+        if (FragmentUtils.isStateLoss(fragmentManager)) {
+            return;
+        }
         // Check fragment already exist
         final Fragment fragmentAlreadyExist = fragmentManager.findFragmentByTag(fragmentTag);
         if (FragmentUtils.isFragmentExist(fragmentAlreadyExist)) {
             // If isRemoving() is true, the fragment maybe be popped out during animation.
-            Log.w(TAG, String.format("Fragment is exist in fragmentManager. tag: %s %s", fragmentTag, fragmentAlreadyExist.isRemoving()));
+            Log.e(TAG, String.format("Fragment is exist in fragmentManager. tag: %s %s", fragmentTag, fragmentAlreadyExist.isRemoving()));
             if (ifExistPolicy.equals(ExistPolicy.doNothing)) {
                 return;
             } else if (ifExistPolicy.equals(ExistPolicy.reAttach)) {
@@ -585,6 +673,9 @@ public class FragmentBuilder {
         if (content == null) {
             throw new RuntimeException("Forbid build!");
         }
+        fragmentBuilderExecutor.queue(this);
+        // TODO 準備移除
+        /*
         synchronized (commitBuilderRunnable) {
             fragmentBuilderQueue.offer(this);
             if (fragmentBuilderQueue.size() == 1) {
@@ -593,15 +684,20 @@ public class FragmentBuilder {
                 } else {
                     content.post(buildDuty);
                 }
+            } else {
+                // TODO  應該會自動進行才對啊...
+                Log.e(TAG, String.format("fragmentBuilderQueue = %s", fragmentBuilderQueue.size()));
             }
         }
+        */
     }
 
-    private static void commitBuilder(FragmentBuilder builder) {
-        builder.buildImmediate();
-        ((FragmentManagerImpl) builder.getFragmentManager()).enqueueAction(commitBuilderRunnable, false);
-        return;
-    }
+    /*
+        private static void commitBuilder(FragmentBuilder builder) {
+            builder.buildImmediate();
+            ((FragmentManagerImpl) builder.getFragmentManager()).enqueueAction(commitBuilderRunnable, false);
+        }
+    */
 
     //  0b000 none
     //  0b001 add
@@ -911,7 +1007,7 @@ public class FragmentBuilder {
                 isPopBackStack = true;
             }
             if (popStackListener != null && isSent) {
-                // TODO  等狀態穩定再執行
+                //  等狀態穩定再執行
                 FragContent content = FragContent.create(onPopFragmentObject);
                 if (content.isResumed()) {
                     submit();

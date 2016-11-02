@@ -297,7 +297,12 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             for (String key : keys) {
                 if (key.startsWith("f")) {
                     int index = Integer.parseInt(key.substring(1));
-                    Fragment f = mFragmentManager.getFragment(bundle, key);
+                    Fragment f = null;
+                    try {
+                        f = mFragmentManager.getFragment(bundle, key);
+                    } catch (Throwable ex) {
+                        ex.printStackTrace();
+                    }
                     if (f != null) {
                         f.setMenuVisibility(false);
                         mFragments.set(index, f);
@@ -355,7 +360,9 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             // 1 2 3 -> 1
             // v25.0.0 Fix fragment didn't run, if through step 1, 2, 3 then go back to 1, step 1 fragment didn't run
             if (fragment.getUserVisibleHint() && !fragment.isResumed()) {
-                fragment.getFragmentManager().beginTransaction().detach(fragment).attach(fragment).commit();
+                if (!FragmentUtils.isStateLoss(fragment.getFragmentManager())) {
+                    fragment.getFragmentManager().beginTransaction().detach(fragment).attach(fragment).commit();
+                }
             }
         }
     }

@@ -82,7 +82,7 @@ public class FragContent {
     public void setContainerViewId(int containerViewId) {
         Fragment frag = getSrcFragment();
         while (null != frag) {
-            if (null != frag.getView().findViewById(containerViewId)) {
+            if (frag.getView() != null && null != frag.getView().findViewById(containerViewId)) {
                 fragmentManager = frag.getChildFragmentManager();
                 break;
             } else {
@@ -259,7 +259,7 @@ public class FragContent {
     }
 
     private static Fragment findFragmentByView(List<Fragment> fragmentList, View srcView, View contentView) {
-        if (fragmentList.size() == 0 || srcView == null) {
+        if (fragmentList == null || fragmentList.size() == 0 || srcView == null) {
             return null;
         }
         for (Fragment frag : fragmentList) {
@@ -397,15 +397,15 @@ public class FragContent {
             throw new RuntimeException("Didn't match.");
         }
         if (obj instanceof View) {
-            if (!content.srcView.equals(obj)) {
+            if (!obj.equals(content.srcView)) {
                 throw new RuntimeException("Didn't match View.");
             }
         } else if (obj instanceof Fragment) {
-            if (!content.srcFragment.equals(obj)) {
+            if (!obj.equals(content.srcFragment)) {
                 throw new RuntimeException("Didn't match Fragment.");
             }
         } else if (obj instanceof FragmentActivity) {
-            if (!content.srcFragmentActivity.equals(obj)) {
+            if (!obj.equals(content.srcFragmentActivity)) {
                 throw new RuntimeException("Didn't match FragmentActivity.");
             }
         }
