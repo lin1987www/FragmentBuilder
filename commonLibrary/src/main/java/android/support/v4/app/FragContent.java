@@ -390,23 +390,29 @@ public class FragContent {
         }
     }
 
+    public static class NonMatchException extends RuntimeException {
+        public NonMatchException(String message) {
+            super(message);
+        }
+    }
+
     private static void checkPath(FragContent content, FragContentPath path) {
         FragmentActivity activity = content.getFragmentActivity();
         Object obj = FragContentPath.findObject(activity, path);
         if (obj == null) {
-            throw new RuntimeException("Didn't match.");
+            throw new NonMatchException("Didn't match.");
         }
         if (obj instanceof View) {
             if (!obj.equals(content.srcView)) {
-                throw new RuntimeException("Didn't match View.");
+                throw new NonMatchException("Didn't match View.");
             }
         } else if (obj instanceof Fragment) {
             if (!obj.equals(content.srcFragment)) {
-                throw new RuntimeException("Didn't match Fragment.");
+                throw new NonMatchException("Didn't match Fragment.");
             }
         } else if (obj instanceof FragmentActivity) {
             if (!obj.equals(content.srcFragmentActivity)) {
-                throw new RuntimeException("Didn't match FragmentActivity.");
+                throw new NonMatchException("Didn't match FragmentActivity.");
             }
         }
     }

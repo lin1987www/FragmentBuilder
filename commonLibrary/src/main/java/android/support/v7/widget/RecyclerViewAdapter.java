@@ -261,7 +261,7 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
         recyclerViewHolder.saveViewHolder(holder);
     }
 
-    public static class RecyclerViewHolder {
+    public static class RecyclerViewHolder implements Runnable {
         public final static String KEY_RecyclerViewHolder = "KEY_RecyclerViewHolder";
 
         private RecyclerViewAdapter mRecyclerViewAdapter;
@@ -331,9 +331,14 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
         }
 
         public void restoreState(Bundle savedInstanceState) {
+            RecyclerView lastRecyclerView = null;
             mRecyclerViewStateSparseArray = savedInstanceState.getSparseParcelableArray(KEY_RecyclerViewHolder);
             for (RecyclerView recyclerView : mRecyclerViewItemTouchHelperWeakHashMap.keySet()) {
                 getRecyclerViewState(recyclerView).restore(recyclerView);
+                lastRecyclerView = recyclerView;
+            }
+            if (lastRecyclerView != null) {
+                lastRecyclerView.post(this);
             }
         }
 
@@ -379,22 +384,28 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
                 if (recyclerView == null) {
                     continue;
                 }
-                if (recyclerView.getLayoutManager() instanceof GridLayoutManager) {
-                    GridLayoutManager gridLayoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
-                    if (gridLayoutManager.getSpanCount() == 1) {
-                        RecyclerView.ViewHolder viewHolder = mRecyclerViewAdapter.createViewHolder(recyclerView, mRecyclerViewAdapter.getItemViewType(0));
-                        View view = viewHolder.itemView;
-                        view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-                        int itemWidth = view.getMeasuredWidth();
-                        int gridWidth = recyclerView.getWidth();
-                        int maxColumns = (int) Math.floor(gridWidth / (double) itemWidth);
-                        int numColumns = mRecyclerViewAdapter.getItemCount() > maxColumns ? maxColumns : mRecyclerViewAdapter.getItemCount();
+                adjustGridSpan(recyclerView);
+            }
+        }
+
+        public void adjustGridSpan(RecyclerView recyclerView) {
+            if (recyclerView.getLayoutManager() instanceof GridLayoutManager) {
+                GridLayoutManager gridLayoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
+                if (gridLayoutManager.getSpanCount() == 1) {
+                    RecyclerView.ViewHolder viewHolder = mRecyclerViewAdapter.createViewHolder(recyclerView, mRecyclerViewAdapter.getItemViewType(0));
+                    View view = viewHolder.itemView;
+                    view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+                    int itemWidth = view.getMeasuredWidth();
+                    int gridWidth = recyclerView.getWidth();
+                    int maxColumns = (int) Math.floor(gridWidth / (double) itemWidth);
+                    int numColumns = mRecyclerViewAdapter.getItemCount() > maxColumns ? maxColumns : mRecyclerViewAdapter.getItemCount();
+                    if (numColumns > 0) {
                         gridLayoutManager.setSpanCount(numColumns);
-                        // Refresh RecyclerView
-                        recyclerView.invalidate();
-                        if (recyclerView.getParent() instanceof View) {
-                            ((View) recyclerView.getParent()).invalidate();
-                        }
+                    }
+                    // Refresh RecyclerView
+                    recyclerView.invalidate();
+                    if (recyclerView.getParent() instanceof View) {
+                        ((View) recyclerView.getParent()).invalidate();
                     }
                 }
             }
@@ -428,6 +439,11 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
                     viewHolderStateArrayList.remove(position);
                 }
             }
+        }
+
+        @Override
+        public void run() {
+            adjustGridSpan();
         }
     }
 
@@ -487,7 +503,7 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
             this.viewHolderStateList = in.createTypedArrayList(ViewHolderState.CREATOR);
         }
 
-        public static final Parcelable.Creator<RecyclerViewState> CREATOR = new Parcelable.Creator<RecyclerViewState>() {
+        public static final Creator<RecyclerViewState> CREATOR = new Creator<RecyclerViewState>() {
             @Override
             public RecyclerViewState createFromParcel(Parcel source) {
                 return new RecyclerViewState(source);
@@ -557,7 +573,7 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
             this.savedState = in.readSparseArray(getClass().getClassLoader());
         }
 
-        public static final Parcelable.Creator<ViewHolderState> CREATOR = new Parcelable.Creator<ViewHolderState>() {
+        public static final Creator<ViewHolderState> CREATOR = new Creator<ViewHolderState>() {
             @Override
             public ViewHolderState createFromParcel(Parcel source) {
                 return new ViewHolderState(source);

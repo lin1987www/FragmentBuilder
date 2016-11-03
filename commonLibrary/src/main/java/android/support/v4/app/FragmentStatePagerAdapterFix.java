@@ -204,6 +204,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
 
             for (Fragment fragment : mFragments) {
                 if (fragment != null) {
+                    /*
                     if (fragment.isAdded() && !fragment.isResumed()) {
                         // Fix sdk 23.0.1 : Fragment isAdded, but didn't resumed.
                         if (FragmentUtils.isStateLoss(fragment.getFragmentManager())) {
@@ -211,6 +212,10 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
                         }
                         // Test move to fixActiveFragment(mFragmentManager, fragment);
                         // fragment.getFragmentManager().beginTransaction().detach(fragment).attach(fragment).commit();
+                    }
+                    */
+                    if (FragmentUtils.isStateLoss(fragment.getFragmentManager())) {
+                        continue;
                     }
                     // Fix sdk 22.0.1 : Fragment is added by transaction. BUT didn't add to FragmentManager's mActive. If you Rotation.
                     fixActiveFragment(mFragmentManager, fragment);

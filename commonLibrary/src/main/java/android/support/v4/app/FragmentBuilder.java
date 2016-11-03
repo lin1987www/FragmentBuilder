@@ -59,74 +59,44 @@ public class FragmentBuilder {
         }
     };
 
-
-    // TODO
-    /*
-    @JsonIgnore
-    public final static Runnable commitBuilderRunnable = new Runnable() {
-        @Override
-        public void run() {
-            synchronized (commitBuilderRunnable) {
-                fragmentBuilderQueue.poll();
-                FragmentBuilder builder = fragmentBuilderQueue.peek();
-                if (builder != null && builder.isAvailable()) {
-                    builder.buildImmediate();
-                    ((FragmentManagerImpl) builder.getFragmentManager()).enqueueAction(this, false);
-                }
-            }
-        }
-    };
-
-    @JsonIgnore
-    private Duty buildDuty = new Duty() {
-        @Override
-        public void doTask(Object context, Duty previousDuty) throws Throwable {
-            commitBuilder(FragmentBuilder.this);
-        }
-    }.setExecutorService(ExecutorSet.nonBlockExecutor);
-    */
-    @JsonIgnore
-    private final static Executor fragmentBuilderExecutor = new Executor();
-
     public static class Executor implements Runnable {
         @JsonIgnore
         public final LinkedList<FragmentBuilder> fragmentBuilderQueue = new LinkedList<>();
 
         public FragmentBuilder getAvailableFragmentBuilder() {
+            // 如果有無效的 FragmentBuilder 的話，就會出現 isPending 的 指令沒有被執行到，所以要重新加入 pending
             FragmentBuilder fragmentBuilder = fragmentBuilderQueue.peek();
             for (; fragmentBuilderQueue.size() > 0 && ((fragmentBuilder == null) || (fragmentBuilder != null && !fragmentBuilder.isAvailable())); fragmentBuilder = fragmentBuilderQueue.peek()) {
                 fragmentBuilderQueue.poll();
+                isPending.set(false);
+                Log.e(TAG, String.format("FragmentBuilder.Executor.getAvailableFragmentBuilder isStateLoss [%s] %s", fragmentBuilder.fragmentClass, fragmentBuilder.getFragmentTag()));
             }
             return fragmentBuilder;
         }
-
-        @JsonIgnore
-        private final Duty runDuty = new Duty() {
-            @Override
-            public void doTask(Object context, Duty previousDuty) throws Throwable {
-                Executor.this.run();
-            }
-        }.setExecutorService(ExecutorSet.nonBlockExecutor);
 
         @Override
         public void run() {
             synchronized (Executor.class) {
                 FragmentBuilder builder = getAvailableFragmentBuilder();
                 if (builder != null) {
-                    builder.buildImmediate();
                     fragmentBuilderQueue.poll();
+                    try {
+                        builder.buildImmediate();
+                    } catch (FragContent.NonMatchException ex) {
+                        run();
+                    }
                     if (fragmentBuilderQueue.size() == 0) {
                         isPending.set(false);
                     } else {
                         if (FragmentUtils.isStateLoss(builder.getFragmentManager())) {
-                            Log.e(TAG, String.format("FragmentBuilder.Executor isStateLoss [%s] %s", builder.fragmentClass, builder.getFragmentTag()));
+                            Log.e(TAG, String.format("FragmentBuilder.Executor.run isStateLoss [%s] %s", builder.fragmentClass, builder.getFragmentTag()));
                             run();
                         } else {
                             ((FragmentManagerImpl) builder.getFragmentManager()).enqueueAction(this, false);
                         }
                     }
                 }
-                Log.d(TAG, String.format("FragmentBuilderQueue.run size %s", fragmentBuilderQueue.size()));
+                Log.d(TAG, String.format("FragmentBuilder.Executor.run size %s", fragmentBuilderQueue.size()));
             }
         }
 
@@ -142,17 +112,18 @@ public class FragmentBuilder {
                         if (fragmentBuilder.content.isResumed()) {
                             run();
                         } else {
-                            fragmentBuilder.content.getDecorView().post(runDuty);
+                            fragmentBuilder.content.getDecorView().post(this);
                         }
                     }
                 }
-                Log.d(TAG, String.format("FragmentBuilderQueue.queue size %s", fragmentBuilderQueue.size()));
+                Log.d(TAG, String.format("FragmentBuilder.Executor.queue size %s", fragmentBuilderQueue.size()));
             }
         }
     }
 
-    //
     // Temp Object
+    @JsonIgnore
+    private final static Executor fragmentBuilderExecutor = new Executor();
     @JsonIgnore
     private FragContent content;
     @JsonIgnore
@@ -674,30 +645,7 @@ public class FragmentBuilder {
             throw new RuntimeException("Forbid build!");
         }
         fragmentBuilderExecutor.queue(this);
-        // TODO 準備移除
-        /*
-        synchronized (commitBuilderRunnable) {
-            fragmentBuilderQueue.offer(this);
-            if (fragmentBuilderQueue.size() == 1) {
-                if (content.isResumed()) {
-                    commitBuilder(this);
-                } else {
-                    content.post(buildDuty);
-                }
-            } else {
-                // TODO  應該會自動進行才對啊...
-                Log.e(TAG, String.format("fragmentBuilderQueue = %s", fragmentBuilderQueue.size()));
-            }
-        }
-        */
     }
-
-    /*
-        private static void commitBuilder(FragmentBuilder builder) {
-            builder.buildImmediate();
-            ((FragmentManagerImpl) builder.getFragmentManager()).enqueueAction(commitBuilderRunnable, false);
-        }
-    */
 
     //  0b000 none
     //  0b001 add
