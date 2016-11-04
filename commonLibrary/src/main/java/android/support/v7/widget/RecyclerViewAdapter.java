@@ -443,14 +443,23 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
 
         @Override
         public void run() {
+            for (RecyclerView recyclerView : mRecyclerViewItemTouchHelperWeakHashMap.keySet()) {
+                RecyclerViewState recyclerViewState = getRecyclerViewState(recyclerView);
+                RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+                if (layoutManager != null) {
+                    layoutManager.onRestoreInstanceState(recyclerViewState.layoutManagerSavedState);
+                }
+            }
             adjustGridSpan();
         }
     }
 
     public static class RecyclerViewState implements Parcelable {
         public int viewId;
+        public Parcelable layoutManagerSavedState;
         public SparseArray<Parcelable> savedState;
         public ArrayList<ViewHolderState> viewHolderStateList;
+
 
         public RecyclerViewState(int viewId) {
             this.viewId = viewId;
@@ -468,6 +477,10 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
         public void save(RecyclerView recyclerView) {
             savedState = new SparseArray<>();
             recyclerView.saveHierarchyState(savedState);
+            RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+            if (layoutManager != null) {
+                layoutManagerSavedState = layoutManager.onSaveInstanceState();
+            }
         }
 
         public void restore(RecyclerView recyclerView) {
@@ -494,12 +507,14 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeInt(this.viewId);
             dest.writeSparseArray((SparseArray) this.savedState);
+            dest.writeParcelable(this.layoutManagerSavedState, flags);
             dest.writeTypedList(this.viewHolderStateList);
         }
 
         protected RecyclerViewState(Parcel in) {
             this.viewId = in.readInt();
-            this.savedState = in.readSparseArray(getClass().getClassLoader());
+            this.savedState = in.readSparseArray(Parcelable.class.getClassLoader());
+            this.layoutManagerSavedState = in.readParcelable(Parcelable.class.getClassLoader());
             this.viewHolderStateList = in.createTypedArrayList(ViewHolderState.CREATOR);
         }
 
