@@ -451,6 +451,7 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
                 }
             }
             adjustGridSpan();
+            scrollForFillSpace();
         }
     }
 

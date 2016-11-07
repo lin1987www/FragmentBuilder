@@ -246,13 +246,19 @@ public class FragmentFix extends Fragment {
         mIsReady = false;
         if (mDutyList.size() > 0) {
             // Cancel all take
+            int isNotDone = 0;
             for (Duty<?> duty : mDutyList) {
+                if (!duty.isDone()) {
+                    isNotDone = isNotDone + 1;
+                }
                 duty.cancel();
             }
-            mDutyList.clear();
             if (DEBUG) {
-                Log.d(TAG, String.format(FORMAT, "clear Duty."));
+                if (isNotDone > 0) {
+                    Log.d(TAG, String.format(FORMAT, String.format("clear Duty that is not done %s.", isNotDone)));
+                }
             }
+            mDutyList.clear();
         }
         super.performPause();
         FragmentUtils.log(this, "performPause after");
@@ -403,7 +409,7 @@ public class FragmentFix extends Fragment {
                 if (!duty.isSubmitted()) {
                     duty.submit();
                     if (DEBUG) {
-                        Log.d(TAG, String.format(FORMAT, "perform pending duty " + duty.getClass().getSimpleName()));
+                        Log.d(TAG, String.format(FORMAT, "perform pending duty " + duty.toString()));
                     }
                 }
             }
@@ -424,7 +430,7 @@ public class FragmentFix extends Fragment {
         mDutyList.add(duty);
         if (mIsReady) {
             if (DEBUG) {
-                Log.d(TAG, String.format(FORMAT, "submit duty " + duty.getClass().getName()));
+                Log.d(TAG, String.format(FORMAT, "submit duty " + duty.toString()));
             }
             duty.submit();
         } else {

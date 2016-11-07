@@ -56,6 +56,11 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
         return mIsLoading;
     }
 
+    public ModelRecyclerViewAdapter<T> setLoading(boolean isLoading) {
+        mIsLoading = isLoading;
+        return this;
+    }
+
     private int mLoadingPage = -1;
 
     public boolean isOnLoadPageDuringScrollCallback = false;
@@ -67,7 +72,7 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
         int remain = (getItemCount() - firstVisibleItem - 1) - visibleItemCount - visibleThreshold;
         if (!isLoading()) {
             if (remain <= 0) {
-                mIsLoading = true;
+                setLoading(true);
                 mLoadingPage = getPageArrayList().getNextPage();
                 isOnLoadPageDuringScrollCallback = true;
                 onLoadPage(mLoadingPage);
@@ -85,7 +90,7 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
             pageData = new ArrayList<>();
         }
         int selection = getPageArrayList().setDataAndGetCurrentIndex(pageData, page);
-        mIsLoading = false;
+        setLoading(false);
         if (isOnLoadPageDuringScrollCallback) {
             // Skip notify to fix: Cannot call this method in a scroll callback. Scroll callbacks might be run during a measure & layout pass where you cannot change the RecyclerView data. Any method call that might change the structure of the RecyclerView or the adapter contents should be postponed to the next frame.
         } else if (page == mLoadingPage) {
@@ -106,8 +111,12 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
 
     public void clear() {
         getPageArrayList().clear();
-        mIsLoading = false;
+        setLoading(false);
         notifyDataSetChanged();
+    }
+
+    public String getSaveStateKey() {
+        return String.format("%s_%s", KEY_ModelRecyclerViewAdapter, getClass().getName());
     }
 
     public void saveState(Bundle outState) {
@@ -117,17 +126,18 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
         bundle.putInt(KEY_viewMode, mViewMode);
         recyclerViewHolder.saveState(bundle);
         //
-        outState.putParcelable(KEY_ModelRecyclerViewAdapter, bundle);
+        outState.putParcelable(getSaveStateKey(), bundle);
     }
 
     public void restoreState(Bundle savedInstanceState) {
         if (savedInstanceState == null) {
             return;
         }
-        if (!savedInstanceState.containsKey(KEY_ModelRecyclerViewAdapter)) {
+        if (!savedInstanceState.containsKey(getSaveStateKey())) {
             return;
         }
-        Bundle bundle = savedInstanceState.getParcelable(KEY_ModelRecyclerViewAdapter);
+        Bundle bundle = savedInstanceState.getParcelable(getSaveStateKey());
+        setLoading(false);
         mPageArrayList = bundle.getParcelable(KEY_page);
         mSelectedAdapterPositions = bundle.getIntegerArrayList(KEY_selectedPositions);
         setViewMode(covertViewMode(bundle.getInt(KEY_viewMode)));
