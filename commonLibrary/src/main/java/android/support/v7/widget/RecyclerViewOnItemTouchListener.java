@@ -38,7 +38,11 @@ public class RecyclerViewOnItemTouchListener implements RecyclerView.OnItemTouch
             // For trigger  ChildView  Button or Checkbox or something else.
             boolean origin = childView.isClickable();
             childView.setClickable(false);
+            int offsetX = recyclerView.getLayoutManager().getDecoratedLeft(childView);
+            int offsetY = recyclerView.getLayoutManager().getDecoratedTop(childView);
+            e.offsetLocation(-offsetX, -offsetY);
             boolean isHandled = childView.dispatchTouchEvent(e);
+            e.offsetLocation(offsetX, offsetY);
             childView.setClickable(origin);
             if (isHandled) {
                 return false;
