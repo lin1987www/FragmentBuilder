@@ -174,17 +174,23 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
         return viewHolder;
     }
 
+    public int getWrapViewHolderItemViewLayoutId() {
+        return 0;
+    }
+
     public View wrapViewHolderItemView(ViewGroup parent, View itemView, int resId) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         ViewGroup wrapper = null;
-        int wrapperResId = 0;
-        switch (getViewMode()) {
-            case AbsListView.CHOICE_MODE_MULTIPLE:
-                wrapperResId = R.layout.viewholder_wrapper_multiple;
-                break;
-            default:
-                wrapperResId = R.layout.viewholder_wrapper_single;
-                break;
+        int wrapperResId = getWrapViewHolderItemViewLayoutId();
+        if (0 == wrapperResId) {
+            switch (getViewMode()) {
+                case AbsListView.CHOICE_MODE_MULTIPLE:
+                    wrapperResId = R.layout.viewholder_wrapper_multiple;
+                    break;
+                default:
+                    wrapperResId = R.layout.viewholder_wrapper_single;
+                    break;
+            }
         }
         if (wrapperResId != 0) {
             wrapper = (ViewGroup) inflater.inflate(wrapperResId, parent, false);
