@@ -7,6 +7,7 @@ import android.support.annotation.CallSuper;
 import android.support.annotation.IntDef;
 import android.support.annotation.LayoutRes;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +33,13 @@ import java.util.WeakHashMap;
  * ItemTouchHelper.Callback  on Adapter
  */
 public abstract class RecyclerViewAdapter<T extends Parcelable> extends RecyclerView.Adapter<ViewHolder> implements ItemTouchHelperCallback.Delegate, RecyclerViewOnScrollListener.Delegate, RecyclerViewOnItemTouchListener.OnItemClickListener {
+    private static final String TAG = RecyclerViewAdapter.class.getSimpleName();
+
+    public RecyclerViewAdapter() {
+        super();
+        registerAdapterDataObserver(adapterDataObserver);
+    }
+
     @IntDef({AbsListView.CHOICE_MODE_NONE, AbsListView.CHOICE_MODE_SINGLE, AbsListView.CHOICE_MODE_MULTIPLE})
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
@@ -72,28 +80,68 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
 
     protected RecyclerViewHolder recyclerViewHolder = new RecyclerViewHolder(this);
 
+    public RecyclerView.AdapterDataObserver adapterDataObserver = new RecyclerView.AdapterDataObserver() {
+        @Override
+        public void onItemRangeChanged(int positionStart, int itemCount, Object payload) {
+            super.onItemRangeChanged(positionStart, itemCount, payload);
+        }
+
+        @Override
+        public void onItemRangeInserted(int positionStart, int itemCount) {
+            for (int i = 0; i < itemCount; i++) {
+                recyclerViewHolder.onInserted(positionStart);
+            }
+        }
+
+        @Override
+        public void onItemRangeRemoved(int positionStart, int itemCount) {
+            // Adjust Selected Position
+            for (int i = getSelectedPositions().size() - 1; i > -1; i--) {
+                Integer selectedPosition = getSelectedPositions().get(i);
+                if (selectedPosition >= positionStart && selectedPosition < positionStart + itemCount) {
+                    getSelectedPositions().remove(i);
+                } else if (selectedPosition >= positionStart + itemCount) {
+                    Integer newSelectedPosition = selectedPosition - itemCount;
+                    getSelectedPositions().set(i, newSelectedPosition);
+                }
+            }
+            // Remove data
+            for (int i = itemCount - 1; i > -1; i--) {
+                getItemList().remove(positionStart);
+                recyclerViewHolder.onSwiped(positionStart);
+            }
+        }
+
+        @Override
+        public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+            //
+            for (int i = 0; i < itemCount; i++) {
+                Collections.swap(getItemList(), fromPosition, toPosition);
+                recyclerViewHolder.onMove(fromPosition, toPosition);
+                if (getSelectedPositions().contains(fromPosition) && !getSelectedPositions().contains(toPosition)) {
+                    int index = getSelectedPositions().indexOf(fromPosition);
+                    int newPosition = toPosition;
+                    getSelectedPositions().set(index, newPosition);
+                } else if (!getSelectedPositions().contains(fromPosition) && getSelectedPositions().contains(toPosition)) {
+                    int index = getSelectedPositions().indexOf(toPosition);
+                    int newPosition = toPosition;
+                    if (fromPosition < toPosition) {
+                        newPosition--;
+                    } else {
+                        newPosition++;
+                    }
+                    getSelectedPositions().set(index, newPosition);
+                }
+                fromPosition++;
+                toPosition++;
+            }
+        }
+    };
+
     @Override
     public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
         int fromPosition = viewHolder.getAdapterPosition();
         int toPosition = target.getAdapterPosition();
-        //
-        Collections.swap(getItemList(), fromPosition, toPosition);
-        recyclerViewHolder.onMove(fromPosition, toPosition);
-        if (getSelectedPositions().contains(fromPosition) && !getSelectedPositions().contains(toPosition)) {
-            int index = getSelectedPositions().indexOf(fromPosition);
-            int newPosition = toPosition;
-            getSelectedPositions().set(index, newPosition);
-        } else if (!getSelectedPositions().contains(fromPosition) && getSelectedPositions().contains(toPosition)) {
-            int index = getSelectedPositions().indexOf(toPosition);
-            int newPosition = toPosition;
-            if (fromPosition < toPosition) {
-                newPosition--;
-            } else {
-                newPosition++;
-            }
-            getSelectedPositions().set(index, newPosition);
-        }
-        //
         notifyItemMoved(fromPosition, toPosition);
         return true;
     }
@@ -101,13 +149,6 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
         int position = viewHolder.getAdapterPosition();
-        //
-        getItemList().remove(position);
-        recyclerViewHolder.onSwiped(position);
-        //
-        if (getSelectedPositions().contains(position)) {
-            getSelectedPositions().remove((Integer) position);
-        }
         notifyItemRemoved(position);
     }
 
@@ -182,7 +223,9 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         ViewGroup wrapper = null;
         int wrapperResId = getWrapViewHolderItemViewLayoutId();
-        if (0 == wrapperResId) {
+        if (View.NO_ID == wrapperResId) {
+            return itemView;
+        } else if (0 == wrapperResId) {
             switch (getViewMode()) {
                 case AbsListView.CHOICE_MODE_MULTIPLE:
                     wrapperResId = R.layout.viewholder_wrapper_multiple;
@@ -441,9 +484,19 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
             for (RecyclerView rv : mRecyclerViewItemTouchHelperWeakHashMap.keySet()) {
                 RecyclerViewState recyclerViewState = getRecyclerViewState(rv);
                 ArrayList<ViewHolderState> viewHolderStateArrayList = recyclerViewState.viewHolderStateList;
-                if (position < viewHolderStateArrayList.size()) {
-                    viewHolderStateArrayList.remove(position);
+                viewHolderStateArrayList.remove(position);
+
+            }
+        }
+
+        public void onInserted(int position) {
+            for (RecyclerView rv : mRecyclerViewItemTouchHelperWeakHashMap.keySet()) {
+                RecyclerViewState recyclerViewState = getRecyclerViewState(rv);
+                ArrayList<ViewHolderState> viewHolderStateArrayList = recyclerViewState.viewHolderStateList;
+                while (position > viewHolderStateArrayList.size()) {
+                    viewHolderStateArrayList.add(null);
                 }
+                viewHolderStateArrayList.add(position, null);
             }
         }
 
@@ -611,7 +664,7 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
     public static
     @ViewMode
     int covertViewMode(int value) {
-        @RecyclerViewAdapter.ViewMode int result = AbsListView.CHOICE_MODE_NONE;
+        @ViewMode int result = AbsListView.CHOICE_MODE_NONE;
         switch (value) {
             case AbsListView.CHOICE_MODE_NONE:
                 result = AbsListView.CHOICE_MODE_NONE;

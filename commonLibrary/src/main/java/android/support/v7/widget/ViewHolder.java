@@ -99,12 +99,12 @@ public abstract class ViewHolder extends RecyclerView.ViewHolder {
     @LayoutRes
     public static int getLayoutResId(Class<? extends ViewHolder> viewHolderClass) {
         int resId = 0;
-        ViewHolder.LayoutResId layoutResIdAnnotation = viewHolderClass.getAnnotation(ViewHolder.LayoutResId.class);
+        LayoutResId layoutResIdAnnotation = viewHolderClass.getAnnotation(LayoutResId.class);
         if (null != layoutResIdAnnotation) {
             resId = layoutResIdAnnotation.id();
         }
         if (resId == 0) {
-            ViewHolder.LayoutResName layoutResNameAnnotation = viewHolderClass.getAnnotation(ViewHolder.LayoutResName.class);
+            LayoutResName layoutResNameAnnotation = viewHolderClass.getAnnotation(LayoutResName.class);
             if (null != layoutResNameAnnotation) {
                 String resName = layoutResNameAnnotation.name();
                 Class<?> layoutClass = layoutResNameAnnotation.layout();

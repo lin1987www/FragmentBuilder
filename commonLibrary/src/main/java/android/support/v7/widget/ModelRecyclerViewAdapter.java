@@ -109,6 +109,27 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
         }
     }
 
+    public void insertData(Collection<? extends T> dataCollection, int position) {
+        // Adjust Selected Position
+        for (int i = 0; i < getSelectedPositions().size(); i++) {
+            Integer selectedPosition = getSelectedPositions().get(i);
+            if (selectedPosition >= position) {
+                Integer newSelectedPosition = selectedPosition + dataCollection.size();
+                getSelectedPositions().set(i, newSelectedPosition);
+            }
+        }
+        // Insert data
+        getPageArrayList().getList().addAll(position, dataCollection);
+        //
+        notifyItemRangeInserted(position, dataCollection.size());
+        // Auto adjust grid span
+        recyclerViewHolder.adjustGridSpan();
+    }
+
+    public void removeData(int positionStart, int itemCount) {
+        notifyItemRangeRemoved(positionStart, itemCount);
+    }
+
     public void clear() {
         getPageArrayList().clear();
         setLoading(false);
