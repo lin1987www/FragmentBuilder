@@ -1,5 +1,6 @@
 package retrofit2;
 
+import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import com.lin1987www.jackson.JacksonHelper;
 
 import java.io.File;
@@ -22,6 +23,7 @@ public class RetrofitHelper {
                 if (mRetrofitBuilder == null) {
                     mRetrofitBuilder = new Retrofit.Builder()
                             .addConverterFactory(JacksonConverterFactory.create(JacksonHelper.getObjectMapper()))
+                            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                             .client(OkHttpHelper.getOkHttpClient());
                 }
             }

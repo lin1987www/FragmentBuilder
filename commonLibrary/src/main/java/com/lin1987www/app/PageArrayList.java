@@ -3,6 +3,8 @@ package com.lin1987www.app;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.lin1987www.common.Utility;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -232,7 +234,7 @@ public class PageArrayList<T extends Parcelable> implements Parcelable {
     protected PageArrayList(Parcel in) {
         this.mFloorPage = in.readInt();
         this.mCeilingPage = in.readInt();
-        this.mList = in.readArrayList(getClass().getClassLoader());
+        this.mList = in.readArrayList(Utility.getClassLoader());
         this.mPageSize = in.readInt();
         this.mDefaultLoadPage = in.readInt();
         this.mStartPage = in.readInt();

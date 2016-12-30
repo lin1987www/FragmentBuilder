@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import com.lin1987www.common.Utility;
+
 import java.lang.reflect.Field;
 
 /**
@@ -178,6 +180,9 @@ public class FragmentUtils {
     private static final String key_fragmentLog = "key_fragmentLog";
 
     public static void log(Fragment fragment, String name) {
+        if (!Utility.DEBUG) {
+            return;
+        }
         if (fragment.getArguments() == null) {
             putArguments(fragment, new Bundle());
         }

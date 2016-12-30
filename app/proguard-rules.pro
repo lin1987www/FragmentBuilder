@@ -1,6 +1,6 @@
 # Add project specific ProGuard rules here.
 # By default, the flags in this file are appended to flags specified
-# in E:\android\sdk/tools/proguard/proguard-android.txt
+# in D:\android\sdk/tools/proguard/proguard-android.txt
 # You can edit the include path and order by changing the proguardFiles
 # directive in build.gradle.
 #
@@ -15,6 +15,7 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
 
 # Butter knife
 -keep class butterknife.** { *; }
@@ -44,6 +45,7 @@ void set*(***);
 *** get*();
 }
 
+
 ## Google Play Services 4.3.23 specific rules ##
 ## https://developer.android.com/google/play-services/setup.html#Proguard ##
 -keep class * extends java.util.ListResourceBundle {
@@ -60,12 +62,14 @@ public static final *** NULL;
 public static final ** CREATOR;
 }
 
+
 # OkHttp
 -keepattributes Signature
 -keepattributes *Annotation*
 -keep class com.squareup.okhttp.** { *; }
 -keep interface com.squareup.okhttp.** { *; }
 -dontwarn com.squareup.okhttp.**
+
 
 # OkHttp3
 -keepattributes Signature
@@ -74,14 +78,17 @@ public static final ** CREATOR;
 -keep interface okhttp3.** { *; }
 -dontwarn okhttp3.**
 
+
 #retrofit2
 -dontwarn retrofit2.**
 -keep class retrofit2.** { *; }
 -keepattributes Signature
 -keepattributes Exceptions
 
+
 #ok.io
 -dontwarn okio.**
+
 
 # jackson
 -keepattributes *Annotation*,EnclosingMethod,Signature
@@ -92,7 +99,7 @@ public static final ** CREATOR;
 public static final org.codehaus.jackson.annotate.JsonAutoDetect$Visibility *;
 }
 ## your package, if didn't using @JsonCreator
--keep public class com.lin1987www.** {
+-keep public class com.wanbaolu.** {
 public void set*(***);
 public *** get*();
 }
@@ -107,8 +114,10 @@ public *** get*();
     <init>(java.lang.Throwable);
 }
 
+
 # glide
 -keep public class * implements com.bumptech.glide.module.GlideModule
+
 
 # OrmLite uses reflection
 -keep class com.j256.**
@@ -121,6 +130,7 @@ public *** get*();
   public <init>(android.content.Context);
 }
 
+
 #dagger
 #-Keep the names of classes that have fields annotated with @Inject and the fields themselves.
 -keepclasseswithmembernames class * {
@@ -128,8 +138,28 @@ public *** get*();
   @javax.inject.* <init>(...);
 }
 
+
+#Gradle Retrolambda Plugin
+-dontwarn java.lang.invoke.*
+
 #
 -dontwarn im.delight.android.webview.**
+
+
+# Creative SDK
+-keep class com.aviary.**
+-keepclassmembers class com.aviary.** { *; }
+
+
+# 支付寶
+-keep class com.alipay.android.app.IAlixPay{*;}
+-keep class com.alipay.android.app.IAlixPay$Stub{*;}
+-keep class com.alipay.android.app.IRemoteServiceCallback{*;}
+-keep class com.alipay.android.app.IRemoteServiceCallback$Stub{*;}
+-keep class com.alipay.sdk.app.PayTask{ public *;}
+-keep class com.alipay.sdk.app.AuthTask{ public *;}
+-dontwarn com.alipay.**
+
 
 # 自己添加
 -keep class com.facebook.**
@@ -140,6 +170,8 @@ public *** get*();
 
 -keep class org.rajawali3d.**
 -dontwarn org.rajawali3d.**
+
+-dontwarn com.wanbaolu.chainby.rx.ApiUnwrap
 
 -keepclassmembers class ** {
     public void onPopFragment(**);

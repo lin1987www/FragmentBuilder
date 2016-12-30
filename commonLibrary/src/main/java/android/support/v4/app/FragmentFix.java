@@ -14,9 +14,16 @@ import android.view.animation.AnimationUtils;
 import com.lin1987www.common.Utility;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import fix.java.util.concurrent.Duty;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.observables.ConnectableObservable;
+import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
 
 
 /**
@@ -29,6 +36,9 @@ public class FragmentFix extends Fragment {
 
     protected ArrayList<Duty<?>> mDutyList = new ArrayList<>();
     protected final AtomicBoolean mIsEnterAnim = new AtomicBoolean();
+
+    protected LinkedList<ConnectableObservable<?>> mConnectableObservableList = new LinkedList<>();
+    protected CompositeDisposable mCompositeDisposable = new CompositeDisposable();
 
     protected FragmentArgs mFragmentArgs;
     Animation.AnimationListener mFragmentAnimListener;
@@ -260,6 +270,8 @@ public class FragmentFix extends Fragment {
             }
             mDutyList.clear();
         }
+        mCompositeDisposable.clear();
+        mConnectableObservableList.clear();
         super.performPause();
         FragmentUtils.log(this, "performPause after");
     }
@@ -414,6 +426,12 @@ public class FragmentFix extends Fragment {
                 }
             }
         }
+        if (mConnectableObservableList.size() > 0) {
+            while (null != mConnectableObservableList.peekFirst()) {
+                ConnectableObservable connectableObservable = mConnectableObservableList.pollFirst();
+                mCompositeDisposable.add(connectableObservable.connect());
+            }
+        }
     }
 
     public void startActivityForResult(Object object, Intent intent, int requestCode) {
@@ -437,6 +455,47 @@ public class FragmentFix extends Fragment {
             if (DEBUG) {
                 Log.d(TAG, String.format(FORMAT, "add duty " + duty.getClass().getSimpleName()));
             }
+        }
+    }
+
+    public <T> ConnectableObservable<T> wrap(Observable<T> observable) {
+        ConnectableObservable<T> connectableObservable;
+        if (observable instanceof ConnectableObservable) {
+            connectableObservable = (ConnectableObservable) observable;
+        } else {
+            connectableObservable = observable.publish();
+        }
+        if (mIsReady) {
+            mCompositeDisposable.add(connectableObservable.connect());
+        } else {
+            mConnectableObservableList.add(connectableObservable);
+        }
+        return connectableObservable;
+    }
+
+    public <T> void subscribe(Observable<T> observable, DisposableObserver<T> observer) {
+        // If fragment will removed don't accept any duty.
+        // Don't care isResumed true or false. Because duty be pended and wait perform
+        if (!isAdded()) {
+            return;
+        }
+        if (mIsReady) {
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, "subscribe " + observable.toString()));
+            }
+            mCompositeDisposable.add(observable.subscribeWith(observer));
+        } else {
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, "pending subscribe " + observable.toString()));
+            }
+            ConnectableObservable connectableObservable;
+            if (observable instanceof ConnectableObservable) {
+                connectableObservable = (ConnectableObservable) observable;
+            } else {
+                connectableObservable = observable.publish();
+            }
+            connectableObservable.subscribeWith(observer);
+            mConnectableObservableList.add(connectableObservable);
         }
     }
 }

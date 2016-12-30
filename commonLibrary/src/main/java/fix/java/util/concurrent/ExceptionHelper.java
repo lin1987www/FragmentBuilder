@@ -41,6 +41,16 @@ public class ExceptionHelper {
         throw e;
     }
 
+    public static void throwRuntimeException(Throwable ex) throws RuntimeException {
+        RuntimeException e;
+        if (ex instanceof RuntimeException) {
+            e = (RuntimeException) ex;
+        } else {
+            e = new RuntimeException(ex);
+        }
+        throw e;
+    }
+
     public static void printException(String taskName, Throwable ex) {
         Thread thread = Thread.currentThread();
         System.err.println(String.format("Exception in thread \"%s\" %s %s", thread.toString(), ex.toString(), taskName));
@@ -52,9 +62,14 @@ public class ExceptionHelper {
     }
 
     public static Throwable getNestedCause(Throwable throwable) {
-        if (throwable.getCause() != null) {
-            return getNestedCause(throwable.getCause());
-        } else {
+        try {
+            if (throwable.getCause() != null) {
+                return getNestedCause(throwable.getCause());
+            } else {
+                return throwable;
+            }
+        } catch (Throwable ex) {
+            ex.printStackTrace();
             return throwable;
         }
     }

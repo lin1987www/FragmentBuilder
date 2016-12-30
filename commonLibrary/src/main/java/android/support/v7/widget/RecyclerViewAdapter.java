@@ -7,7 +7,6 @@ import android.support.annotation.CallSuper;
 import android.support.annotation.IntDef;
 import android.support.annotation.LayoutRes;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 
 import com.lin1987www.common.R;
+import com.lin1987www.common.Utility;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -573,8 +573,8 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
 
         protected RecyclerViewState(Parcel in) {
             this.viewId = in.readInt();
-            this.savedState = in.readSparseArray(Parcelable.class.getClassLoader());
-            this.layoutManagerSavedState = in.readParcelable(Parcelable.class.getClassLoader());
+            this.savedState = in.readSparseArray(Utility.getClassLoader());
+            this.layoutManagerSavedState = in.readParcelable(Utility.getClassLoader());
             this.viewHolderStateList = in.createTypedArrayList(ViewHolderState.CREATOR);
         }
 
@@ -645,7 +645,7 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
         protected ViewHolderState(Parcel in) {
             this.adapterPosition = in.readInt();
             this.viewId = in.readInt();
-            this.savedState = in.readSparseArray(getClass().getClassLoader());
+            this.savedState = in.readSparseArray(Utility.getClassLoader());
         }
 
         public static final Creator<ViewHolderState> CREATOR = new Creator<ViewHolderState>() {

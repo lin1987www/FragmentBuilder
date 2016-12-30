@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
  * Created by lin on 2014/9/11.
  */
 public class Utility {
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = BuildConfig.DEBUG;
 
     private final static SimpleDateFormat mDateFormat;
 
@@ -93,5 +93,10 @@ public class Utility {
         htmlBuffer.insert(headIndex + headTag.length(), style);
         String result = htmlBuffer.toString();
         return result;
+    }
+
+    public static ClassLoader getClassLoader() {
+        // 解決 BadParcelableException 問題
+        return BuildConfig.class.getClassLoader();
     }
 }

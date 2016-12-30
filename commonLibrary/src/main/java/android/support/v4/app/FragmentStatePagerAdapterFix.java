@@ -7,6 +7,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.lin1987www.common.Utility;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
@@ -31,6 +33,11 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
     @Override
     public int getCount() {
         return mFragmentClassNames.size();
+    }
+
+    public <F extends Fragment> F getFragment(int index) {
+        F fragment = (F) mFragments.get(index);
+        return fragment;
     }
 
     public FragmentActivity getFragmentActivity() {
@@ -132,7 +139,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
                 // Fix bug
                 // http://stackoverflow.com/questions/11381470/classnotfoundexception-when-unmarshalling-android-support-v4-view-viewpagersav
                 if (fragment.mSavedFragmentState != null) {
-                    fragment.mSavedFragmentState.setClassLoader(fragment.getClass().getClassLoader());
+                    fragment.mSavedFragmentState.setClassLoader(Utility.getClassLoader());
                 }
             } else {
                 Log.e(TAG,
