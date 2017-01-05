@@ -70,6 +70,10 @@ public class PageArrayList<T extends Parcelable> implements Parcelable {
         return this;
     }
 
+    public boolean hasPrevPage() {
+        return mStartPage > mFloorPage;
+    }
+
     public int getPrevPage() {
         mLastRecordPage = getPrevPageNonRecord();
         return mLastRecordPage;
@@ -85,6 +89,10 @@ public class PageArrayList<T extends Parcelable> implements Parcelable {
             page = mStartPage - 1;
         }
         return page;
+    }
+
+    public boolean hasNextPage() {
+        return mEndPage < mCeilingPage;
     }
 
     public int getNextPage() {
@@ -190,6 +198,7 @@ public class PageArrayList<T extends Parcelable> implements Parcelable {
             if (isRefreshPage) {
                 // Refresh Page
                 refreshPageData(page, pageData);
+                selection = 0;
             } else {
                 // 第一次載入資料
                 mList.addAll(pageData);

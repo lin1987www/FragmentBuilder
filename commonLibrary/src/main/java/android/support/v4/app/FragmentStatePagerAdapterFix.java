@@ -2,6 +2,7 @@ package android.support.v4.app;
 
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.annotation.CallSuper;
 import android.support.v4.view.PagerAdapter;
 import android.util.Log;
 import android.view.View;
@@ -38,6 +39,11 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
     public <F extends Fragment> F getFragment(int index) {
         F fragment = (F) mFragments.get(index);
         return fragment;
+    }
+
+    public <B extends Bundle> B getFragmentArgs(int index) {
+        B bundle = (B) mFragmentArgs.get(index);
+        return bundle;
     }
 
     public FragmentActivity getFragmentActivity() {
@@ -236,6 +242,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
         return ((Fragment) object).getView() == view;
     }
 
+    @CallSuper
     @Override
     public Parcelable saveState() {
         Bundle state = null;
@@ -274,6 +281,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
         return state;
     }
 
+    @CallSuper
     @Override
     public void restoreState(Parcelable state, ClassLoader loader) {
         if (state != null) {

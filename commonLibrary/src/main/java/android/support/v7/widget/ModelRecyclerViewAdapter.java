@@ -71,7 +71,7 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
         //if ((getItemCount() - visibleItemCount) <= (firstVisibleItem + visibleThreshold))
         int remain = (getItemCount() - firstVisibleItem - 1) - visibleItemCount - visibleThreshold;
         if (!isLoading()) {
-            if (remain <= 0) {
+            if (remain <= 0 && getPageArrayList().hasNextPage()) {
                 setLoading(true);
                 mLoadingPage = getPageArrayList().getNextPage();
                 isOnLoadPageDuringScrollCallback = true;

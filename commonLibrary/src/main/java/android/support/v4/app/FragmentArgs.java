@@ -2,6 +2,9 @@ package android.support.v4.app;
 
 import android.os.Bundle;
 
+import com.lin1987www.common.BuildConfig;
+import com.lin1987www.common.Utility;
+
 /**
  * Created by Administrator on 2015/7/8.
  */
@@ -25,6 +28,7 @@ public class FragmentArgs {
 
     public FragmentArgs(Bundle bundle) {
         this.bundle = bundle;
+        bundle.setClassLoader(Utility.getClassLoader());
     }
 
     boolean consumePopOnResume() {

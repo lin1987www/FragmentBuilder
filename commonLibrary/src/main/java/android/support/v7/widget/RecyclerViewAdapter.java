@@ -7,6 +7,7 @@ import android.support.annotation.CallSuper;
 import android.support.annotation.IntDef;
 import android.support.annotation.LayoutRes;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.support.v7.widget.helper.ItemTouchHelperFix;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -187,8 +188,8 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
 
     @Override
     public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
-        super.onDetachedFromRecyclerView(recyclerView);
         recyclerViewHolder.onDetachedFromRecyclerView(recyclerView);
+        super.onDetachedFromRecyclerView(recyclerView);
     }
 
     /*
@@ -375,6 +376,8 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
                 }
                 // save RecyclerView state
                 getRecyclerViewState(recyclerView).save(recyclerView);
+                //
+                recyclerView.setAdapter(null);
             }
             outState.putSparseParcelableArray(KEY_RecyclerViewHolder, mRecyclerViewStateSparseArray);
         }
@@ -415,16 +418,16 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
             recyclerView.addOnItemTouchListener(mRecyclerViewOnItemTouchListener);
             recyclerView.addOnScrollListener(mRecyclerViewOnScrollListener);
             //
-            ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelperCallback(mRecyclerViewAdapter));
+            ItemTouchHelper itemTouchHelper = new ItemTouchHelperFix(new ItemTouchHelperCallback(mRecyclerViewAdapter));
             itemTouchHelper.attachToRecyclerView(recyclerView);
             mRecyclerViewItemTouchHelperWeakHashMap.put(recyclerView, itemTouchHelper);
         }
 
         public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
-            ItemTouchHelper itemTouchHelper = mRecyclerViewItemTouchHelperWeakHashMap.get(recyclerView);
-            itemTouchHelper.attachToRecyclerView(null);
             recyclerView.removeOnScrollListener(mRecyclerViewOnScrollListener);
             recyclerView.removeOnItemTouchListener(mRecyclerViewOnItemTouchListener);
+            ItemTouchHelper itemTouchHelper = mRecyclerViewItemTouchHelperWeakHashMap.get(recyclerView);
+            itemTouchHelper.attachToRecyclerView(null);
             mRecyclerViewItemTouchHelperWeakHashMap.remove(recyclerView);
         }
 

@@ -1,6 +1,7 @@
 package android.support.v7.widget;
 
 import android.content.Context;
+import android.support.v4.view.GestureDetectorCompat;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -10,14 +11,14 @@ import android.view.View;
  */
 
 public class RecyclerViewOnItemTouchListener implements RecyclerView.OnItemTouchListener {
-    private GestureDetector mGestureDetector;
+    private GestureDetectorCompat mGestureDetector;
 
-    public GestureDetector getGestureDetector() {
+    public GestureDetectorCompat getGestureDetector() {
         return mGestureDetector;
     }
 
     public RecyclerViewOnItemTouchListener(Context context) {
-        mGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+        mGestureDetector = new GestureDetectorCompat(context, new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
                 return true;
