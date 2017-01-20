@@ -81,7 +81,7 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
 
     protected RecyclerViewHolder recyclerViewHolder = new RecyclerViewHolder(this);
 
-    public RecyclerView.AdapterDataObserver adapterDataObserver = new RecyclerView.AdapterDataObserver() {
+    protected RecyclerView.AdapterDataObserver adapterDataObserver = new RecyclerView.AdapterDataObserver() {
         @Override
         public void onItemRangeChanged(int positionStart, int itemCount, Object payload) {
             super.onItemRangeChanged(positionStart, itemCount, payload);

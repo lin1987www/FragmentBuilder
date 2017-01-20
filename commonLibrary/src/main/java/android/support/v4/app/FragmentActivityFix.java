@@ -211,7 +211,6 @@ public class FragmentActivityFix extends FragmentActivity {
     @Override
     public void onBackPressed() {
         // 隱藏鍵盤
-
         ContextHelper.hideKeyboard(this);
 
         if (mOnPreBackPressedListenerList.size() > 0) {

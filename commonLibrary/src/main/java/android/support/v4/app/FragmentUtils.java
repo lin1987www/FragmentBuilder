@@ -151,7 +151,10 @@ public class FragmentUtils {
 
     public static boolean isStateLoss(FragmentManager fragmentManager) {
         FragmentManagerImpl fm = (FragmentManagerImpl) fragmentManager;
-        boolean isStateLoss = fm.mStateSaved | (fm.mNoTransactionsBecause != null);
+        boolean isStateLoss = true;
+        if (fm != null) {
+            isStateLoss = fm.mStateSaved | (fm.mNoTransactionsBecause != null);
+        }
         return isStateLoss;
     }
 

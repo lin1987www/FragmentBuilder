@@ -714,6 +714,7 @@ public class FragmentBuilder {
     }
 
     public static boolean hasPopBackStack(final FragmentActivity activity) {
+        ContextHelper.hideKeyboard(activity);
         PopBackStackRecord record = popBackStackRecord(activity);
         if (record != null) {
             record.popBackStack();
