@@ -86,11 +86,16 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
     public abstract void onLoadPage(int page);
 
     public void addPageData(Collection<? extends T> pageData, int page) {
+        setLoading(false);
         if (pageData == null) {
             pageData = new ArrayList<>();
         }
+        if (page == 1) {
+            clear();
+        } else if (getPageArrayList().getPageSize() == 0 && page == 2) {
+            getPageArrayList().setPageSize(getPageArrayList().getList().size());
+        }
         int selection = getPageArrayList().setDataAndGetCurrentIndex(pageData, page);
-        setLoading(false);
         if (isOnLoadPageDuringScrollCallback) {
             // Skip notify to fix: Cannot call this method in a scroll callback. Scroll callbacks might be run during a measure & layout pass where you cannot change the RecyclerView data. Any method call that might change the structure of the RecyclerView or the adapter contents should be postponed to the next frame.
         } else if (page == mLoadingPage) {
