@@ -8,8 +8,6 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
-import fix.java.util.concurrent.Duty;
-
 /**
  * Provider
  */
@@ -333,13 +331,16 @@ public class FragContent {
         return mParentFragContentPath;
     }
 
-    public void post(Duty duty) {
+    public void post(Runnable task) {
         Fragment fragment = getSrcFragment();
-        if (fragment != null && fragment instanceof FragmentFix) {
-            FragmentFix fragmentFix = (FragmentFix) fragment;
-            fragmentFix.duty(duty);
+        FragmentManagerImpl fm = null;
+        if (fragment != null) {
+            fm = (FragmentManagerImpl) fragment.getChildFragmentManager();
         } else if (getFragmentActivity() != null) {
-            getDecorView().post(duty);
+            fm = (FragmentManagerImpl) getFragmentActivity().getSupportFragmentManager();
+        }
+        if (fm != null) {
+            fm.enqueueAction(task, false);
         }
     }
 

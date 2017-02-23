@@ -1,5 +1,7 @@
 package com.lin1987www.jackson;
 
+import android.util.Log;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -11,6 +13,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import java.io.IOException;
+
+import fix.java.util.concurrent.ExceptionHelper;
 
 public class JacksonHelper {
     private static JsonFactory mJsonFactory = null;
@@ -35,8 +39,7 @@ public class JacksonHelper {
         return mObjectMapper;
     }
 
-    protected final static TypeFactory mTypeFactory = getObjectMapper()
-            .getTypeFactory();
+    protected final static TypeFactory mTypeFactory = getObjectMapper().getTypeFactory();
 
     /**
      * JacksonHelper.<String> Parse("123456") => "123456"
@@ -47,10 +50,11 @@ public class JacksonHelper {
      * @throws JsonParseException
      * @throws IOException
      */
-    public static <T> T Parse(String text) throws JsonParseException,
-            IOException {
-        return JacksonHelper.<T>Parse(text, new TypeReference<T>() {
-        });
+    public static <T> T Parse(String text) throws IOException {
+        return JacksonHelper.<T>Parse(
+                text,
+                new TypeReference<T>() {
+                });
     }
 
     /**
@@ -65,8 +69,7 @@ public class JacksonHelper {
      * @throws JsonParseException
      * @throws IOException
      */
-    public static <T> T Parse(String text, TypeReference<?> typeReference)
-            throws JsonParseException, IOException {
+    public static <T> T Parse(String text, TypeReference<?> typeReference) throws IOException {
         T result;
         JsonParser jsonParser = getJsonFactory().createParser(text);
         result = getObjectMapper().readValue(jsonParser, typeReference);
@@ -85,11 +88,14 @@ public class JacksonHelper {
      * @throws JsonParseException
      * @throws IOException
      */
-    public static <T> T Parse(String text, JavaType pJavaType)
-            throws JsonParseException, IOException {
-        T result;
-        JsonParser jsonParser = getJsonFactory().createParser(text);
-        result = getObjectMapper().readValue(jsonParser, pJavaType);
+    public static <T> T Parse(String text, JavaType pJavaType) {
+        T result = null;
+        try {
+            JsonParser jsonParser = getJsonFactory().createParser(text);
+            result = getObjectMapper().readValue(jsonParser, pJavaType);
+        } catch (Throwable throwable) {
+            Log.e(pJavaType.toString(), ExceptionHelper.getPrintStackTraceString(throwable));
+        }
         return result;
     }
 
@@ -121,10 +127,8 @@ public class JacksonHelper {
      * @param contentClass
      * @return
      */
-    public static JavaType GenericType(Class<?> containerClass,
-                                       JavaType... contentClass) {
-        return mTypeFactory.constructParametricType(containerClass,
-                contentClass);
+    public static JavaType GenericType(Class<?> containerClass, JavaType... contentClass) {
+        return mTypeFactory.constructParametricType(containerClass, contentClass);
     }
 
     /**
@@ -151,10 +155,8 @@ public class JacksonHelper {
      * @param contentClass
      * @return
      */
-    public static JavaType GenericType(Class<?> containerClass,
-                                       Class<?>... contentClass) {
-        return mTypeFactory.constructParametricType(containerClass,
-                contentClass);
+    public static JavaType GenericType(Class<?> containerClass, Class<?>... contentClass) {
+        return mTypeFactory.constructParametricType(containerClass, contentClass);
     }
 
     public static String toJson(Object pObject) {

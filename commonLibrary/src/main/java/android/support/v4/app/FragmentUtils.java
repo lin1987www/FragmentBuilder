@@ -8,6 +8,8 @@ import com.lin1987www.common.Utility;
 
 import java.lang.reflect.Field;
 
+import fix.java.util.concurrent.ExceptionHelper;
+
 /**
  * Created by Administrator on 2015/7/5.
  * <p/>
@@ -26,7 +28,7 @@ import java.lang.reflect.Field;
 
 public class FragmentUtils {
     private static final String TAG = FragmentUtils.class.getName();
-    private static final Field sChildFragmentManagerField;
+    private static final Field sChildFragmentManagerField = findUnderlying(Fragment.class, "mChildFragmentManager");
 
     static {
         /**
@@ -42,7 +44,46 @@ public class FragmentUtils {
         } catch (NoSuchFieldException e) {
             Log.e(TAG, "Error getting mChildFragmentManager field", e);
         }
-        sChildFragmentManagerField = f;
+        // sChildFragmentManagerField = f;
+    }
+
+    public static Field findUnderlying(Class<?> clazz, String fieldName) {
+        Class<?> current = clazz;
+        do {
+            try {
+                return current.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
+            }
+        } while ((current = current.getSuperclass()) != null);
+        return null;
+    }
+
+    public static void setFieldValue(Object obj, String fieldName, Object value) {
+        Field field = findUnderlying(obj.getClass(), fieldName);
+        setFieldValue(obj, field, value);
+    }
+
+    public static void setFieldValue(Object obj, String fieldName, Object value, Class<?> objClass) {
+        Field field = findUnderlying(objClass, fieldName);
+        setFieldValue(obj, field, value);
+    }
+
+    public static void setFieldValue(Object obj, Field field, Object value) {
+        try {
+            field.setAccessible(true);
+            // NOTE: Normally, a field that is final and static may not be modified.
+            //
+            // Below code is modify field is not final, but didn't work. :(
+            // Android:accessFlags(?),  Java:modifiers(X)
+            /*
+            Field modifiersField = Field.class.getDeclaredField("accessFlags");
+            modifiersField.setAccessible(true);
+            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+            */
+            field.set(obj, value);
+        } catch (Throwable e) {
+            ExceptionHelper.throwRuntimeException(e);
+        }
     }
 
     public static void setChildFragmentManager(Fragment fragment, FragmentManager fragmentManager) {

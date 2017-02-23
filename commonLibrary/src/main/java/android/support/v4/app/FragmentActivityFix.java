@@ -2,6 +2,7 @@ package android.support.v4.app;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.CallSuper;
 import android.text.InputType;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -16,7 +17,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import fix.java.util.concurrent.ExceptionHelper;
-
 
 public class FragmentActivityFix extends FragmentActivity {
     public static boolean DEBUG = true;
@@ -44,6 +44,7 @@ public class FragmentActivityFix extends FragmentActivity {
         puppetActivities.add(puppetActivity);
     }
 
+    @CallSuper
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (DEBUG) {
@@ -54,39 +55,38 @@ public class FragmentActivityFix extends FragmentActivity {
         for (PuppetActivity puppetActivity : puppetActivities) {
             puppetActivity.onCreate(savedInstanceState);
         }
+        BackStackRecordShell.wrap(this, getSupportFragmentManager());
     }
 
+    @CallSuper
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (DEBUG) {
             Log.d(TAG, String.format(FORMAT, "onActivityResult"));
         }
         super.onActivityResult(requestCode, resultCode, data);
+
         for (PuppetActivity puppetActivity : puppetActivities) {
             puppetActivity.onActivityResult(requestCode, resultCode, data);
         }
         if (null != mStartActivityFromFragContentPath) {
-            try {
-                FragContentPath path = JacksonHelper.Parse(mStartActivityFromFragContentPath, JacksonHelper.GenericType(FragContentPath.class));
-                Object object = FragContentPath.findObject(this, path);
-                if (object instanceof Fragment) {
-                    ((Fragment) object).onActivityResult(requestCode, resultCode, data);
-                } else if (object instanceof onActivityResultListener) {
-                    ((onActivityResultListener) object).onActivityResult(requestCode, resultCode, data);
-                } else {
-                    Class<?> targetClass = object.getClass();
-                    try {
-                        Method method = targetClass.getDeclaredMethod("onActivityResult", int.class, int.class, Intent.class);
-                        if (method != null) {
-                            method.invoke(object, requestCode, resultCode, data);
-                            return;
-                        }
-                    } catch (Throwable ex) {
-                        System.err.println(String.format("Miss onActivityResult() on %s throwable:\n%s", object, ExceptionHelper.getPrintStackTraceString(ex)));
+            FragContentPath path = JacksonHelper.Parse(mStartActivityFromFragContentPath, JacksonHelper.GenericType(FragContentPath.class));
+            Object object = FragContentPath.findObject(this, path);
+            if (object instanceof Fragment) {
+                ((Fragment) object).onActivityResult(requestCode, resultCode, data);
+            } else if (object instanceof onActivityResultListener) {
+                ((onActivityResultListener) object).onActivityResult(requestCode, resultCode, data);
+            } else {
+                Class<?> targetClass = object.getClass();
+                try {
+                    Method method = targetClass.getDeclaredMethod("onActivityResult", int.class, int.class, Intent.class);
+                    if (method != null) {
+                        method.invoke(object, requestCode, resultCode, data);
+                        return;
                     }
+                } catch (Throwable ex) {
+                    System.err.println(String.format("Miss onActivityResult() on %s throwable:\n%s", object, ExceptionHelper.getPrintStackTraceString(ex)));
                 }
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
             }
             mStartActivityFromFragContentPath = null;
         }
@@ -226,7 +226,7 @@ public class FragmentActivityFix extends FragmentActivity {
             }
         }
         //
-        FragmentBuilder.PopBackStackRecord record = FragmentBuilder.popBackStackRecord(this);
+        FragmentBuilder.FragmentCarriers record = FragmentBuilder.popBackStackRecord(this);
         if (record != null) {
             record.popBackStack();
             return;
@@ -275,5 +275,4 @@ public class FragmentActivityFix extends FragmentActivity {
         }
         return result;
     }
-
 }

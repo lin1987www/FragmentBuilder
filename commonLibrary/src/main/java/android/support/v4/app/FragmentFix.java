@@ -19,11 +19,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import fix.java.util.concurrent.Duty;
 import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observables.ConnectableObservable;
 import io.reactivex.observers.DisposableObserver;
-import io.reactivex.schedulers.Schedulers;
 
 
 /**
@@ -151,6 +149,7 @@ public class FragmentFix extends Fragment {
             instantiateChildFragmentManager();
         }
         super.onCreate(savedInstanceState);
+        BackStackRecordShell.wrap(this, getChildFragmentManager());
     }
 
     @Override

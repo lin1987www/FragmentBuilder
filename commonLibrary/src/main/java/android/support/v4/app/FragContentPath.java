@@ -39,24 +39,29 @@ public class FragContentPath {
         return obj;
     }
 
-    private static Fragment findFragment(FragmentActivity activity, List<Integer> fragmentPath) {
+    static Fragment findFragment(FragmentActivity activity, List<Integer> fragmentPath) {
         Fragment fragment = null;
         if (fragmentPath == null || fragmentPath.size() == 0) {
             fragment = null;
         } else {
             FragmentManager fm = activity.getSupportFragmentManager();
-            for (Integer index : fragmentPath) {
-                fragment = fm.getFragments().get(index);
-                if (fragment == null) {
-                    break;
+            if (fm != null) {
+                for (Integer index : fragmentPath) {
+                    List<Fragment> fragments = fm.getFragments();
+                    if (fragments != null && index < fragments.size()) {
+                        fragment = fm.getFragments().get(index);
+                    }
+                    if (fragment == null) {
+                        break;
+                    }
+                    fm = fragment.getChildFragmentManager();
                 }
-                fm = fragment.getChildFragmentManager();
             }
         }
         return fragment;
     }
 
-    private static View findViewByPath(View parent, ArrayList<Integer> viewPath, int index) {
+    static View findViewByPath(View parent, ArrayList<Integer> viewPath, int index) {
         if (parent == null) {
             return null;
         }

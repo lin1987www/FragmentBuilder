@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.lin1987www.common"
     android:versionCode="6"
-    android:versionName="25.0.2.4">
+    android:versionName="25.0.2.6">
     <uses-sdk android:minSdkVersion="10" />
 </manifest>
