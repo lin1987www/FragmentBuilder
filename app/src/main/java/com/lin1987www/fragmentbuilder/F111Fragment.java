@@ -14,6 +14,7 @@ import com.lin1987www.fragmentbuilder.widget.ShowEnterTextView;
  */
 public class F111Fragment extends FragmentFix {
     private final static String TAG = F111Fragment.class.getSimpleName();
+
     public String result;
 
     TextView mTextView;
