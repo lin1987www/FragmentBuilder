@@ -35,25 +35,23 @@ public class WizardStepsTextView extends TextView implements View.OnClickListene
 
     @Override
     public void onClick(View view) {
-        isFinish = false;
-        result = null;
-        FragmentBuilder
-                .create(this)
-                .backContainer()
-                .replace()
-                .setFragment(F11Fragment.class, F11Fragment.class.getSimpleName())
-                .addToBackStack(F11Fragment.BACK_STACK_NAME)
-                .build();
+        if (this == view) {
+            isFinish = false;
+            result = null;
+            FragmentBuilder
+                    .create(this)
+                    .backContainer()
+                    .replace()
+                    .setFragment(F11Fragment.class, F11Fragment.class.getSimpleName())
+                    .addToBackStack(F11Fragment.BACK_STACK_NAME)
+                    .build();
+        }
     }
 
     @Override
     public boolean onLongClick(View view) {
         Intent intent = new Intent(getContext(), com.lin1987www.fragmentbuilder.AskQuestionActivity.class);
         ((FragmentActivityFix) getContext()).startActivityForResult(this, intent, request_code_ask_question);
-        /*
-        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        ((FragmentActivityFix) getContext()).startActivityForResult(this, cameraIntent, request_code_ask_question);
-        */
         return true;
     }
 
@@ -121,6 +119,5 @@ public class WizardStepsTextView extends TextView implements View.OnClickListene
     @Override
     public void run() {
         isPostRun = false;
-        Toast.makeText(getContext(), "WizardStepsTextView run()", Toast.LENGTH_SHORT).show();
     }
 }

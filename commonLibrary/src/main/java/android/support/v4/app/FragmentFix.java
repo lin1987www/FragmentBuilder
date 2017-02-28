@@ -145,9 +145,8 @@ public class FragmentFix extends Fragment {
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
-        if (FragmentUtils.getFragmentHostCallback(getChildFragmentManager()) == null) {
-            instantiateChildFragmentManager();
-        }
+        // 不要因為mHost = null 而使用instantiateChildFragmentManager()
+        // 會導致Activity Restore 的時候發生錯誤
         super.onCreate(savedInstanceState);
         BackStackRecordShell.wrap(this, getChildFragmentManager());
     }
@@ -221,6 +220,7 @@ public class FragmentFix extends Fragment {
 
     @Override
     void performResume() {
+        super.performResume();
         FragmentUtils.log(this, "performResume before");
         if (mChildFragmentManager != null) {
             mChildFragmentManager.noteStateNotSaved();

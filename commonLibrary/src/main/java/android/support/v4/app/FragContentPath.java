@@ -39,7 +39,7 @@ public class FragContentPath {
         return obj;
     }
 
-    static Fragment findFragment(FragmentActivity activity, List<Integer> fragmentPath) {
+    private static Fragment findFragment(FragmentActivity activity, List<Integer> fragmentPath) {
         Fragment fragment = null;
         if (fragmentPath == null || fragmentPath.size() == 0) {
             fragment = null;
@@ -61,7 +61,7 @@ public class FragContentPath {
         return fragment;
     }
 
-    static View findViewByPath(View parent, ArrayList<Integer> viewPath, int index) {
+    private static View findViewByPath(View parent, ArrayList<Integer> viewPath, int index) {
         if (parent == null) {
             return null;
         }

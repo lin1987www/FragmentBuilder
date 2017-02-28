@@ -353,7 +353,9 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
         }
 
         public void saveState(Bundle outState) {
-            for (RecyclerView recyclerView : mRecyclerViewItemTouchHelperWeakHashMap.keySet()) {
+            RecyclerView array[] = new RecyclerView[mRecyclerViewItemTouchHelperWeakHashMap.keySet().size()];
+            mRecyclerViewItemTouchHelperWeakHashMap.keySet().toArray(array);
+            for (RecyclerView recyclerView : array) {
                 if (recyclerView == null) {
                     continue;
                 }
