@@ -147,6 +147,56 @@ public class FragmentFix extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         // 不要因為mHost = null 而使用instantiateChildFragmentManager()
         // 會導致Activity Restore 的時候發生錯誤
+        /*  根據是否要回復 再做決定
+        if (FragmentUtils.getFragmentHostCallback(getChildFragmentManager()) == null) {
+            instantiateChildFragmentManager();
+        }
+        */
+        if (savedInstanceState == null) {
+            if (mChildFragmentManager != null && mChildFragmentManager.mHost == null) {
+                mChildFragmentManager.mHost = mHost;
+            }
+        } else {
+            FragmentManagerState fms = savedInstanceState.getParcelable(FragmentActivity.FRAGMENTS_TAG);
+            if (fms != null) {
+                if (mChildFragmentManager != null) {
+                    if (mChildFragmentManager.mHost == null ||
+                            (mChildFragmentManager.mHost != null && mChildFragmentManager.mHost.getContext() == null)) {
+                        mChildFragmentManager.mHost = mHost;
+                    }
+                    if (mChildFragmentManager.mActive != null && mChildFragmentManager.mActive.size() > 0) {
+                        ArrayList<Integer> didNotAdded = new ArrayList<>();
+                        for (int i = 0; i < fms.mAdded.length; i++) {
+                            Fragment f = mChildFragmentManager.mActive.get(fms.mAdded[i]);
+                            if (mChildFragmentManager.mAdded.contains(f)) {
+                                Log.d(TAG, String.format("%s Already added!", f));
+                            } else {
+                                didNotAdded.contains(i);
+                            }
+                        }
+                        if (didNotAdded.size() != fms.mAdded.length) {
+                            int didNotAddedArray[] = new int[didNotAdded.size()];
+                            for (int i = 0; i < didNotAddedArray.length; i++) {
+                                didNotAddedArray[i] = didNotAdded.get(i);
+                            }
+                        }
+                    }
+                }
+            } else {
+                if (mChildFragmentManager != null && mChildFragmentManager.mHost == null) {
+                    mChildFragmentManager.mHost = mHost;
+                }
+            }
+        }
+        if (mChildFragmentManager != null) {
+            if (mChildFragmentManager.mHost == null) {
+                Log.e(TAG, "mChildFragmentManager.mHost = null");
+            } else {
+                if (mChildFragmentManager.mHost.getContext() == null) {
+                    Log.e(TAG, "mChildFragmentManager.mHost.getContext() = null");
+                }
+            }
+        }
         super.onCreate(savedInstanceState);
         BackStackRecordShell.wrap(this, getChildFragmentManager());
     }
@@ -185,9 +235,6 @@ public class FragmentFix extends Fragment {
 
     @Override
     void performActivityCreated(Bundle savedInstanceState) {
-        if (FragmentUtils.getFragmentManagerActivity(mChildFragmentManager) == null) {
-            FragmentUtils.setChildFragmentManager(this, null);
-        }
         FragmentUtils.log(this, "performActivityCreated before");
         super.performActivityCreated(savedInstanceState);
         FragmentUtils.log(this, "performActivityCreated after");
@@ -460,7 +507,7 @@ public class FragmentFix extends Fragment {
     public <T> ConnectableObservable<T> wrap(Observable<T> observable) {
         ConnectableObservable<T> connectableObservable;
         if (observable instanceof ConnectableObservable) {
-            connectableObservable = (ConnectableObservable) observable;
+            connectableObservable = (ConnectableObservable<T>) observable;
         } else {
             connectableObservable = observable.publish();
         }

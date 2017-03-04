@@ -10,6 +10,7 @@ import android.view.View;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lin1987www.common.Utility;
 import com.lin1987www.jackson.JacksonHelper;
 
 import java.lang.annotation.Retention;
@@ -58,68 +59,6 @@ public class FragmentBuilder {
         }
     };
 
-    public static class Executor implements Runnable {
-        @JsonIgnore
-        public final LinkedList<FragmentBuilder> fragmentBuilderQueue = new LinkedList<>();
-
-        public FragmentBuilder getAvailableFragmentBuilder() {
-            // 如果有無效的 FragmentBuilder 的話，就會出現 isPending 的 指令沒有被執行到，所以要重新加入 pending
-            FragmentBuilder fragmentBuilder = fragmentBuilderQueue.peek();
-            for (; fragmentBuilderQueue.size() > 0 && ((fragmentBuilder == null) || (fragmentBuilder != null && !fragmentBuilder.isAvailable())); fragmentBuilder = fragmentBuilderQueue.peek()) {
-                fragmentBuilderQueue.poll();
-                isPending.set(false);
-                Log.e(TAG, String.format("FragmentBuilder.Executor.getAvailableFragmentBuilder isStateLoss [%s] %s", fragmentBuilder.fragmentClass, fragmentBuilder.getFragmentTag()));
-            }
-            return fragmentBuilder;
-        }
-
-        @Override
-        public void run() {
-            synchronized (Executor.class) {
-                FragmentBuilder builder = getAvailableFragmentBuilder();
-                if (builder != null) {
-                    fragmentBuilderQueue.poll();
-                    try {
-                        builder.buildImmediate();
-                    } catch (FragContent.NonMatchException ex) {
-                        run();
-                    }
-                    if (fragmentBuilderQueue.size() == 0) {
-                        isPending.set(false);
-                    } else {
-                        if (FragmentUtils.isStateLoss(builder.getFragmentManager())) {
-                            Log.e(TAG, String.format("FragmentBuilder.Executor.run isStateLoss [%s] %s", builder.fragmentClass, builder.getFragmentTag()));
-                            run();
-                        } else {
-                            ((FragmentManagerImpl) builder.getFragmentManager()).enqueueAction(this, false);
-                        }
-                    }
-                }
-                Log.d(TAG, String.format("FragmentBuilder.Executor.run size %s", fragmentBuilderQueue.size()));
-            }
-        }
-
-        @JsonIgnore
-        private final AtomicBoolean isPending = new AtomicBoolean(false);
-
-        public void queue(FragmentBuilder queueBuilder) {
-            synchronized (Executor.class) {
-                fragmentBuilderQueue.offer(queueBuilder);
-                FragmentBuilder fragmentBuilder = getAvailableFragmentBuilder();
-                if (fragmentBuilder != null) {
-                    if (!isPending.getAndSet(true)) {
-                        if (fragmentBuilder.content.isResumed()) {
-                            run();
-                        } else {
-                            fragmentBuilder.content.getDecorView().post(this);
-                        }
-                    }
-                }
-                Log.d(TAG, String.format("FragmentBuilder.Executor.queue size %s", fragmentBuilderQueue.size()));
-            }
-        }
-    }
-
     // Temp Object
     @JsonIgnore
     private final static Executor fragmentBuilderExecutor = new Executor();
@@ -127,6 +66,8 @@ public class FragmentBuilder {
     private FragContent content;
     @JsonIgnore
     private Fragment fragment;
+    @JsonIgnore
+    private Fragment fragmentAlreadyExist;
     @JsonIgnore
     private Class<? extends Fragment> fragmentClass;
     @JsonIgnore
@@ -216,8 +157,8 @@ public class FragmentBuilder {
         return this;
     }
 
-    private FragmentManager getFragmentManager() {
-        return content.getContainerFragmentManager(containerViewId);
+    private FragmentManagerImpl getFragmentManager() {
+        return (FragmentManagerImpl) content.getContainerFragmentManager(containerViewId);
     }
 
     @JsonCreator
@@ -553,12 +494,12 @@ public class FragmentBuilder {
                 containerViewId = defaultContainerViewId;
             }
         }
-        FragmentManagerImpl fragmentManager = (FragmentManagerImpl) getFragmentManager();
+        FragmentManagerImpl fragmentManager = getFragmentManager();
         if (FragmentUtils.isStateLoss(fragmentManager)) {
             return;
         }
         // Check fragment already exist
-        final Fragment fragmentAlreadyExist = fragmentManager.findFragmentByTag(fragmentTag);
+        fragmentAlreadyExist = fragmentManager.findFragmentByTag(fragmentTag);
         if (FragmentUtils.isFragmentExist(fragmentAlreadyExist)) {
             // If isRemoving() is true, the fragment maybe be popped out during animation.
             Log.e(TAG, String.format("Fragment is exist in fragmentManager. tag: %s %s", fragmentTag, fragmentAlreadyExist.isRemoving()));
@@ -638,12 +579,74 @@ public class FragmentBuilder {
         ft.commit();
     }
 
-
     public void build() {
         if (content == null) {
             throw new RuntimeException("Forbid build!");
         }
         fragmentBuilderExecutor.queue(this);
+    }
+
+    public static class Executor implements Runnable {
+        @JsonIgnore
+        public final LinkedList<FragmentBuilder> fragmentBuilderQueue = new LinkedList<>();
+
+        @JsonIgnore
+        private final AtomicBoolean mExecutingActions = new AtomicBoolean(false);
+
+        public FragmentBuilder getAvailableFragmentBuilder() {
+            FragmentBuilder fragmentBuilder;
+            synchronized (Executor.class) {
+                fragmentBuilder = fragmentBuilderQueue.peek();
+                for (; fragmentBuilderQueue.size() > 0 && ((fragmentBuilder == null) || (fragmentBuilder != null && !fragmentBuilder.isAvailable())); fragmentBuilder = fragmentBuilderQueue.peek()) {
+                    fragmentBuilderQueue.poll();
+                    Log.e(TAG, String.format("FragmentBuilder.Executor.getAvailableFragmentBuilder isStateLoss [%s] %s", fragmentBuilder.fragmentClass, fragmentBuilder.getFragmentTag()));
+                }
+            }
+            return fragmentBuilder;
+        }
+
+        public void queue(FragmentBuilder queueBuilder) {
+            synchronized (Executor.class) {
+                fragmentBuilderQueue.offer(queueBuilder);
+                FragmentBuilder fragmentBuilder = getAvailableFragmentBuilder();
+                if (fragmentBuilder != null) {
+                    if (!mExecutingActions.getAndSet(true)) {
+                        execute(fragmentBuilder.content);
+                    }
+                }
+                if (Utility.DEBUG) {
+                    Log.d(TAG, String.format("FragmentBuilder.Executor.queue size %s", fragmentBuilderQueue.size()));
+                }
+            }
+        }
+
+        private void execute(FragContent content) {
+            if (content.isResumed()) {
+                run();
+            } else {
+                content.getDecorView().post(this);
+            }
+        }
+
+        @Override
+        public void run() {
+            synchronized (Executor.class) {
+                FragmentBuilder currentBuilder = getAvailableFragmentBuilder();
+                if (currentBuilder != null) {
+                    fragmentBuilderQueue.poll();
+                    currentBuilder.buildImmediate();
+                    currentBuilder.getFragmentManager().enqueueAction(this, false);
+                } else {
+                    if (fragmentBuilderQueue.size() == 0) {
+                        mExecutingActions.set(false);
+                    } else {
+                        String msg = String.format("fragmentBuilderQueue.size() %s, but currentBuilder==null", fragmentBuilderQueue.size());
+                        throw new RuntimeException(msg);
+                    }
+                }
+                Log.d(TAG, String.format("FragmentBuilder.Executor.run size %s", fragmentBuilderQueue.size()));
+            }
+        }
     }
 
     //  0b000 none

@@ -5,9 +5,6 @@ import android.os.Bundle;
 public class DialogFragmentFix extends DialogFragment {
     @Override
     void performActivityCreated(Bundle savedInstanceState) {
-        if (FragmentUtils.getFragmentManagerActivity(mChildFragmentManager) == null) {
-            FragmentUtils.setChildFragmentManager(this, null);
-        }
         super.performActivityCreated(savedInstanceState);
     }
 

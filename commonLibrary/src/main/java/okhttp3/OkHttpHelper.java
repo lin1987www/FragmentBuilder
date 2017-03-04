@@ -19,7 +19,7 @@ public class OkHttpHelper {
                     mOkHttpClientBuilder.cookieJar(CookieKeeper.getInstance().cookieJar);
                     if (Utility.DEBUG) {
                         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-                        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+                        logging.setLevel(HttpLoggingInterceptor.Level.BASIC);
                         mOkHttpClientBuilder.addInterceptor(logging);
                     }
                 }

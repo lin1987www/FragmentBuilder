@@ -1,15 +1,23 @@
 package android.support.v4.app;
 
+import android.util.Log;
+
+import com.lin1987www.common.Utility;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.WeakHashMap;
+
+import fix.java.util.concurrent.ExceptionHelper;
 
 /**
  * Created by Administrator on 2017/2/22.
  */
 
 public class BackStackRecordShell implements Runnable {
+    public static final String TAG = BackStackRecordShell.class.getSimpleName();
+
     public BackStackRecord backStackRecord;
 
     public BackStackRecordShell(Runnable runnable) {
@@ -20,7 +28,14 @@ public class BackStackRecordShell implements Runnable {
     public void run() {
         // before Enter
         // 可以用於執行前檢查
-        backStackRecord.run();
+        try {
+            backStackRecord.run();
+        } catch (Throwable e) {
+            if (Utility.DEBUG) {
+                Log.e(TAG, ExceptionHelper.getPrintStackTraceString(e));
+                throw e;
+            }
+        }
         // after Enter
         // 通知執行完畢  大概也只能用於 print 狀態
     }

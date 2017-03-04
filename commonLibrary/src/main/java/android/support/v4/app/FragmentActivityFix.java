@@ -1,20 +1,30 @@
 package android.support.v4.app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.support.annotation.CallSuper;
 import android.text.InputType;
+import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.lin1987www.common.Utility;
 import com.lin1987www.jackson.JacksonHelper;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import fix.java.util.concurrent.ExceptionHelper;
 
@@ -22,6 +32,7 @@ public class FragmentActivityFix extends FragmentActivity {
     public static boolean DEBUG = true;
     public final static String TAG = FragmentActivityFix.class.getSimpleName();
     public final static String key_startActivityFragContentPath = "key_startActivityFragContentPath";
+    protected final static String KEY_savedInstanceState = "key_savedInstanceState";
     protected final String FORMAT = String.format("%s %s", toString(), "%s");
 
     public boolean enableDoubleBackPressed = true;
@@ -47,6 +58,15 @@ public class FragmentActivityFix extends FragmentActivity {
     @CallSuper
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Bundle bundle = restoreFromPreferences();
+        if (savedInstanceState == null) {
+            savedInstanceState = bundle;
+        } else {
+            savedInstanceState.setClassLoader(Utility.getClassLoader());
+            if (bundle != null) {
+                savedInstanceState.putAll(bundle);
+            }
+        }
         if (DEBUG) {
             Log.d(TAG, String.format(FORMAT, "onCreate"));
         }
@@ -163,6 +183,8 @@ public class FragmentActivityFix extends FragmentActivity {
         if (null != key_startActivityFragContentPath) {
             outState.putString(key_startActivityFragContentPath, mStartActivityFromFragContentPath);
         }
+        saveToPreferences(outState);
+        outState.clear();
     }
 
     @Override
@@ -274,5 +296,69 @@ public class FragmentActivityFix extends FragmentActivity {
             }
         }
         return result;
+    }
+
+    private void saveToPreferences(Bundle in) {
+        Parcel parcel = Parcel.obtain();
+        String serialized = serializeBundle(in);
+        if (serialized != null) {
+            SharedPreferences settings = getSharedPreferences(KEY_savedInstanceState, MODE_PRIVATE);
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putString(KEY_savedInstanceState, serialized);
+            editor.commit();
+        }
+    }
+
+    private Bundle restoreFromPreferences() {
+        Bundle bundle = null;
+        SharedPreferences settings = getSharedPreferences(KEY_savedInstanceState, MODE_PRIVATE);
+        String serialized = settings.getString(KEY_savedInstanceState, null);
+        if (serialized != null) {
+            bundle = deserializeBundle(serialized);
+        }
+        return bundle;
+    }
+
+    public static String serializeBundle(final Bundle bundle) {
+        String base64 = null;
+        final Parcel parcel = Parcel.obtain();
+        try {
+            parcel.writeBundle(bundle);
+            final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            final GZIPOutputStream zos = new GZIPOutputStream(new BufferedOutputStream(bos));
+            zos.write(parcel.marshall());
+            zos.close();
+            base64 = Base64.encodeToString(bos.toByteArray(), 0);
+        } catch (IOException e) {
+            e.printStackTrace();
+            base64 = null;
+        } finally {
+            parcel.recycle();
+        }
+        return base64;
+    }
+
+    public static Bundle deserializeBundle(final String base64) {
+        Bundle bundle = null;
+        final Parcel parcel = Parcel.obtain();
+        try {
+            final ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+            final byte[] buffer = new byte[1024];
+            final GZIPInputStream zis = new GZIPInputStream(new ByteArrayInputStream(Base64.decode(base64, 0)));
+            int len = 0;
+            while ((len = zis.read(buffer)) != -1) {
+                byteBuffer.write(buffer, 0, len);
+            }
+            zis.close();
+            parcel.unmarshall(byteBuffer.toByteArray(), 0, byteBuffer.size());
+            parcel.setDataPosition(0);
+            bundle = parcel.readBundle(Utility.getClassLoader());
+        } catch (IOException e) {
+            e.printStackTrace();
+            bundle = null;
+        } finally {
+            parcel.recycle();
+        }
+        return bundle;
     }
 }

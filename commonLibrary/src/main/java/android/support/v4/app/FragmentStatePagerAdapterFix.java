@@ -15,11 +15,11 @@ import java.util.ArrayList;
 
 public class FragmentStatePagerAdapterFix extends PagerAdapter {
     private static final String TAG = FragmentStatePagerAdapterFix.class.getSimpleName();
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = Utility.DEBUG;
 
     private WeakReference<FragmentActivity> wrFragmentActivity;
     private WeakReference<Fragment> wrParentFragment;
-    private final FragmentManager mFragmentManager;
+    private final FragmentManagerImpl mFragmentManager;
     private FragmentTransaction mCurTransaction = null;
 
     protected ArrayList<Fragment> mFragments = new ArrayList<>();
@@ -55,13 +55,13 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
     }
 
     public FragmentStatePagerAdapterFix(FragmentActivity activity) {
-        mFragmentManager = activity.getSupportFragmentManager();
+        mFragmentManager = (FragmentManagerImpl) activity.getSupportFragmentManager();
         wrFragmentActivity = new WeakReference<>(activity);
         wrParentFragment = new WeakReference<>(null);
     }
 
     public FragmentStatePagerAdapterFix(Fragment fragment) {
-        mFragmentManager = fragment.getChildFragmentManager();
+        mFragmentManager = (FragmentManagerImpl) fragment.getChildFragmentManager();
         wrFragmentActivity = new WeakReference<>(fragment.getActivity());
         wrParentFragment = new WeakReference<>(fragment);
     }
@@ -147,6 +147,8 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
                 if (fragment.mSavedFragmentState != null) {
                     fragment.mSavedFragmentState.setClassLoader(Utility.getClassLoader());
                 }
+                // 回復狀態後要清除 取代 .detach(f).attach(f).commit()
+                fragment.initState();
             } else {
                 Log.e(TAG,
                         String.format("Fragment tag isn't equal! Origin: %s %s",
@@ -176,8 +178,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             mCurTransaction = mFragmentManager.beginTransaction();
         }
         if (DEBUG) {
-            Log.v(TAG, "Removing item #" + position + ": f=" + object
-                    + " v=" + ((Fragment) object).getView());
+            Log.v(TAG, "Removing item #" + position + ": f=" + object + " v=" + ((Fragment) object).getView());
         }
         if (position < getCount() && fragment.mIndex >= 0) {
             FragmentState fragmentState = new FragmentState(fragment);
@@ -199,7 +200,6 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
                 mCurrentPrimaryItem.setMenuVisibility(false);
                 mCurrentPrimaryItem.setUserVisibleHint(false);
             }
-            // TODO Fragment mIndex -1 可能會發生還沒準備好的情況
             if (fragment != null) {
                 fragment.setMenuVisibility(true);
                 fragment.setUserVisibleHint(true);
@@ -211,29 +211,31 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
     @Override
     public void finishUpdate(ViewGroup container) {
         if (mCurTransaction != null) {
-            mCurTransaction.commitAllowingStateLoss();
+            mCurTransaction.commit();
             mCurTransaction = null;
             mFragmentManager.executePendingTransactions();
-
+            if (DEBUG) {
+                Log.d(TAG, "finishUpdate");
+            }
+/*
             for (Fragment fragment : mFragments) {
                 if (fragment != null) {
-                    /*
-                    if (fragment.isAdded() && !fragment.isResumed()) {
-                        // Fix sdk 23.0.1 : Fragment isAdded, but didn't resumed.
-                        if (FragmentUtils.isStateLoss(fragment.getFragmentManager())) {
-                            continue;
-                        }
-                        // Test move to fixActiveFragment(mFragmentManager, fragment);
-                        // fragment.getFragmentManager().beginTransaction().detach(fragment).attach(fragment).commit();
-                    }
-                    */
+//                    if (fragment.isAdded() && !fragment.isResumed()) {
+//                        // Fix sdk 23.0.1 : Fragment isAdded, but didn't resumed.
+//                        if (FragmentUtils.isStateLoss(fragment.getFragmentManager())) {
+//                            continue;
+//                        }
+//                        // Test move to fixActiveFragment(mFragmentManager, fragment);
+//                        // fragment.getFragmentManager().beginTransaction().detach(fragment).attach(fragment).commit();
+//                    }
                     if (FragmentUtils.isStateLoss(fragment.getFragmentManager())) {
                         continue;
                     }
                     // Fix sdk 22.0.1 : Fragment is added by transaction. BUT didn't add to FragmentManager's mActive. If you Rotation.
-                    fixActiveFragment(mFragmentManager, fragment);
+                    // fixActiveFragment(mFragmentManager, fragment);
                 }
             }
+*/
         }
     }
 
@@ -245,11 +247,16 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
     @CallSuper
     @Override
     public Parcelable saveState() {
+        if (DEBUG) {
+            Log.v(TAG, "saveState");
+            log();
+        }
+
         Bundle state = null;
         // 目前顯示的 Fragments
         for (int i = 0; i < mFragments.size(); i++) {
             Fragment f = mFragments.get(i);
-            if (f != null && f.isAdded()) {
+            if (f != null && f.isAdded() && f.mIndex > -1) {
                 if (state == null) {
                     state = new Bundle();
                 }
@@ -286,7 +293,8 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
     public void restoreState(Parcelable state, ClassLoader loader) {
         if (state != null) {
             Bundle bundle = (Bundle) state;
-            bundle.setClassLoader(loader);
+            // Don't use default loader
+            bundle.setClassLoader(Utility.getClassLoader());
             ArrayList<FragmentState> fs = bundle.getParcelableArrayList("states_fragment");
             ArrayList<Bundle> args = bundle.getParcelableArrayList("arg_fragment");
             ArrayList<String> tags = bundle.getStringArrayList("tag_fragment");
@@ -336,6 +344,41 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             }
             // If restore will change
             notifyDataSetChanged();
+        }
+    }
+
+    private void fixAddedDidNotActive() {
+        if (mFragmentManager.mAdded != null) {
+            for (int i = 0; i < mFragmentManager.mAdded.size(); i++) {
+                Fragment f = mFragmentManager.mAdded.get(i);
+                if (f != null) {
+                    if (!mFragmentManager.mActive.contains(f)) {
+                        if (f.getUserVisibleHint() && !f.isResumed()) {
+                            if (!FragmentUtils.isStateLoss(f.getFragmentManager())) {
+                                mFragmentManager.beginTransaction().detach(f).attach(f).commit();
+                                Log.e(TAG, String.format("fix didn't show up %s, %s, mIndex:%s, contains:%s", f, i, f.mIndex, mFragmentManager.mActive.contains(f)));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void fixActiveSizeDidNotEnough() {
+        if (mFragmentManager.mAdded != null) {
+            for (int i = 0; i < mFragmentManager.mAdded.size(); i++) {
+                Fragment f = mFragmentManager.mAdded.get(i);
+                if (f != null) {
+                    int fi = f.mIndex;
+                    if (fi >= mFragmentManager.mActive.size()) {
+                        Log.e(TAG, String.format("fix mActive didn't enough %s %s", f, fi));
+                        while (fi >= mFragmentManager.mActive.size()) {
+                            mFragmentManager.mActive.add(null);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -401,5 +444,34 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             result = PagerAdapter.POSITION_NONE;
         }
         return result;
+    }
+
+    private void log() {
+        Log.d(TAG, "mFragments START");
+        for (int i = 0; i < mFragments.size(); i++) {
+            Fragment f = mFragments.get(i);
+            if (f != null) {
+                Log.d(TAG, String.format("%s, %s, mIndex:%s", f, i, f.mIndex));
+            }
+        }
+        Log.d(TAG, "mFragmentManager.mAdded");
+        if (mFragmentManager.mAdded != null) {
+            for (int i = 0; i < mFragmentManager.mAdded.size(); i++) {
+                Fragment f = mFragmentManager.mAdded.get(i);
+                if (f != null) {
+                    Log.d(TAG, String.format("%s, %s, mIndex:%s, contains:%s", f, i, f.mIndex, mFragmentManager.mAdded.contains(f)));
+                }
+            }
+        }
+        Log.d(TAG, "mFragmentManager.mActive");
+        if (mFragmentManager.mActive != null) {
+            for (int i = 0; i < mFragmentManager.mActive.size(); i++) {
+                Fragment f = mFragmentManager.mActive.get(i);
+                if (f != null) {
+                    Log.d(TAG, String.format("%s, %s, mIndex:%s, contains:%s", f, i, f.mIndex, mFragmentManager.mActive.contains(f)));
+                }
+            }
+        }
+        Log.d(TAG, "mFragments END");
     }
 }
