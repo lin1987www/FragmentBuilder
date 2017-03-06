@@ -20,15 +20,17 @@ public class WizardStepsBackButton extends Button implements View.OnClickListene
 
     @Override
     public void onClick(View view) {
-        Bundle args = new Bundle();
-        args.putBoolean("openStep", true);
-        FragmentBuilder
-                .create(this)
-                .back()
-                .replace()
-                .addToBackStack()
-                .setFragment(WizardStepsFragment.class)
-                .setArgs(args)
-                .build();
+        if (this == view) {
+            Bundle args = new Bundle();
+            args.putBoolean("openStep", true);
+            FragmentBuilder
+                    .create(this)
+                    .back()
+                    .replace()
+                    .addToBackStack()
+                    .setFragment(WizardStepsFragment.class)
+                    .setArgs(args)
+                    .build();
+        }
     }
 }

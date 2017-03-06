@@ -51,10 +51,12 @@ public class ListItemHolder extends ViewHolder implements View.OnClickListener {
 
     @Override
     public void onClick(View view) {
-        Parcelable data = getItem();
-        if (data instanceof RecyclePanelFrag.NumberSeat) {
-            ((RecyclePanelFrag.NumberSeat) data).clickCount += 2;
-            bindViewToData();
+        if (plus2Button == view) {
+            Parcelable data = getItem();
+            if (data instanceof RecyclePanelFrag.NumberSeat) {
+                ((RecyclePanelFrag.NumberSeat) data).clickCount += 2;
+                bindViewToData();
+            }
         }
     }
 }

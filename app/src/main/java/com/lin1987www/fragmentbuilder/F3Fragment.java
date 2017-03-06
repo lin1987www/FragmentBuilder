@@ -53,8 +53,10 @@ public class F3Fragment extends FragmentFix implements View.OnClickListener {
     }
 
     @Override
-    public void onClick(View v) {
-        Intent intent = new Intent(getActivity(), AskQuestionActivity.class);
-        startActivityForResult(intent, request_code_ask_question);
+    public void onClick(View view) {
+        if (mStartActivityResultButton == view) {
+            Intent intent = new Intent(getActivity(), AskQuestionActivity.class);
+            startActivityForResult(intent, request_code_ask_question);
+        }
     }
 }

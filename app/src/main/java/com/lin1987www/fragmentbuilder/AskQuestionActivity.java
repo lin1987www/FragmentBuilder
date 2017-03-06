@@ -23,10 +23,10 @@ public class AskQuestionActivity extends FragmentActivityFix implements View.OnC
     }
 
     @Override
-    public void onClick(View v) {
-        if (v.equals(mSelect1Button)) {
+    public void onClick(View view) {
+        if (mSelect1Button == view) {
             getIntent().putExtra("select", "1");
-        } else {
+        } else if (mSelect2Button == view) {
             getIntent().putExtra("select", "2");
         }
         setResult(RESULT_OK, getIntent());

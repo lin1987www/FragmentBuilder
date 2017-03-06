@@ -16,7 +16,7 @@ import com.lin1987www.fragmentbuilder.widget.ShowEnterTextView;
 /**
  * Created by Administrator on 2015/6/26.
  */
-public class F13Fragment extends FragmentFix {
+public class F13Fragment extends FragmentFix implements View.OnClickListener {
     private final static String TAG = F13Fragment.class.getSimpleName();
     public boolean isFinish = false;
     public String result;
@@ -25,24 +25,13 @@ public class F13Fragment extends FragmentFix {
     Button mFinishButton;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f13, container, false);
         mTextView = (TextView) view.findViewById(R.id.textView);
         mTextView.setText(String.format("%s", getTag()));
         mShowEnterTextView = (ShowEnterTextView) view.findViewById(R.id.showNameTextView);
         mFinishButton = (Button) view.findViewById(R.id.finishButton);
-        mFinishButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                isFinish = true;
-                FragmentBuilder.popBackStackRecord(
-                        getActivity(),
-                        F11Fragment.BACK_STACK_NAME,
-                        FragmentManager.POP_BACK_STACK_INCLUSIVE
-                ).popBackStack();
-            }
-        });
+        mFinishButton.setOnClickListener(this);
         return view;
     }
 
@@ -55,5 +44,17 @@ public class F13Fragment extends FragmentFix {
     public void onDestroyView() {
         result = String.format("F13:[%s]", mShowEnterTextView.getEnterName());
         super.onDestroyView();
+    }
+
+    @Override
+    public void onClick(View view) {
+        if (mFinishButton == view) {
+            isFinish = true;
+            FragmentBuilder.popBackStackRecord(
+                    getActivity(),
+                    F11Fragment.BACK_STACK_NAME,
+                    FragmentManager.POP_BACK_STACK_INCLUSIVE
+            ).popBackStack();
+        }
     }
 }

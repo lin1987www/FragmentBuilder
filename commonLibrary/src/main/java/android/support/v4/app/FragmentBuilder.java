@@ -916,9 +916,9 @@ public class FragmentBuilder {
         public FragmentCarrier prevCarrier;
         public FragmentCarrier nextCarrier;
 
-        private PopBackStackListener popStackListener;
+        private OnPopBackStackListener popStackListener;
 
-        public void setPopStackListener(PopBackStackListener listener) {
+        public void setPopStackListener(OnPopBackStackListener listener) {
             this.popStackListener = listener;
         }
 
@@ -969,15 +969,13 @@ public class FragmentBuilder {
             if (prevCarrier != null) {
                 prevCarrier.tryToSendPackageFragment();
             }
-            // 不管有沒有 recipient 都要將該處發的事件觸發
-            if (!didTriggerPopStackListener) {
-                triggerPopBackStackEvent();
-            }
             if (recipient == null) {
                 recipient = FragContentPath.findObject(fragmentActivity, builder.delegateFragContentPath);
             }
             if (recipient != null) {
                 sendPackageFragment();
+                // 有 recipient 才事件觸發
+                triggerPopBackStackEvent();
             }
             if (!didNotifyNextCarrier) {
                 hookPackageFragmentManager.enqueueAction(notifyNextFragmentCarrierTask, false);
@@ -1037,8 +1035,8 @@ public class FragmentBuilder {
             if (onPopFragmentObject == null) {
                 return;
             }
-            if (onPopFragmentObject instanceof PopFragmentListener) {
-                ((PopFragmentListener) onPopFragmentObject).onPopFragment(popFragment);
+            if (onPopFragmentObject instanceof OnPopFragmentListener) {
+                ((OnPopFragmentListener) onPopFragmentObject).onPopFragment(popFragment);
                 return;
             }
             try {
@@ -1073,18 +1071,18 @@ public class FragmentBuilder {
             getHead().popBackStack();
         }
 
-        public FragmentCarriers setTailPopStackListener(PopBackStackListener listener) {
+        public FragmentCarriers setTailPopStackListener(OnPopBackStackListener listener) {
             getTail().setPopStackListener(listener);
             return this;
         }
     }
 
-    public interface PopBackStackListener {
-        void onPopBackStack(Object onPopFragmentObject, Fragment popFragment);
+    public interface OnPopBackStackListener {
+        void onPopBackStack(Object recipient, Fragment fragment);
     }
 
-    public interface PopFragmentListener {
-        void onPopFragment(Fragment popFragment);
+    public interface OnPopFragmentListener {
+        void onPopFragment(Fragment fragment);
     }
 
     private static

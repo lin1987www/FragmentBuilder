@@ -22,17 +22,19 @@ public class F12SwitchButton extends Button implements View.OnClickListener {
 
     @Override
     public void onClick(View view) {
-        FragContent content = new FragContent(view);
-        Class<? extends Fragment> fragClass = content.getSrcFragment().getClass();
-        if (fragClass.equals(F12Fragment.class)) {
-            fragClass = F12NewFragment.class;
-        } else {
-            fragClass = F12Fragment.class;
+        if (this == view) {
+            FragContent content = new FragContent(view);
+            Class<? extends Fragment> fragClass = content.getSrcFragment().getClass();
+            if (fragClass.equals(F12Fragment.class)) {
+                fragClass = F12NewFragment.class;
+            } else {
+                fragClass = F12Fragment.class;
+            }
+            FragmentBuilder
+                    .create(this)
+                    .reset()
+                    .setFragment(fragClass, fragClass.getSimpleName())
+                    .build();
         }
-        FragmentBuilder
-                .create(this)
-                .reset()
-                .setFragment(fragClass, fragClass.getSimpleName())
-                .build();
     }
 }

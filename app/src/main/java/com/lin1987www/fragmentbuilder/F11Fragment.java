@@ -2,6 +2,7 @@ package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
 import android.support.v4.app.ExecutorSet;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentBuilder;
 import android.support.v4.app.FragmentFix;
 import android.view.LayoutInflater;
@@ -21,7 +22,7 @@ import fix.java.util.concurrent.DutyOn;
 /**
  * Created by Administrator on 2015/6/26.
  */
-public class F11Fragment extends FragmentFix implements View.OnClickListener {
+public class F11Fragment extends FragmentFix implements View.OnClickListener, FragmentBuilder.OnPopFragmentListener {
     public final static String BACK_STACK_NAME = F11Fragment.class.getSimpleName();
     private final static String TAG = F11Fragment.class.getSimpleName();
     public String result;
@@ -32,10 +33,8 @@ public class F11Fragment extends FragmentFix implements View.OnClickListener {
     EditText mEditText;
     Button mNextStepButton;
 
-
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f11, container, false);
         mTextView = (TextView) view.findViewById(R.id.textView);
         mTextView.setText(String.format("%s", getTag()));
@@ -61,13 +60,20 @@ public class F11Fragment extends FragmentFix implements View.OnClickListener {
         super.onDestroyView();
     }
 
-    public void onPopFragment(F111Fragment fragment) {
-        f111Result = fragment.result;
+    @Override
+    public void onPopFragment(Fragment fragment) {
+        if (fragment instanceof F111Fragment) {
+            onPopFragment((F111Fragment) fragment);
+        }
+    }
+
+    public void onPopFragment(F111Fragment f111Fragment) {
+        f111Result = f111Fragment.result;
     }
 
     public boolean onDuty(GetUser task) {
         if (task.isDone()) {
-            Toast.makeText(getActivity(), String.format("UserName: %s", task.userName), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), String.format("%s onResume %s", TAG, task.userName), Toast.LENGTH_SHORT).show();
             return true;
         } else {
             return false;
@@ -76,13 +82,13 @@ public class F11Fragment extends FragmentFix implements View.OnClickListener {
 
     @Override
     public void onClick(View view) {
-        if (view == mNextStepButton) {
+        if (mNextStepButton == view) {
             FragmentBuilder
                     .create(F11Fragment.this)
                     .back()
                     .setFragment(F12Fragment.class, F12Fragment.class.getSimpleName())
                     .build();
-        } else if (view == mExtraStepButton) {
+        } else if (mExtraStepButton == view) {
             FragmentBuilder
                     .create(F11Fragment.this)
                     .addToBackStack()

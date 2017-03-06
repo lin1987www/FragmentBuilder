@@ -10,7 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-public class MainActivity extends FragmentActivityFix {
+public class MainActivity extends FragmentActivityFix implements FragmentBuilder.OnPopFragmentListener, View.OnClickListener {
     Button mButton;
 
     @Override
@@ -19,27 +19,7 @@ public class MainActivity extends FragmentActivityFix {
         setContentView(R.layout.activity_main);
 
         mButton = (Button) findViewById(R.id.button);
-        mButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Class<? extends Fragment> fragClass = MainFragment.class;
-                Fragment hereFrag = getSupportFragmentManager().findFragmentById(R.id.container);
-                if (hereFrag != null) {
-                    if (hereFrag.getClass().equals(PagerFragment.class)) {
-                        fragClass = MainFragment.class;
-                    } else {
-                        fragClass = PagerFragment.class;
-                    }
-                }
-                FragmentBuilder
-                        .create(MainActivity.this)
-                        .setContainerViewId(R.id.container)
-                        .setFragment(fragClass)
-                        .reset()
-                        .replace()
-                        .build();
-            }
-        });
+        mButton.setOnClickListener(this);
 
         FragmentBuilder.defaultContainerViewId = R.id.container;
 
@@ -52,6 +32,35 @@ public class MainActivity extends FragmentActivityFix {
                     .setContainerViewId(R.id.container)
                     .setFragment(MainFragment.class)
                     .build();
+        }
+    }
+
+    @Override
+    public void onClick(View view) {
+        if (mButton == view) {
+            Class<? extends Fragment> fragClass = MainFragment.class;
+            Fragment hereFrag = getSupportFragmentManager().findFragmentById(R.id.container);
+            if (hereFrag != null) {
+                if (hereFrag.getClass().equals(PagerFragment.class)) {
+                    fragClass = MainFragment.class;
+                } else {
+                    fragClass = PagerFragment.class;
+                }
+            }
+            FragmentBuilder
+                    .create(MainActivity.this)
+                    .setContainerViewId(R.id.container)
+                    .setFragment(fragClass)
+                    .reset()
+                    .replace()
+                    .build();
+        }
+    }
+
+    @Override
+    public void onPopFragment(Fragment fragment) {
+        if (fragment instanceof WizardStepsFragment) {
+            onPopFragment((WizardStepsFragment) fragment);
         }
     }
 

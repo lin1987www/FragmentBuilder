@@ -2,6 +2,7 @@ package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
 import android.os.Parcel;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentBuilder;
 import android.support.v4.app.FragmentFix;
 import android.support.v4.app.FragmentTransaction;
@@ -20,7 +21,7 @@ import java.util.ArrayList;
 /**
  * Created by Administrator on 2015/6/26.
  */
-public class F1Fragment extends FragmentFix {
+public class F1Fragment extends FragmentFix implements FragmentBuilder.OnPopFragmentListener, View.OnClickListener {
     TextView mTextView;
     FrameLayout mContainer;
 
@@ -32,7 +33,6 @@ public class F1Fragment extends FragmentFix {
     private TextView textView;
     private android.support.v7.widget.Selector selector;
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f1, container, false);
@@ -41,19 +41,7 @@ public class F1Fragment extends FragmentFix {
         mTextView = (TextView) view.findViewById(R.id.textView);
         mTextView.setText(String.format("%s", getTag()));
         mContainer = (FrameLayout) view.findViewById(R.id.container_f1);
-        mContainer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FragmentBuilder
-                        .create(F1Fragment.this)
-                        .setContainerViewId(R.id.container_f1)
-                        .setFragment(F11Fragment.class, F11Fragment.class.getSimpleName())
-                        .replace()
-                        .addToBackStack(F11Fragment.BACK_STACK_NAME)
-                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                        .build();
-            }
-        });
+        mContainer.setOnClickListener(this);
 
         ArrayList<SelectItem> selectItems = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
@@ -64,6 +52,19 @@ public class F1Fragment extends FragmentFix {
         selector.setViewMode(AbsListView.CHOICE_MODE_MULTIPLE);
 
         return view;
+    }
+
+    @Override
+    public void onPopFragment(Fragment fragment) {
+        if (fragment instanceof F11Fragment) {
+            onPopFragment((F11Fragment) fragment);
+        } else if (fragment instanceof F12Fragment) {
+            onPopFragment((F12Fragment) fragment);
+        } else if (fragment instanceof F12NewFragment) {
+            onPopFragment((F12NewFragment) fragment);
+        } else if (fragment instanceof F13Fragment) {
+            onPopFragment((F13Fragment) fragment);
+        }
     }
 
     public void onPopFragment(F11Fragment fragment) {
@@ -85,6 +86,20 @@ public class F1Fragment extends FragmentFix {
     public void onPopFragment(F13Fragment fragment) {
         isFinish = fragment.isFinish;
         f13text = fragment.result;
+    }
+
+    @Override
+    public void onClick(View view) {
+        if (mContainer == view) {
+            FragmentBuilder
+                    .create(F1Fragment.this)
+                    .setContainerViewId(R.id.container_f1)
+                    .setFragment(F11Fragment.class, F11Fragment.class.getSimpleName())
+                    .replace()
+                    .addToBackStack(F11Fragment.BACK_STACK_NAME)
+                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                    .build();
+        }
     }
 
     public static class SelectItem implements Selector.Item {

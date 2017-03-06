@@ -12,7 +12,7 @@ import android.widget.Button;
 /**
  * Created by Administrator on 2015/7/8.
  */
-public class Pager2Fragment extends FragmentFix {
+public class Pager2Fragment extends FragmentFix implements View.OnClickListener {
     ViewPager mPager;
 
     FragmentStatePagerAdapterFix mPagerAdapter;
@@ -29,8 +29,7 @@ public class Pager2Fragment extends FragmentFix {
     };
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_pager2, container, false);
         mPager = (ViewPager) view.findViewById(R.id.pager);
         mAppendPageButton = (Button) view.findViewById(R.id.appendPageButton);
@@ -42,35 +41,9 @@ public class Pager2Fragment extends FragmentFix {
         mPagerAdapter = new FragmentStatePagerAdapterFix(this);
         mPager.setAdapter(mPagerAdapter);
 
-        mAppendPageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int index = mPagerAdapter.getCount() % mFragArray.length;
-                Class fragClass = mFragArray[index];
-                String tag = fragClass.getSimpleName() + "_" + mPagerAdapter.getCount();
-                mPagerAdapter.add(fragClass, tag);
-                mPagerAdapter.notifyDataSetChanged();
-            }
-        });
-
-        mRemoveLastPageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int index = mPagerAdapter.getCount() - 1;
-                if (index >= 0) {
-                    mPagerAdapter.remove(index);
-                    mPagerAdapter.notifyDataSetChanged();
-                }
-            }
-        });
-
-        mClearPageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPagerAdapter.clear();
-                mPagerAdapter.notifyDataSetChanged();
-            }
-        });
+        mAppendPageButton.setOnClickListener(this);
+        mRemoveLastPageButton.setOnClickListener(this);
+        mClearPageButton.setOnClickListener(this);
 
         return view;
     }
@@ -83,6 +56,26 @@ public class Pager2Fragment extends FragmentFix {
                 String tag = fragClass.getSimpleName() + "_" + mPagerAdapter.getCount();
                 mPagerAdapter.add(fragClass, tag);
             }
+            mPagerAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void onClick(View view) {
+        if (mAppendPageButton == view) {
+            int index = mPagerAdapter.getCount() % mFragArray.length;
+            Class fragClass = mFragArray[index];
+            String tag = fragClass.getSimpleName() + "_" + mPagerAdapter.getCount();
+            mPagerAdapter.add(fragClass, tag);
+            mPagerAdapter.notifyDataSetChanged();
+        } else if (mRemoveLastPageButton == view) {
+            int index = mPagerAdapter.getCount() - 1;
+            if (index >= 0) {
+                mPagerAdapter.remove(index);
+                mPagerAdapter.notifyDataSetChanged();
+            }
+        } else if (mClearPageButton == view) {
+            mPagerAdapter.clear();
             mPagerAdapter.notifyDataSetChanged();
         }
     }

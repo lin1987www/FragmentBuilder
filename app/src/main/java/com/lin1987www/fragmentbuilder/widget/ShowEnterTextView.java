@@ -3,6 +3,7 @@ package com.lin1987www.fragmentbuilder.widget;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentBuilder;
 import android.util.AttributeSet;
 import android.view.View;
@@ -13,7 +14,7 @@ import com.lin1987www.fragmentbuilder.EnterTextFragment;
 /**
  * Created by Administrator on 2015/6/26.
  */
-public class ShowEnterTextView extends TextView implements View.OnClickListener {
+public class ShowEnterTextView extends TextView implements View.OnClickListener, FragmentBuilder.OnPopFragmentListener {
     private String enterName = "";
 
     public ShowEnterTextView(Context context, AttributeSet attrs) {
@@ -41,6 +42,13 @@ public class ShowEnterTextView extends TextView implements View.OnClickListener 
         show();
     }
 
+    @Override
+    public void onPopFragment(Fragment fragment) {
+        if (fragment instanceof EnterTextFragment) {
+            onPopFragment((EnterTextFragment) fragment);
+        }
+    }
+
     public void onPopFragment(EnterTextFragment fragment) {
         enterName = fragment.enterName;
         show();
@@ -56,11 +64,13 @@ public class ShowEnterTextView extends TextView implements View.OnClickListener 
 
     @Override
     public void onClick(View view) {
-        FragmentBuilder
-                .create(this)
-                .setFragment(EnterTextFragment.class, getClass().getName() + " " + getId())
-                .replace()
-                .addToBackStack()
-                .build();
+        if (this == view) {
+            FragmentBuilder
+                    .create(this)
+                    .setFragment(EnterTextFragment.class, getClass().getName() + " " + getId())
+                    .replace()
+                    .addToBackStack()
+                    .build();
+        }
     }
 }

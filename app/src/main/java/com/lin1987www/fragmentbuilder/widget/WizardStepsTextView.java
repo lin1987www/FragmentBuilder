@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Parcelable;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivityFix;
 import android.support.v4.app.FragmentBuilder;
 import android.util.AttributeSet;
@@ -19,7 +20,7 @@ import com.lin1987www.fragmentbuilder.F13Fragment;
 /**
  * Created by Administrator on 2015/6/30.
  */
-public class WizardStepsTextView extends TextView implements View.OnClickListener, View.OnLongClickListener, Runnable, FragmentActivityFix.onActivityResultListener {
+public class WizardStepsTextView extends TextView implements View.OnClickListener, View.OnLongClickListener, Runnable, FragmentActivityFix.OnActivityResultListener, FragmentBuilder.OnPopFragmentListener {
     public boolean isFinish = false;
     public String result = "";
     private String f11text = "";
@@ -50,8 +51,10 @@ public class WizardStepsTextView extends TextView implements View.OnClickListene
 
     @Override
     public boolean onLongClick(View view) {
-        Intent intent = new Intent(getContext(), com.lin1987www.fragmentbuilder.AskQuestionActivity.class);
-        ((FragmentActivityFix) getContext()).startActivityForResult(this, intent, request_code_ask_question);
+        if (this == view) {
+            Intent intent = new Intent(getContext(), com.lin1987www.fragmentbuilder.AskQuestionActivity.class);
+            ((FragmentActivityFix) getContext()).startActivityForResult(this, intent, request_code_ask_question);
+        }
         return true;
     }
 
@@ -85,6 +88,33 @@ public class WizardStepsTextView extends TextView implements View.OnClickListene
         }
     }
 
+    private boolean isPostRun = false;
+
+    private void delayRun() {
+        if (!isPostRun) {
+            isPostRun = true;
+            post(this);
+        }
+    }
+
+    @Override
+    public void run() {
+        isPostRun = false;
+    }
+
+    @Override
+    public void onPopFragment(Fragment fragment) {
+        if (fragment instanceof F11Fragment) {
+            onPopFragment((F11Fragment) fragment);
+        } else if (fragment instanceof F12Fragment) {
+            onPopFragment((F12Fragment) fragment);
+        } else if (fragment instanceof F12NewFragment) {
+            onPopFragment((F12NewFragment) fragment);
+        } else if (fragment instanceof F13Fragment) {
+            onPopFragment((F13Fragment) fragment);
+        }
+    }
+
     public void onPopFragment(F11Fragment fragment) {
         delayRun();
         f11text = fragment.result;
@@ -105,19 +135,5 @@ public class WizardStepsTextView extends TextView implements View.OnClickListene
     public void onPopFragment(F13Fragment fragment) {
         isFinish = fragment.isFinish;
         f13text = fragment.result;
-    }
-
-    private boolean isPostRun = false;
-
-    private void delayRun() {
-        if (!isPostRun) {
-            isPostRun = true;
-            post(this);
-        }
-    }
-
-    @Override
-    public void run() {
-        isPostRun = false;
     }
 }

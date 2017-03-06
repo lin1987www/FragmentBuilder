@@ -17,8 +17,7 @@ public class EnterTextFragment extends FragmentFix {
     EditText mEditText;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_enter_text, container, false);
         mEditText = (EditText) view.findViewById(R.id.editText);
         enterName = getFragmentArgs().bundle.getString(KEY_enterName);

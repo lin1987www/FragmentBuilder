@@ -94,8 +94,8 @@ public class FragmentActivityFix extends FragmentActivity {
             Object object = FragContentPath.findObject(this, path);
             if (object instanceof Fragment) {
                 ((Fragment) object).onActivityResult(requestCode, resultCode, data);
-            } else if (object instanceof onActivityResultListener) {
-                ((onActivityResultListener) object).onActivityResult(requestCode, resultCode, data);
+            } else if (object instanceof OnActivityResultListener) {
+                ((OnActivityResultListener) object).onActivityResult(requestCode, resultCode, data);
             } else {
                 Class<?> targetClass = object.getClass();
                 try {
@@ -112,7 +112,7 @@ public class FragmentActivityFix extends FragmentActivity {
         }
     }
 
-    public interface onActivityResultListener {
+    public interface OnActivityResultListener {
         void onActivityResult(int requestCode, int resultCode, Intent data);
     }
 

@@ -2,6 +2,7 @@ package com.lin1987www.fragmentbuilder;
 
 import android.os.Bundle;
 import android.support.v4.app.FragContent;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentBuilder;
 import android.support.v4.app.FragmentFix;
 import android.util.Log;
@@ -15,7 +16,7 @@ import android.widget.TextView;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainFragment extends FragmentFix {
+public class MainFragment extends FragmentFix implements FragmentBuilder.OnPopFragmentListener, View.OnClickListener {
     private final static String TAG = MainFragment.class.getSimpleName();
     FrameLayout mContainerMain4;
     FrameLayout mContainerMain5;
@@ -48,48 +49,52 @@ public class MainFragment extends FragmentFix {
                 .build();
 
         mContainerMain4 = (FrameLayout) view.findViewById(R.id.container_main_4);
-        mContainerMain4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FragmentBuilder
-                        .create(MainFragment.this)
-                        .setContainerViewId(R.id.container_main_4)
-                        .setFragment(F4Fragment.class, F4Fragment.class.getSimpleName())
-                        .attach()
-                        .build();
-            }
-        });
+        mContainerMain4.setOnClickListener(this);
 
         mContainerMain5 = (FrameLayout) view.findViewById(R.id.container_main_5);
-        mContainerMain5.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FragmentBuilder
-                        .create(MainFragment.this)
-                        .setContainerViewId(R.id.container_main_5)
-                        .setFragment(F5Fragment.class, F5Fragment.class.getSimpleName())
-                        .attach()
-                        .build();
-            }
-        });
+        mContainerMain5.setOnClickListener(this);
 
         mTextView = (TextView) view.findViewById(R.id.textView);
         mTestCodeButton = (Button) view.findViewById(R.id.testCodeButton);
-        mTestCodeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FragmentBuilder builder =
-                        FragmentBuilder.findFragmentBuilder(new FragContent(MainFragment.this));
+        mTestCodeButton.setOnClickListener(this);
 
-                Log.e(TAG, String.format("BackStackEntry: %s", builder));
-            }
-        });
         return view;
     }
 
     @Override
     public void onResume() {
         super.onResume();
+    }
+
+    @Override
+    public void onClick(View view) {
+        if (mContainerMain4 == view) {
+            FragmentBuilder
+                    .create(MainFragment.this)
+                    .setContainerViewId(R.id.container_main_4)
+                    .setFragment(F4Fragment.class, F4Fragment.class.getSimpleName())
+                    .attach()
+                    .build();
+        } else if (mContainerMain5 == view) {
+            FragmentBuilder
+                    .create(MainFragment.this)
+                    .setContainerViewId(R.id.container_main_5)
+                    .setFragment(F5Fragment.class, F5Fragment.class.getSimpleName())
+                    .attach()
+                    .build();
+        } else if (mTestCodeButton == view) {
+            FragmentBuilder builder = FragmentBuilder.findFragmentBuilder(new FragContent(MainFragment.this));
+            Log.d(TAG, String.format("BackStackEntry: %s", builder));
+        }
+    }
+
+    @Override
+    public void onPopFragment(Fragment fragment) {
+        if (fragment instanceof F4Fragment) {
+            onPopFragment((F4Fragment) fragment);
+        } else if (fragment instanceof F5Fragment) {
+            onPopFragment((F5Fragment) fragment);
+        }
     }
 
     public void onPopFragment(F4Fragment fragment) {

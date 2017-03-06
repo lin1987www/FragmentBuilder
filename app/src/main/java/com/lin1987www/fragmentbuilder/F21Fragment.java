@@ -19,8 +19,7 @@ public class F21Fragment extends FragmentFix {
     ShowEnterTextView mShowEnterTextView;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f21, container, false);
         mTextView = (TextView) view.findViewById(R.id.textView);
         mShowEnterTextView = (ShowEnterTextView) view.findViewById(R.id.showNameTextView);
