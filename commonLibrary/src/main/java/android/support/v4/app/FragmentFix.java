@@ -480,6 +480,11 @@ public class FragmentFix extends Fragment {
         }
     }
 
+    @Override
+    public void startActivityForResult(Intent intent, int requestCode) {
+        startActivityForResult(this, intent, requestCode);
+    }
+
     public void startActivityForResult(Object object, Intent intent, int requestCode) {
         FragmentActivityFix fragmentActivity = (FragmentActivityFix) getContext();
         fragmentActivity.startActivityForResult(object, intent, requestCode);

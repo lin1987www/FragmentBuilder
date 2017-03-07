@@ -1,2 +1,0 @@
-1. F3Fragment.startActivityForResult 旋轉 跳出回來  Activity 被清除後 不會觸發
-2. WizardStepsTextView.delayRun  未完成

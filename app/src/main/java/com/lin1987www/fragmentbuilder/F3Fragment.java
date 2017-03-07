@@ -45,7 +45,7 @@ public class F3Fragment extends FragmentFix implements View.OnClickListener {
             if (requestCode == request_code_ask_question) {
                 Toast.makeText(
                         getActivity(),
-                        String.format("Select %s", data.getStringExtra("select")),
+                        String.format("%s Select %s", getClass().getSimpleName(), data.getStringExtra("select")),
                         Toast.LENGTH_SHORT)
                         .show();
             }

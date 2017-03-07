@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivityFix;
 import android.support.v4.app.FragmentBuilder;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,6 +22,8 @@ import com.lin1987www.fragmentbuilder.F13Fragment;
  * Created by Administrator on 2015/6/30.
  */
 public class WizardStepsTextView extends TextView implements View.OnClickListener, View.OnLongClickListener, Runnable, FragmentActivityFix.OnActivityResultListener, FragmentBuilder.OnPopFragmentListener {
+    protected final String TAG = getClass().getSimpleName();
+
     public boolean isFinish = false;
     public String result = "";
     private String f11text = "";
@@ -60,23 +63,26 @@ public class WizardStepsTextView extends TextView implements View.OnClickListene
 
     private void refresh() {
         setText(result);
+        Log.e(TAG, String.format("%s refresh", this));
     }
 
     @Override
     protected void onAttachedToWindow() {
         delayRun();
+        Log.e(TAG, String.format("%s onAttachedToWindow", this));
         super.onAttachedToWindow();
     }
 
     @Override
     public void onRestoreInstanceState(Parcelable state) {
-        delayRun();
+        Log.e(TAG, String.format("%s onRestoreInstanceState", this));
         super.onRestoreInstanceState(state);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         delayRun();
+        Log.e(TAG, String.format("%s onActivityResult", this));
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == request_code_ask_question) {
                 Toast.makeText(
@@ -94,16 +100,24 @@ public class WizardStepsTextView extends TextView implements View.OnClickListene
         if (!isPostRun) {
             isPostRun = true;
             post(this);
+            Log.e(TAG, String.format("%s post", this));
+        } else {
+            removeCallbacks(this);
+            post(this);
+            Log.e(TAG, String.format("%s post again.", this));
         }
     }
 
     @Override
     public void run() {
         isPostRun = false;
+        Log.e(TAG, String.format("%s run", this));
     }
 
     @Override
     public void onPopFragment(Fragment fragment) {
+        Log.e(TAG, String.format("%s onPopFragment", this));
+        delayRun();
         if (fragment instanceof F11Fragment) {
             onPopFragment((F11Fragment) fragment);
         } else if (fragment instanceof F12Fragment) {
@@ -116,7 +130,6 @@ public class WizardStepsTextView extends TextView implements View.OnClickListene
     }
 
     public void onPopFragment(F11Fragment fragment) {
-        delayRun();
         f11text = fragment.result;
         if (isFinish) {
             result = String.format("WizardStepsTextView Result:\n%s\n%s\n%s", f11text, f12text, f13text);

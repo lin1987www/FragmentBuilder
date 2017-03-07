@@ -29,10 +29,10 @@ import java.util.zip.GZIPOutputStream;
 import fix.java.util.concurrent.ExceptionHelper;
 
 public class FragmentActivityFix extends FragmentActivity {
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = Utility.DEBUG;
     public final static String TAG = FragmentActivityFix.class.getSimpleName();
-    public final static String key_startActivityFragContentPath = "key_startActivityFragContentPath";
-    protected final static String KEY_savedInstanceState = "key_savedInstanceState";
+    public final static String KEY_startActivityFragContentPath = "KEY_startActivityFragContentPath";
+    protected final String KEY_savedInstanceState = "KEY_savedInstanceState_" + getClass().getSimpleName();
     protected final String FORMAT = String.format("%s %s", toString(), "%s");
 
     public boolean enableDoubleBackPressed = true;
@@ -85,13 +85,18 @@ public class FragmentActivityFix extends FragmentActivity {
             Log.d(TAG, String.format(FORMAT, "onActivityResult"));
         }
         super.onActivityResult(requestCode, resultCode, data);
-
         for (PuppetActivity puppetActivity : puppetActivities) {
             puppetActivity.onActivityResult(requestCode, resultCode, data);
+        }
+        if (DEBUG) {
+            Log.d(TAG, String.format(FORMAT, String.format("mStartActivityFromFragContentPath %s", mStartActivityFromFragContentPath)));
         }
         if (null != mStartActivityFromFragContentPath) {
             FragContentPath path = JacksonHelper.Parse(mStartActivityFromFragContentPath, JacksonHelper.GenericType(FragContentPath.class));
             Object object = FragContentPath.findObject(this, path);
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("mStartActivityFromFragContentPath %s %s", mStartActivityFromFragContentPath, object)));
+            }
             if (object instanceof Fragment) {
                 ((Fragment) object).onActivityResult(requestCode, resultCode, data);
             } else if (object instanceof OnActivityResultListener) {
@@ -143,10 +148,15 @@ public class FragmentActivityFix extends FragmentActivity {
         if (DEBUG) {
             Log.d(TAG, String.format(FORMAT, "onRestoreInstanceState"));
         }
-        super.onRestoreInstanceState(savedInstanceState);
         if (null != savedInstanceState) {
-            mStartActivityFromFragContentPath = savedInstanceState.getString(key_startActivityFragContentPath);
+            if (savedInstanceState.containsKey(KEY_startActivityFragContentPath)) {
+                mStartActivityFromFragContentPath = savedInstanceState.getString(KEY_startActivityFragContentPath);
+                if (DEBUG) {
+                    Log.d(TAG, String.format(FORMAT, String.format("onRestoreInstanceState mStartActivityFromFragContentPath %s", mStartActivityFromFragContentPath)));
+                }
+            }
         }
+        super.onRestoreInstanceState(savedInstanceState);
     }
 
     @Override
@@ -180,8 +190,11 @@ public class FragmentActivityFix extends FragmentActivity {
         for (PuppetActivity puppetActivity : puppetActivities) {
             puppetActivity.onSaveInstanceState(outState);
         }
-        if (null != key_startActivityFragContentPath) {
-            outState.putString(key_startActivityFragContentPath, mStartActivityFromFragContentPath);
+        if (null != mStartActivityFromFragContentPath) {
+            outState.putString(KEY_startActivityFragContentPath, mStartActivityFromFragContentPath);
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("onSaveInstanceState mStartActivityFromFragContentPath %s", mStartActivityFromFragContentPath)));
+            }
         }
         saveToPreferences(outState);
         outState.clear();
@@ -215,6 +228,9 @@ public class FragmentActivityFix extends FragmentActivity {
     }
 
     public void startActivityForResult(Object object, Intent intent, int requestCode) {
+        if (DEBUG) {
+            Log.d(TAG, String.format(FORMAT, "startActivityForResult"));
+        }
         FragContent content = FragContent.create(object);
         if (content != null) {
             FragContentPath path = content.getFragContentPath();
@@ -299,7 +315,6 @@ public class FragmentActivityFix extends FragmentActivity {
     }
 
     private void saveToPreferences(Bundle in) {
-        Parcel parcel = Parcel.obtain();
         String serialized = serializeBundle(in);
         if (serialized != null) {
             SharedPreferences settings = getSharedPreferences(KEY_savedInstanceState, MODE_PRIVATE);
