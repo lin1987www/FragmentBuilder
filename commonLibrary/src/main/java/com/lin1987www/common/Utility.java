@@ -9,11 +9,19 @@ import android.text.format.DateUtils;
 import android.view.ViewTreeObserver;
 import android.widget.TextView;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import fix.java.util.concurrent.ExceptionHelper;
 
 /**
  * Created by lin on 2014/9/11.
@@ -160,5 +168,46 @@ public class Utility {
     public static ClassLoader getClassLoader() {
         // 解決 BadParcelableException 問題
         return BuildConfig.class.getClassLoader();
+    }
+
+    public static LinkedHashMap<String, String> splitQuery(String urlString) {
+        final LinkedHashMap<String, String> query_pairs = new LinkedHashMap<>();
+        try {
+            String urlQueryString;
+            int queryStartIndex = urlString.indexOf("?");
+            if (queryStartIndex >= 0) {
+                urlQueryString = urlString.split("\\?")[1];
+            } else {
+                urlQueryString = urlString;
+            }
+            final String[] pairs = urlQueryString.split("&");
+            for (String pair : pairs) {
+                final int idx = pair.indexOf("=");
+                final String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), "UTF-8") : pair;
+                if (query_pairs.containsKey(key)) {
+                    throw new RuntimeException(String.format("Duplicate key: %s", key));
+                }
+                final String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), "UTF-8") : null;
+                query_pairs.put(key, value);
+            }
+        } catch (Throwable e) {
+            ExceptionHelper.throwRuntimeException(e);
+        }
+        return query_pairs;
+    }
+
+    public static LinkedHashMap<String, List<String>> splitQueryToList(URL url) throws UnsupportedEncodingException {
+        final LinkedHashMap<String, List<String>> query_pairs = new LinkedHashMap<>();
+        final String[] pairs = url.getQuery().split("&");
+        for (String pair : pairs) {
+            final int idx = pair.indexOf("=");
+            final String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), "UTF-8") : pair;
+            if (!query_pairs.containsKey(key)) {
+                query_pairs.put(key, new LinkedList<String>());
+            }
+            final String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), "UTF-8") : null;
+            query_pairs.get(key).add(value);
+        }
+        return query_pairs;
     }
 }

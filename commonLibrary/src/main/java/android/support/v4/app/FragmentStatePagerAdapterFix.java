@@ -46,12 +46,12 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
         return bundle;
     }
 
-    public FragmentActivity getFragmentActivity() {
-        return wrFragmentActivity.get();
+    public <T extends FragmentActivity> T getFragmentActivity() {
+        return (T) wrFragmentActivity.get();
     }
 
-    public Fragment getParentFragment() {
-        return wrParentFragment.get();
+    public <T extends Fragment> T getParentFragment() {
+        return (T) wrParentFragment.get();
     }
 
     public FragmentStatePagerAdapterFix(FragmentActivity activity) {
@@ -210,6 +210,9 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
 
     @Override
     public void finishUpdate(ViewGroup container) {
+        if (FragmentUtils.isStateLoss(mFragmentManager)) {
+            return;
+        }
         if (mCurTransaction != null) {
             mCurTransaction.commit();
             mCurTransaction = null;
