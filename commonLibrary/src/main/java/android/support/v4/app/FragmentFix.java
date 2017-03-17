@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
@@ -30,6 +31,13 @@ import io.reactivex.observers.DisposableObserver;
 public class FragmentFix extends Fragment {
     public static boolean DEBUG = Utility.DEBUG;
     public final static String TAG = FragmentFix.class.getSimpleName();
+    protected static View.OnTouchListener doNothingOnTouch = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            return true;
+        }
+    };
+
     protected final String FORMAT = String.format("%s %s", toString(), "%s");
 
     protected ArrayList<Duty<?>> mDutyList = new ArrayList<>();

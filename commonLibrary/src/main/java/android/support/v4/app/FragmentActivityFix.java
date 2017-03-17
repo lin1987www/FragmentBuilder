@@ -223,6 +223,22 @@ public class FragmentActivityFix extends FragmentActivity {
     }
 
     @Override
+    public void onLowMemory() {
+        if (DEBUG) {
+            Log.e(TAG, String.format(FORMAT, "onLowMemory"));
+        }
+        super.onLowMemory();
+    }
+
+    @Override
+    public void onTrimMemory(int level) {
+        if (DEBUG) {
+            Log.e(TAG, String.format(FORMAT, String.format("onTrimMemory level %s", level)));
+        }
+        super.onTrimMemory(level);
+    }
+
+    @Override
     public void startActivityFromFragment(Fragment fragment, Intent intent, int requestCode) {
         startActivityForResult(fragment, intent, requestCode);
     }

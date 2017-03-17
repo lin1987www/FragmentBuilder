@@ -5,6 +5,7 @@ import android.support.multidex.MultiDex;
 import android.support.v4.app.ContextHelper;
 import android.util.Log;
 
+import com.bumptech.glide.Glide;
 import com.squareup.leakcanary.LeakCanary;
 
 import fix.java.util.concurrent.ExceptionHelper;
@@ -33,5 +34,17 @@ public class ApplicationFix extends Application implements ExceptionHelper.Excep
     public void printException(String taskName, Throwable ex) {
         String error = String.format("%s\n%s", taskName, ExceptionHelper.getPrintStackTraceString(ex));
         Log.e(TAG, error);
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        Glide.get(this).clearMemory();
+    }
+
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        Glide.get(this).trimMemory(level);
     }
 }
