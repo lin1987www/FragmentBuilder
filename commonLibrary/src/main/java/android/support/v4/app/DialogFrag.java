@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.lin1987www.common.R;
+import com.lin1987www.common.Utility;
 
 /**
  * Created by Administrator on 2016/6/3.
@@ -63,12 +64,12 @@ public class DialogFrag extends FragmentFix implements View.OnClickListener, Fra
     }
 
     @Override
-    public void onPopBackStack(Object onPopFragmentObject, Fragment popFragment) {
+    public void onPopBackStack(Object recipient, Fragment packageFragment, FragmentBuilder.FragCarrier fragCarrier) {
         try {
-            Class fragClass = Class.forName(fragArgs.getFragClassName(), false, getContext().getClassLoader());
+            Class fragClass = Class.forName(fragArgs.getFragClassName(), false, Utility.getClassLoader());
             FragmentBuilder contentBuilder = FragmentBuilder.findFragmentBuilder(new FragContent(this));
             FragmentBuilder
-                    .create(onPopFragmentObject)
+                    .create(recipient)
                     .replace()
                     .addToBackStack()
                     .setContainerViewId(contentBuilder.getContainerViewId())

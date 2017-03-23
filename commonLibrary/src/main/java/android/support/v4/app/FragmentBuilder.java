@@ -472,8 +472,6 @@ public class FragmentBuilder {
             Log.e(TAG, String.format("FragmentBuilder lose FragmentActivity [%s] %s", fragmentClass, getFragmentTag()));
             return false;
         }
-        // v25.3.0 將 content.getFragContentPath() 整合到 isAvailable
-        content.getFragContentPath();
         return true;
     }
 
@@ -727,10 +725,7 @@ public class FragmentBuilder {
     public static FragCarrier popBackStackRecord(FragmentActivity activity, String name, @PopFlag int flags) {
         FragCarrier fragCarrier = new FragCarrier(activity);
         fragCarrier.setData(name, flags);
-        if (fragCarrier.getWillPopRecord() != null) {
-            return fragCarrier;
-        }
-        return null;
+        return fragCarrier;
     }
 
     public interface Predicate {
@@ -913,6 +908,9 @@ public class FragmentBuilder {
             令 Op.Add 或 Op.Attach 為 1 , Op.Remove 或 Op.Detach 為 -1
             瀏覽所有 Op 統計以上值為 -1 則執行 performResumeIfReady
             */
+            if (fragPackages.size() == 0) {
+                return;
+            }
             HashMap<Fragment, Integer> map = new HashMap<>();
             for (FragPackage fragPackage : fragPackages) {
                 if (!fragPackage.didSent) {
@@ -940,6 +938,7 @@ public class FragmentBuilder {
                 int value = map.get(fragment);
                 if (value == -1) {
                     FragmentFix f = (FragmentFix) fragment;
+                    f.getFragmentArgs().consumeDisableReady();
                     f.performResumeIfReady("FragCarrier finish.");
                 }
             }

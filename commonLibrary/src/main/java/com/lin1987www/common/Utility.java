@@ -10,9 +10,11 @@ import android.view.ViewTreeObserver;
 import android.widget.TextView;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -72,6 +74,7 @@ public class Utility {
     public static void detectIsShowAllText(TextView textView, TextViewShowAllTextListener listener) {
         DetectShowAllText detectShowAllText = new DetectShowAllText(textView, listener);
     }
+
 
     public static class DetectShowAllText implements ViewTreeObserver.OnGlobalLayoutListener {
         private TextView mTextView;
@@ -209,5 +212,54 @@ public class Utility {
             query_pairs.get(key).add(value);
         }
         return query_pairs;
+    }
+
+    public static void removeDuplicate(ArrayList<?> arrayList) {
+        int size = arrayList.size();
+        for (int i = size - 1; i > -1; i--) {
+            Object obj = arrayList.get(i);
+            if (i != arrayList.indexOf(obj)) {
+                arrayList.remove(i);
+            }
+        }
+    }
+
+    public static Field findUnderlying(Class<?> clazz, String fieldName) {
+        Class<?> current = clazz;
+        do {
+            try {
+                return current.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
+            }
+        } while ((current = current.getSuperclass()) != null);
+        return null;
+    }
+
+    public static void setFieldValue(Object obj, String fieldName, Object value) {
+        Field field = Utility.findUnderlying(obj.getClass(), fieldName);
+        setFieldValue(obj, field, value);
+    }
+
+    public static void setFieldValue(Object obj, String fieldName, Object value, Class<?> objClass) {
+        Field field = Utility.findUnderlying(objClass, fieldName);
+        setFieldValue(obj, field, value);
+    }
+
+    public static void setFieldValue(Object obj, Field field, Object value) {
+        try {
+            field.setAccessible(true);
+            // NOTE: Normally, a field that is final and static may not be modified.
+            //
+            // Below code is modify field is not final, but didn't work. :(
+            // Android:accessFlags(?),  Java:modifiers(X)
+            /*
+            Field modifiersField = Field.class.getDeclaredField("accessFlags");
+            modifiersField.setAccessible(true);
+            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+            */
+            field.set(obj, value);
+        } catch (Throwable e) {
+            ExceptionHelper.throwRuntimeException(e);
+        }
     }
 }

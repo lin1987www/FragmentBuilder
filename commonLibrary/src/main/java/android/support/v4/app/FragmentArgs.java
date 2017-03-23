@@ -9,7 +9,6 @@ import com.lin1987www.common.Utility;
  */
 public class FragmentArgs {
     private final static String suffix = FragmentArgs.class.getName();
-    private final static String key_isSkipPopOnResume = key("key_isSkipPopOnResume");
     private final static String key_userVisibleHintOnResume = key("key_userVisibleHintOnResume");
     private final static String key_fragmentBuilderText = key("key_fragmentBuilderText");
     private final static String key_disableReady = key("key_disableReady");
@@ -31,21 +30,6 @@ public class FragmentArgs {
         bundle.setClassLoader(Utility.getClassLoader());
     }
 
-    boolean consumePopOnResume() {
-        boolean isConsumed = bundle.getBoolean(key_isSkipPopOnResume, false);
-        if (bundle.containsKey(key_isSkipPopOnResume)) {
-            bundle.remove(key_isSkipPopOnResume);
-        }
-        return isConsumed;
-    }
-
-    /**
-     * Use Case: When  popBackState  all  detach Fragment will attach again, we ignore it onResume.
-     */
-    void skipPopOnResume() {
-        bundle.putBoolean(key_isSkipPopOnResume, true);
-    }
-
     boolean consumeDisableReady() {
         boolean disableReady = bundle.getBoolean(key_disableReady, false);
         if (bundle.containsKey(key_disableReady)) {
@@ -58,7 +42,7 @@ public class FragmentArgs {
         bundle.putBoolean(key_disableReady, true);
     }
 
-    boolean isUserVisibleHintOnResume() {
+    public boolean isUserVisibleHintOnResume() {
         boolean useNormalResume = bundle.getBoolean(key_userVisibleHintOnResume, false);
         return useNormalResume;
     }

@@ -6,10 +6,7 @@ import android.view.View;
 
 import com.lin1987www.common.Utility;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-
-import fix.java.util.concurrent.ExceptionHelper;
 
 /**
  * Created by Administrator on 2015/7/5.
@@ -29,73 +26,6 @@ import fix.java.util.concurrent.ExceptionHelper;
 
 public class FragmentUtils {
     private static final String TAG = FragmentUtils.class.getName();
-    private static final Field sChildFragmentManagerField = findUnderlying(Fragment.class, "mChildFragmentManager");
-
-    static {
-        /**
-         * BUG : causing a java.IllegalStateException error, No Activity, only
-         * when navigating to Fragment for the SECOND time
-         * http://stackoverflow.com /questions/15207305/getting-the-error-java-lang-illegalstateexception-activity-has-been-destroyed
-         * http://stackoverflow.com/questions/14929907/causing-a-java-illegalstateexception-error-no-activity-only-when-navigating-to
-         */
-        Field f = null;
-        try {
-            f = Fragment.class.getDeclaredField("mChildFragmentManager");
-            f.setAccessible(true);
-        } catch (NoSuchFieldException e) {
-            Log.e(TAG, "Error getting mChildFragmentManager field", e);
-        }
-        // sChildFragmentManagerField = f;
-    }
-
-    public static Field findUnderlying(Class<?> clazz, String fieldName) {
-        Class<?> current = clazz;
-        do {
-            try {
-                return current.getDeclaredField(fieldName);
-            } catch (NoSuchFieldException e) {
-            }
-        } while ((current = current.getSuperclass()) != null);
-        return null;
-    }
-
-    public static void setFieldValue(Object obj, String fieldName, Object value) {
-        Field field = findUnderlying(obj.getClass(), fieldName);
-        setFieldValue(obj, field, value);
-    }
-
-    public static void setFieldValue(Object obj, String fieldName, Object value, Class<?> objClass) {
-        Field field = findUnderlying(objClass, fieldName);
-        setFieldValue(obj, field, value);
-    }
-
-    public static void setFieldValue(Object obj, Field field, Object value) {
-        try {
-            field.setAccessible(true);
-            // NOTE: Normally, a field that is final and static may not be modified.
-            //
-            // Below code is modify field is not final, but didn't work. :(
-            // Android:accessFlags(?),  Java:modifiers(X)
-            /*
-            Field modifiersField = Field.class.getDeclaredField("accessFlags");
-            modifiersField.setAccessible(true);
-            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-            */
-            field.set(obj, value);
-        } catch (Throwable e) {
-            ExceptionHelper.throwRuntimeException(e);
-        }
-    }
-
-    public static void setChildFragmentManager(Fragment fragment, FragmentManager fragmentManager) {
-        if (sChildFragmentManagerField != null) {
-            try {
-                sChildFragmentManagerField.set(fragment, fragmentManager);
-            } catch (Exception e) {
-                Log.e(TAG, "Error setting mChildFragmentManager field", e);
-            }
-        }
-    }
 
     public static void setArguments(Fragment fragment, Bundle args) {
         fragment.mArguments = args;
@@ -123,14 +53,6 @@ public class FragmentUtils {
             return false;
         }
     }
-
-    // SDK 22.0.1
-    /*
-    public static FragmentActivity getFragmentManagerActivity(FragmentManager fragmentManager) {
-        FragmentManagerImpl fm = (FragmentManagerImpl) fragmentManager;
-        return fm.mActivity;
-    }
-    */
 
     public static FragmentActivity getFragmentManagerActivity(FragmentManager fragmentManager) {
         FragmentHostCallback hostCallback = getFragmentHostCallback(fragmentManager);
@@ -200,8 +122,7 @@ public class FragmentUtils {
         return isStateLoss;
     }
 
-    public static void putAnim(FragmentManager.BackStackEntry backStackEntry, int transit, int styleRes, int enter,
-                               int exit, int popEnter, int popExit) {
+    public static void putAnim(FragmentManager.BackStackEntry backStackEntry, int transit, int styleRes, int enter, int exit, int popEnter, int popExit) {
         // fix rotation screen cause BackStack animation lose.
         BackStackRecord backStackRecord = (BackStackRecord) backStackEntry;
         backStackRecord.setTransition(transit);

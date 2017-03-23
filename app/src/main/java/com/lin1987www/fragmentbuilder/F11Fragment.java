@@ -51,7 +51,7 @@ public class F11Fragment extends FragmentFix implements View.OnClickListener, Fr
     @Override
     public void onResume() {
         super.onResume();
-        Duty duty = new GetUser().setExecutorService(ExecutorSet.nonBlockExecutor);
+        Duty duty = new GetUser("Duty").setExecutorService(ExecutorSet.nonBlockExecutor);
         duty.always(new DutyOn(this).setExecutorService(ExecutorSet.mainThreadExecutor));
         duty(duty);
     }

@@ -1,5 +1,1 @@
-
-1. Fragment Skip OnResume 改成 enableOnReady
-
-2. 每次Pop前都將 enableOnReady 改成 False ，Pop後 若沒有要繼續 Pop 則將剛剛的Fragment enableOnReady 改成 true 並嘗試執行 OnReady任務
-
+1. rx. concatMap 似乎可以串接

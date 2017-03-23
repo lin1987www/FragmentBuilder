@@ -280,13 +280,6 @@ public class FragmentActivityFix extends FragmentActivity {
             }
         }
         //
-        /*
-        FragmentBuilder.FragmentCarriers record = FragmentBuilder.popBackStackRecord(this);
-        if (record != null) {
-            record.popBackStack();
-            return;
-        }
-        */
         FragmentBuilder.FragCarrier carrier = FragmentBuilder.popBackStackRecord(this);
         if (carrier.getWillPopRecord() != null) {
             carrier.popBackStack();
@@ -302,8 +295,7 @@ public class FragmentActivityFix extends FragmentActivity {
         if (isTaskRoot() && enableDoubleBackPressed) {
             if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
                 if (System.currentTimeMillis() > (mLastBackPressedTime + 5 * 1000)) {
-                    Toast.makeText(getBaseContext(), "再按返回以退出",
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getBaseContext(), "再按返回以退出", Toast.LENGTH_SHORT).show();
                     mLastBackPressedTime = System.currentTimeMillis();
                     return;
                 }

@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.lin1987www.fragmentbuilder.widget.ShowEnterTextView;
 
@@ -31,6 +32,22 @@ public class F12Fragment extends FragmentFix implements View.OnClickListener {
         mShowEnterTextView = (ShowEnterTextView) view.findViewById(R.id.showNameTextView);
         mNextStepButton = (Button) view.findViewById(R.id.nextStepButton);
         mNextStepButton.setOnClickListener(this);
+
+        resume(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getActivity(), String.format("%s run resume task", TAG), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+        ready(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getActivity(), String.format("%s run ready task", TAG), Toast.LENGTH_SHORT).show();
+            }
+        });
+
         return view;
     }
 

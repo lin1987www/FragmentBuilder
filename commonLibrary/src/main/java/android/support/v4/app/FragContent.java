@@ -7,6 +7,8 @@ import android.support.v7.widget.TintContextWrapper;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.lin1987www.common.Utility;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -231,19 +233,9 @@ public class FragContent {
             mAllBackStackRecords = new ArrayList<>();
         }
         fillAllFragmentAndManagerAndRecord(fm, mAllFragments, mAllFragmentManagers, mAllBackStackRecords);
-        removeDuplicate(mAllFragments);
-        removeDuplicate(mAllFragmentManagers);
-        removeDuplicate(mAllBackStackRecords);
-    }
-
-    private static void removeDuplicate(ArrayList<?> arrayList) {
-        int size = arrayList.size();
-        for (int i = size - 1; i > -1; i--) {
-            Object obj = arrayList.get(i);
-            if (i != arrayList.indexOf(obj)) {
-                arrayList.remove(i);
-            }
-        }
+        Utility.removeDuplicate(mAllFragments);
+        Utility.removeDuplicate(mAllFragmentManagers);
+        Utility.removeDuplicate(mAllBackStackRecords);
     }
 
     private static void fillAllFragmentAndManagerAndRecord(FragmentManager fm, List<Fragment> fragmentList, List<FragmentManager> fragmentManagerList, ArrayList<BackStackRecord> backStackRecords) {
