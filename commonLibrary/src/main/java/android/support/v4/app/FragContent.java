@@ -231,7 +231,6 @@ public class FragContent {
             mAllBackStackRecords = new ArrayList<>();
         }
         fillAllFragmentAndManagerAndRecord(fm, mAllFragments, mAllFragmentManagers, mAllBackStackRecords);
-        // TODO 可能需要把重複的移除
         removeDuplicate(mAllFragments);
         removeDuplicate(mAllFragmentManagers);
         removeDuplicate(mAllBackStackRecords);

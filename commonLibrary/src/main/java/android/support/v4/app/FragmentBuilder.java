@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import fix.java.util.concurrent.ExceptionHelper;
@@ -473,11 +472,12 @@ public class FragmentBuilder {
             Log.e(TAG, String.format("FragmentBuilder lose FragmentActivity [%s] %s", fragmentClass, getFragmentTag()));
             return false;
         }
+        // v25.3.0 將 content.getFragContentPath() 整合到 isAvailable
+        content.getFragContentPath();
         return true;
     }
 
     public void buildImmediate() {
-        // TODO 將 content.getFragContentPath() 整合到 isAvailable
         if (!isAvailable()) {
             return;
         }
@@ -502,7 +502,7 @@ public class FragmentBuilder {
         fragmentAlreadyExist = fragmentManager.findFragmentByTag(fragmentTag);
         if (FragmentUtils.isFragmentExist(fragmentAlreadyExist)) {
             // If isRemoving() is true, the fragment maybe be popped out during animation.
-            Log.e(TAG, String.format("Fragment is exist in fragmentManager. tag: %s %s", fragmentTag, fragmentAlreadyExist.isRemoving()));
+            Log.e(TAG, String.format("Fragment exist in fragmentManager. tag: %s %s", fragmentTag, fragmentAlreadyExist.isRemoving()));
             if (ifExistPolicy.equals(ExistPolicy.doNothing)) {
                 return;
             } else if (ifExistPolicy.equals(ExistPolicy.reAttach)) {
@@ -635,13 +635,12 @@ public class FragmentBuilder {
                 if (currentBuilder != null) {
                     fragmentBuilderQueue.poll();
                     currentBuilder.buildImmediate();
-                    //currentBuilder.getFragmentManager().enqueueAction(this, false);
-                    FragContent.post(currentBuilder.getFragmentManager(), this);
+                    ExecCommit.enqueueAction(currentBuilder.getFragmentManager(), this);
                 } else {
                     if (fragmentBuilderQueue.size() == 0) {
                         mExecutingActions.set(false);
                     } else {
-                        String msg = String.format("fragmentBuilderQueue.size() %s, but currentBuilder==null", fragmentBuilderQueue.size());
+                        String msg = String.format("FragmentBuilder.Executor.fragmentBuilderQueue.size() %s, but currentBuilder==null", fragmentBuilderQueue.size());
                         throw new RuntimeException(msg);
                     }
                 }
@@ -711,20 +710,8 @@ public class FragmentBuilder {
         return builder;
     }
 
-    /* TODO
-    *  透過時間  找出最後 一個  目前可以被看到的  Enter 的 Fragment  為目標Fragment
-    *  透過 chain 檢查  找出不再  chain 裡面的 並且移除
-    * */
     public static boolean hasPopBackStack(final FragmentActivity activity) {
         ContextHelper.hideKeyboard(activity);
-        /*
-        FragmentCarriers record = popBackStackRecord(activity);
-        if (record != null) {
-            record.popBackStack();
-            return true;
-        }
-        return false;
-        */
         FragCarrier carrier = new FragCarrier(activity);
         if (carrier.getWillPopRecord() != null) {
             carrier.popBackStack();
@@ -739,148 +726,11 @@ public class FragmentBuilder {
 
     public static FragCarrier popBackStackRecord(FragmentActivity activity, String name, @PopFlag int flags) {
         FragCarrier fragCarrier = new FragCarrier(activity);
-        fragCarrier.flags = flags;
-        fragCarrier.backStackRecordName = name;
+        fragCarrier.setData(name, flags);
         if (fragCarrier.getWillPopRecord() != null) {
             return fragCarrier;
         }
         return null;
-    }
-
-    /*
-        public static FragmentCarriers popBackStackRecord(final FragmentActivity activity) {
-            FragContent content = new FragContent(activity);
-            if (content.getAllBackStackRecords().size() > 1) {
-                Collections.sort(content.getAllBackStackRecords(), sortBackStack);
-            }
-            ArrayList<BackStackRecord> list = content.getAllBackStackRecords();
-            if (list.size() > 0) {
-                FragmentBuilder lastBuilder = parse(list.get(0));
-                String name = lastBuilder.assignBackStackName;
-                return popBackStackRecord(activity, name, FragmentManager.POP_BACK_STACK_INCLUSIVE, content);
-            }
-            return null;
-        }
-
-        public static FragmentCarriers popBackStackRecord(FragmentActivity activity, String name, @PopFlag int flags) {
-            return popBackStackRecord(activity, new PredicateBackStackName(name), flags, null);
-        }
-
-        public static FragmentCarriers popBackStackRecord(FragmentActivity activity, String name, @PopFlag int flags, FragContent content) {
-            return popBackStackRecord(activity, new PredicateBackStackName(name), flags, content);
-        }
-
-        public static FragmentCarriers popBackStackRecord(FragmentActivity activity, Predicate predicate, @PopFlag int flags) {
-            return popBackStackRecord(activity, predicate, flags, null);
-        }
-
-        public static FragmentCarriers popBackStackRecord(FragmentActivity activity, Predicate predicate, @PopFlag int flags, FragContent content) {
-            if (content == null) {
-                content = new FragContent(activity);
-                if (content.getAllBackStackRecords().size() > 1) {
-                    Collections.sort(content.getAllBackStackRecords(), sortBackStack);
-                }
-            }
-            ArrayList<BackStackRecord> list = content.getAllBackStackRecords();
-            ArrayList<BackStackRecord> popList = new ArrayList<>();
-            for (int i = 0; i < list.size(); i++) {
-                BackStackRecord backStackRecord = list.get(i);
-                FragmentBuilder builder = parse(backStackRecord);
-                if (predicate.apply(backStackRecord, builder)) {
-                    if (flags == FragmentManager.POP_BACK_STACK_INCLUSIVE) {
-                        popList.add(backStackRecord);
-                    }
-                    break;
-                } else {
-                    popList.add(backStackRecord);
-                }
-            }
-            // 執行完後，某些Fragment只會出現一下又消失，因此SkipOnResume能使那些Fragment略過 OnResume 增進效能
-            skipOnResume(popList);
-            ArrayList<FragmentCarrier> fragmentCarrierList = new ArrayList<>();
-            FragmentCarrier prevSender = null;
-            for (int i = 0; i < popList.size(); i++) {
-                BackStackRecord backStackRecord = popList.get(i);
-                FragmentBuilder builder = parse(backStackRecord);
-                FragmentUtils.putAnim(backStackRecord, builder.transition, builder.styleRes, builder.enter, builder.exit, builder.popEnter, builder.popExit);
-                FragmentCarrier sender = new FragmentCarrier(activity, builder, backStackRecord);
-                if (prevSender != null) {
-                    prevSender.nextCarrier = sender;
-                    sender.prevCarrier = prevSender;
-                }
-                fragmentCarrierList.add(sender);
-                prevSender = sender;
-            }
-            FragmentCarriers record = null;
-            if (fragmentCarrierList.size() > 0) {
-                record = new FragmentCarriers(fragmentCarrierList);
-            }
-            return record;
-        }
-    */
-    private static void skipOnResume(ArrayList<BackStackRecord> popList) {
-        /*
-        下列情況沒有需要 skipOnResume 的 Fragment
-        a->A, b->B, c->C
-        |a->A|
-        |b->B|
-        |c->C|
-        以下情況需要 skipOnResume
-        a->A->b->B->c->C
-        |a->A|
-        |A->b|
-        |b->B|
-        |B->c|
-        |c->C|
-        需要skipOnResume的Fragment有 A,b,B,c
-        令 Op.Add 或 Op.Attach 為 1 , Op.Remove 或 Op.Detach 為 -1
-        瀏覽所有 Op 統計以上值為 0 則 skipOnResume
-        */
-        HashMap<Fragment, Integer> map = new HashMap<>();
-        for (BackStackRecord record : popList) {
-            for (BackStackRecord.Op op : record.mOps) {
-                if (op != null) {
-                    Fragment fragment = op.fragment;
-                    int value = 0;
-                    if (map.containsKey(fragment)) {
-                        value = map.get(fragment);
-                    }
-                    if (op.cmd == BackStackRecord.OP_ADD | op.cmd == BackStackRecord.OP_ATTACH) {
-                        value = value + 1;
-                    } else if (op.cmd == BackStackRecord.OP_REMOVE | op.cmd == BackStackRecord.OP_DETACH) {
-                        value = value - 1;
-                    }
-                    map.put(fragment, value);
-
-                }
-            }
-        }
-        for (Fragment fragment : map.keySet()) {
-            int value = map.get(fragment);
-            if (value == 0) {
-                FragmentArgs resumeFragmentArgs = new FragmentArgs(fragment.getArguments());
-                resumeFragmentArgs.skipPopOnResume();
-                // 其 Child Fragment 也要一併 skipOnResume
-                skipOnResume(fragment);
-            }
-        }
-    }
-
-    private static void skipOnResume(Fragment fragment) {
-        FragmentManager childFragmentManager = fragment.mChildFragmentManager;
-        if (childFragmentManager == null) {
-            return;
-        }
-        List<Fragment> fragList = childFragmentManager.getFragments();
-        if (fragList != null && fragList.size() > 0) {
-            for (Fragment frag : fragList) {
-                if (frag != null) {
-                    FragmentArgs resumeFragmentArgs = new FragmentArgs(frag.getArguments());
-                    resumeFragmentArgs.skipPopOnResume();
-                    skipOnResume(frag);
-                }
-            }
-        }
     }
 
     public interface Predicate {
@@ -927,16 +777,15 @@ public class FragmentBuilder {
         private ArrayList<FragPackage> fragPackages = new ArrayList<>();
 
         // Temp data
-        private FragmentManagerImpl hookPackageFragmentManager;
+        private FragmentManagerImpl lastDoPopFragmentManager;
         private FragmentManagerImpl doPopFragmentManager;
         private boolean didFillData = false;
         private ArrayList<BackStackRecord> availableRecords;
         private BackStackRecord willPopRecord;
 
-        // TODO 之後要改
         private OnPopBackStackListener popStackListener;
 
-        public FragCarrier setPopStackListener(OnPopBackStackListener listener) {
+        public FragCarrier setPopBackStackListener(OnPopBackStackListener listener) {
             this.popStackListener = listener;
             return this;
         }
@@ -947,16 +796,22 @@ public class FragmentBuilder {
         private String backStackRecordName;
         private boolean didMatchBackStackRecord = false;
 
+        public FragCarrier setData(String backStackRecordName, @PopFlag int flags) {
+            this.flags = flags;
+            this.backStackRecordName = backStackRecordName;
+            return this;
+        }
+
         public FragCarrier(FragmentActivity fragmentActivity) {
             this.fragmentActivity = fragmentActivity;
             this.content = new FragContent(fragmentActivity);
-            this.hookPackageFragmentManager = (FragmentManagerImpl) fragmentActivity.getSupportFragmentManager();
+            this.lastDoPopFragmentManager = (FragmentManagerImpl) fragmentActivity.getSupportFragmentManager();
         }
 
         public BackStackRecord getWillPopRecord() {
             if (!didFillData) {
                 didFillData = true;
-                content.fillAllFragmentAndManagerAndRecord(hookPackageFragmentManager);
+                content.fillAllFragmentAndManagerAndRecord(lastDoPopFragmentManager);
                 if (content.getAllBackStackRecords().size() > 1) {
                     Collections.sort(content.getAllBackStackRecords(), sortBackStack);
                 }
@@ -1004,7 +859,7 @@ public class FragmentBuilder {
                 doPopFragmentManager = willPopRecord.mManager;
                 //
                 // solution 1
-                new BackStackPopTrigger(doPopFragmentManager, this, willPopRecord);
+                new PopBackStackTrigger(doPopFragmentManager, this, willPopRecord);
                 // solution 2
                 // ExecCommit.enqueueAction(doPopFragmentManager, onAfterPopBackStackTask);
                 //
@@ -1013,13 +868,94 @@ public class FragmentBuilder {
             }
         }
 
-        private static class BackStackPopTrigger implements Runnable, FragmentManager.OnBackStackChangedListener {
+        private Runnable onAfterPopBackStackTask = new Runnable() {
+            @Override
+            public void run() {
+                onAfterPopBackStack();
+            }
+        };
+
+        private void onAfterPopBackStack() {
+            for (FragPackage fragPackage : fragPackages) {
+                fragPackage.tryToSend();
+            }
+            if (flags != FragmentManager.POP_BACK_STACK_INCLUSIVE && backStackRecordName == null) {
+                finish();
+            } else {
+                if (didMatchBackStackRecord) {
+                    finish();
+                } else {
+                    // try pop next one
+                    lastDoPopFragmentManager = doPopFragmentManager;
+                    doPopFragmentManager = null;
+                    didFillData = false;
+                    availableRecords = null;
+                    willPopRecord = null;
+                    popBackStack();
+                }
+            }
+        }
+
+        private void finish() {
+             /*
+            下列情況一次Pop一個BackStackRecord a, b, c 在單次Pop後需要執行 performResumeIfReady
+            a->A, b->B, c->C
+            |a->A|
+            |b->B|
+            |c->C|
+            以下情況是一口氣 Pop 到a 因此 a 需要在Pop後執行 performResumeIfReady
+            a->A->b->B->c->C
+            |a->A|
+            |A->b|
+            |b->B|
+            |B->c|
+            |c->C|
+            令 Op.Add 或 Op.Attach 為 1 , Op.Remove 或 Op.Detach 為 -1
+            瀏覽所有 Op 統計以上值為 -1 則執行 performResumeIfReady
+            */
+            HashMap<Fragment, Integer> map = new HashMap<>();
+            for (FragPackage fragPackage : fragPackages) {
+                if (!fragPackage.didSent) {
+                    Log.e(TAG, String.format("Didn't send %s", fragPackage.packageFrag));
+                }
+                if (fragPackage.inBackStackFrag != null) {
+                    int value = 0;
+                    if (map.containsKey(fragPackage.inBackStackFrag)) {
+                        value = map.get(fragPackage.inBackStackFrag);
+                    }
+                    value = value - 1;
+                    map.put(fragPackage.inBackStackFrag, value);
+                }
+                if (fragPackage.packageFrag != null) {
+                    int value = 0;
+                    if (map.containsKey(fragPackage.packageFrag)) {
+                        value = map.get(fragPackage.packageFrag);
+                    }
+                    value = value + 1;
+                    map.put(fragPackage.packageFrag, value);
+                }
+            }
+            // -1 代表要執行 ready
+            for (Fragment fragment : map.keySet()) {
+                int value = map.get(fragment);
+                if (value == -1) {
+                    FragmentFix f = (FragmentFix) fragment;
+                    f.performResumeIfReady("FragCarrier finish.");
+                }
+            }
+            if (popStackListener != null) {
+                FragPackage fragPackage = fragPackages.get(fragPackages.size() - 1);
+                popStackListener.onPopBackStack(fragPackage.recipient, fragPackage.packageFrag, this);
+            }
+        }
+
+        private static class PopBackStackTrigger implements Runnable, FragmentManager.OnBackStackChangedListener {
             FragmentManagerImpl popFragmentManager;
             BackStackRecord popRecord;
             FragCarrier fragCarrier;
             private boolean didPopBackStack = false;
 
-            public BackStackPopTrigger(FragmentManagerImpl fragmentManager, FragCarrier fragCarrier, BackStackRecord popRecord) {
+            public PopBackStackTrigger(FragmentManagerImpl fragmentManager, FragCarrier fragCarrier, BackStackRecord popRecord) {
                 this.popFragmentManager = fragmentManager;
                 this.popRecord = popRecord;
                 this.fragCarrier = fragCarrier;
@@ -1046,7 +982,7 @@ public class FragmentBuilder {
         private static class FragPackage {
             private FragmentActivity fragmentActivity;
             BackStackRecord record;
-            Fragment frag;
+            Fragment packageFrag;
             Fragment inBackStackFrag;
             private FragmentBuilder builder;
 
@@ -1056,9 +992,10 @@ public class FragmentBuilder {
             public FragPackage(FragmentActivity fragmentActivity, BackStackRecord record) {
                 this.fragmentActivity = fragmentActivity;
                 this.record = record;
-                this.frag = FragContent.findAddedFragment(record);
+                this.packageFrag = FragContent.findAddedFragment(record);
                 this.inBackStackFrag = FragContent.findStillInBackStackFragment(record);
                 this.builder = FragmentBuilder.parse(record);
+                FragmentUtils.putAnim(record, builder.transition, builder.styleRes, builder.enter, builder.exit, builder.popEnter, builder.popExit);
             }
 
             public void disableReady() {
@@ -1073,7 +1010,7 @@ public class FragmentBuilder {
                     recipient = FragContentPath.findObject(fragmentActivity, builder.delegateFragContentPath);
                     if (recipient != null) {
                         didSent = true;
-                        sendPackageFragment(recipient, frag);
+                        sendPackageFragment(recipient, packageFrag);
                     }
                 }
             }
@@ -1098,301 +1035,10 @@ public class FragmentBuilder {
                 }
             }
         }
-
-        private Runnable onAfterPopBackStackTask = new Runnable() {
-            @Override
-            public void run() {
-                onAfterPopBackStack();
-            }
-        };
-
-        private void onAfterPopBackStack() {
-            for (FragPackage fragPackage : fragPackages) {
-                fragPackage.tryToSend();
-            }
-            if (flags != FragmentManager.POP_BACK_STACK_INCLUSIVE && backStackRecordName == null) {
-                finish();
-            } else {
-                if (didMatchBackStackRecord) {
-                    finish();
-                } else {
-                    // try pop next one
-                    hookPackageFragmentManager = doPopFragmentManager;
-                    doPopFragmentManager = null;
-                    didFillData = false;
-                    availableRecords = null;
-                    willPopRecord = null;
-                    popBackStack();
-                }
-            }
-        }
-
-        private void finish() {
-             /*
-            下列情況沒有需要 skipOnResume 的 Fragment
-            a->A, b->B, c->C
-            |a->A|
-            |b->B|
-            |c->C|
-            以下情況需要 skipOnResume
-            a->A->b->B->c->C
-            |a->A|
-            |A->b|
-            |b->B|
-            |B->c|
-            |c->C|
-            需要skipOnResume的Fragment有 A,b,B,c
-            令 Op.Add 或 Op.Attach 為 1 , Op.Remove 或 Op.Detach 為 -1
-            瀏覽所有 Op 統計以上值為 0 則 skipOnResume
-            */
-            HashMap<Fragment, Integer> map = new HashMap<>();
-            for (FragPackage fragPackage : fragPackages) {
-                if (!fragPackage.didSent) {
-                    Log.e(TAG, String.format("Didn't send %s", fragPackage.frag));
-                }
-                if (fragPackage.inBackStackFrag != null) {
-                    int value = 0;
-                    if (map.containsKey(fragPackage.inBackStackFrag)) {
-                        value = map.get(fragPackage.inBackStackFrag);
-                    }
-                    value = value - 1;
-                    map.put(fragPackage.inBackStackFrag, value);
-                }
-                if (fragPackage.frag != null) {
-                    int value = 0;
-                    if (map.containsKey(fragPackage.frag)) {
-                        value = map.get(fragPackage.frag);
-                    }
-                    value = value + 1;
-                    map.put(fragPackage.frag, value);
-                }
-            }
-            // -1 代表要執行 ready
-            for (Fragment fragment : map.keySet()) {
-                int value = map.get(fragment);
-                if (value == -1) {
-                    FragmentFix f = (FragmentFix) fragment;
-                    f.performResumeIfReady("FragCarrier finish.");
-                }
-            }
-            if (popStackListener != null) {
-                FragPackage fragPackage = fragPackages.get(fragPackages.size() - 1);
-                popStackListener.onPopBackStack(fragPackage.recipient, fragPackage.frag);
-            }
-        }
-    }
-
-    private static class FragmentCarrier implements FragmentManager.OnBackStackChangedListener {
-        private BackStackRecord record;
-
-        private FragmentActivity fragmentActivity;
-
-        private FragmentManagerImpl hookPackageFragmentManager;
-
-        protected FragmentManagerImpl getHookPackageFragmentManager() {
-            if (hookPackageFragmentManager == null) {
-                this.hookPackageFragmentManager = (FragmentManagerImpl) getPackageFragment().getFragmentManager();
-            }
-            return hookPackageFragmentManager;
-        }
-
-        private Fragment packageFragment;
-
-        protected Fragment getPackageFragment() {
-            if (packageFragment == null) {
-                this.packageFragment = FragContent.findAddedFragment(record);
-            }
-            return packageFragment;
-        }
-
-        private Object recipient;
-
-        private FragmentBuilder builder;
-
-        private boolean isSent = false;
-        private boolean didPopBackStack = false;
-        private boolean didRemoveBackStackChangedListener = false;
-        private boolean didNotifyNextCarrier = false;
-        private boolean didTriggerPopStackListener = false;
-
-        public FragmentCarrier prevCarrier;
-        public FragmentCarrier nextCarrier;
-
-        private OnPopBackStackListener popStackListener;
-
-        public void setPopStackListener(OnPopBackStackListener listener) {
-            this.popStackListener = listener;
-        }
-
-        public FragmentCarrier(FragmentActivity activity, FragmentBuilder builder, BackStackRecord entry) {
-            // 直接給予目前的 Activity 避免被釋放的時候 找不到東西
-            this.fragmentActivity = activity;
-            this.builder = builder;
-            this.record = entry;
-        }
-
-        public void popBackStack() {
-            if (getHookPackageFragmentManager().mBackStack == null) {
-                ExecCommit.enqueueAction(getHookPackageFragmentManager(), new Runnable() {
-                    @Override
-                    public void run() {
-                        popBackStack();
-                    }
-                });
-                return;
-            }
-            int backStackSize = getHookPackageFragmentManager().mBackStack.size();
-            if (backStackSize == 0) {
-                // 這裡暗示了一個錯誤!!!   pop 前檢查  才有救... 不應該有情況
-                throw new RuntimeException("FragmentManagerImpl.backStackSize == 0, can not popBackStack.");
-            } else {
-                // 正常情況是 還有 BackStack 存在
-                if (getHookPackageFragmentManager().mBackStack.contains(record)) {
-                    getHookPackageFragmentManager().addOnBackStackChangedListener(FragmentCarrier.this);
-                    getHookPackageFragmentManager().popBackStack();
-                } else {
-                    throw new RuntimeException("FragmentManager didn't contain BackStackRecord, can not popBackStack.");
-                }
-            }
-        }
-
-        @Override
-        public void onBackStackChanged() {
-            didPopBackStack = !getHookPackageFragmentManager().mBackStack.contains(record);
-            if (didPopBackStack) {
-                if (!didRemoveBackStackChangedListener) {
-                    didRemoveBackStackChangedListener = true;
-                    // 2017 02/22 提早移除的話 會影響到部分BackStack沒有被通知到  因為 for 迴圈 size() 變動了
-                    ExecCommit.enqueueAction(getHookPackageFragmentManager(), new Runnable() {
-                        @Override
-                        public void run() {
-                            getHookPackageFragmentManager().removeOnBackStackChangedListener(FragmentCarrier.this);
-                        }
-                    });
-                    //hookPackageFragmentManager.enqueueAction(tryToSendPackageFragmentTask, false);
-                    ExecCommit.enqueueAction(getHookPackageFragmentManager(), tryToSendPackageFragmentTask);
-                }
-            }
-        }
-
-        private void tryToSendPackageFragment() {
-            if (prevCarrier != null) {
-                prevCarrier.tryToSendPackageFragment();
-            }
-            if (recipient == null) {
-                recipient = FragContentPath.findObject(fragmentActivity, builder.delegateFragContentPath);
-            }
-            if (recipient != null) {
-                sendPackageFragment();
-                // 有 recipient 才事件觸發
-                triggerPopBackStackEvent();
-            }
-            if (!didNotifyNextCarrier) {
-                ExecCommit.enqueueAction(getHookPackageFragmentManager(), notifyNextFragmentCarrierTask);
-            }
-        }
-
-        private Runnable tryToSendPackageFragmentTask = new Runnable() {
-            @Override
-            public void run() {
-                tryToSendPackageFragment();
-            }
-        };
-
-        private void sendPackageFragment() {
-            if (!isSent) {
-                isSent = true;
-                sendPackageFragment(recipient, getPackageFragment());
-            }
-        }
-
-        private void triggerPopBackStackEvent() {
-            if (!didTriggerPopStackListener) {
-                didTriggerPopStackListener = true;
-                if (popStackListener != null) {
-                    popStackListener.onPopBackStack(recipient, getPackageFragment());
-                    popStackListener = null;
-                }
-            }
-        }
-
-        private Runnable triggerPopBackStackEventTask = new Runnable() {
-            @Override
-            public void run() {
-                triggerPopBackStackEvent();
-            }
-        };
-
-        private void notifyNextFragmentCarrier() {
-            if (!didNotifyNextCarrier) {
-                if (nextCarrier != null) {
-                    didNotifyNextCarrier = true;
-                    nextCarrier.popBackStack();
-                } else {
-                    didNotifyNextCarrier = true;
-                }
-            }
-        }
-
-        private Runnable notifyNextFragmentCarrierTask = new Runnable() {
-            @Override
-            public void run() {
-                notifyNextFragmentCarrier();
-            }
-        };
-
-        private static void sendPackageFragment(Object onPopFragmentObject, Fragment popFragment) {
-            if (onPopFragmentObject == null) {
-                return;
-            }
-            if (onPopFragmentObject instanceof OnPopFragmentListener) {
-                ((OnPopFragmentListener) onPopFragmentObject).onPopFragment(popFragment);
-                return;
-            }
-            try {
-                Class<?> targetClass = onPopFragmentObject.getClass();
-                Method method = targetClass.getDeclaredMethod("onPopFragment", popFragment.getClass());
-                if (method != null) {
-                    method.invoke(onPopFragmentObject, popFragment);
-                    return;
-                }
-            } catch (Throwable ex) {
-                ExceptionHelper.printException(String.format("onPopFragment on %s", onPopFragmentObject), ex);
-            }
-        }
-    }
-
-    public static class FragmentCarriers {
-        public final ArrayList<FragmentCarrier> fragmentCarriersList;
-
-        public FragmentCarriers(ArrayList<FragmentCarrier> list) {
-            this.fragmentCarriersList = list;
-        }
-
-        public FragmentCarrier getHead() {
-            return fragmentCarriersList.get(0);
-        }
-
-        public FragmentCarrier getTail() {
-            return fragmentCarriersList.get(fragmentCarriersList.size() - 1);
-        }
-
-        public void popBackStack() {
-            getHead().popBackStack();
-        }
-
-        public FragmentCarriers setTailPopStackListener(OnPopBackStackListener listener) {
-            getTail().setPopStackListener(listener);
-            return this;
-        }
     }
 
     public interface OnPopBackStackListener {
-        void onPopBackStack(Object recipient, Fragment fragment);
-    }
-
-    public interface OnPopStackListener {
-        void onPopStack(Object recipient, Fragment fragment, BackStackRecord record);
+        void onPopBackStack(Object recipient, Fragment packageFrag, FragCarrier fragCarrier);
     }
 
     public interface OnPopFragmentListener {
