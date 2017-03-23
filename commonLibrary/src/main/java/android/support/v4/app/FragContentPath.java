@@ -54,7 +54,7 @@ public class FragContentPath {
                     if (fragment == null) {
                         break;
                     }
-                    fm = fragment.getChildFragmentManager();
+                    fm = fragment.mChildFragmentManager;
                 }
             }
         }

@@ -1,7 +1,9 @@
 package android.support.v4.app;
 
+import android.content.Context;
 import android.support.annotation.IdRes;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.TintContextWrapper;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -61,9 +63,8 @@ public class FragContent {
                 throw new RuntimeException(String.format("You must set id to %s", srcView));
             }
             */
-            if (!(srcView.getContext() instanceof FragmentActivity)) {
-                throw new RuntimeException(String.format("You must use FragmentActivity. %s", srcView));
-            }
+            // Test using FragmentActivity
+            getFragmentActivity(srcView);
         }
     }
 
@@ -73,7 +74,7 @@ public class FragContent {
         } else if (srcFragment != null) {
             return srcFragment.getActivity();
         } else {
-            return (FragmentActivity) srcView.getContext();
+            return getFragmentActivity(srcView);
         }
     }
 
@@ -217,16 +218,33 @@ public class FragContent {
     }
 
     private void fillAllFragmentAndManagerAndRecord() {
-        ArrayList<Fragment> fragments = new ArrayList<>();
-        ArrayList<FragmentManager> fragmentManagers = new ArrayList<>();
-        ArrayList<BackStackRecord> backStackRecords = new ArrayList<>();
+        fillAllFragmentAndManagerAndRecord(getFragmentActivity().getSupportFragmentManager());
+    }
+
+    public void fillAllFragmentAndManagerAndRecord(FragmentManager fm) {
         if (getFragmentActivity() == null) {
             return;
         }
-        fillAllFragmentAndManagerAndRecord(getFragmentActivity().getSupportFragmentManager(), fragments, fragmentManagers, backStackRecords);
-        mAllFragments = fragments;
-        mAllFragmentManagers = fragmentManagers;
-        mAllBackStackRecords = backStackRecords;
+        if (mAllBackStackRecords == null) {
+            mAllFragments = new ArrayList<>();
+            mAllFragmentManagers = new ArrayList<>();
+            mAllBackStackRecords = new ArrayList<>();
+        }
+        fillAllFragmentAndManagerAndRecord(fm, mAllFragments, mAllFragmentManagers, mAllBackStackRecords);
+        // TODO 可能需要把重複的移除
+        removeDuplicate(mAllFragments);
+        removeDuplicate(mAllFragmentManagers);
+        removeDuplicate(mAllBackStackRecords);
+    }
+
+    private static void removeDuplicate(ArrayList<?> arrayList) {
+        int size = arrayList.size();
+        for (int i = size - 1; i > -1; i--) {
+            Object obj = arrayList.get(i);
+            if (i != arrayList.indexOf(obj)) {
+                arrayList.remove(i);
+            }
+        }
     }
 
     private static void fillAllFragmentAndManagerAndRecord(FragmentManager fm, List<Fragment> fragmentList, List<FragmentManager> fragmentManagerList, ArrayList<BackStackRecord> backStackRecords) {
@@ -245,7 +263,7 @@ public class FragContent {
                         continue;
                     }
                     fragmentList.add(frag);
-                    fillAllFragmentAndManagerAndRecord(frag.getChildFragmentManager(), fragmentList, fragmentManagerList, backStackRecords);
+                    fillAllFragmentAndManagerAndRecord(frag.mChildFragmentManager, fragmentList, fragmentManagerList, backStackRecords);
                 }
             }
         }
@@ -331,17 +349,9 @@ public class FragContent {
         return mParentFragContentPath;
     }
 
-    public void post(Runnable task) {
-        Fragment fragment = getSrcFragment();
-        FragmentManagerImpl fm = null;
-        if (fragment != null) {
-            fm = (FragmentManagerImpl) fragment.getChildFragmentManager();
-        } else if (getFragmentActivity() != null) {
-            fm = (FragmentManagerImpl) getFragmentActivity().getSupportFragmentManager();
-        }
-        if (fm != null) {
-            fm.enqueueAction(task, false);
-        }
+    public static void post(FragmentManager fragmentManager, Runnable task) {
+        FragmentManagerImpl fm = (FragmentManagerImpl) fragmentManager;
+        fm.mHost.getHandler().post(task);
     }
 
     public boolean isResumed() {
@@ -405,41 +415,56 @@ public class FragContent {
         }
         if (obj instanceof View) {
             if (!obj.equals(content.srcView)) {
-                throw new NonMatchException("Didn't match View.");
+                throw new NonMatchException(String.format("Didn't match View. %s", obj));
             }
         } else if (obj instanceof Fragment) {
             if (!obj.equals(content.srcFragment)) {
-                throw new NonMatchException("Didn't match Fragment.");
+                throw new NonMatchException(String.format("Didn't match Fragment. %s", obj));
             }
         } else if (obj instanceof FragmentActivity) {
             if (!obj.equals(content.srcFragmentActivity)) {
-                throw new NonMatchException("Didn't match FragmentActivity.");
+                throw new NonMatchException(String.format("Didn't match FragmentActivity. %s", obj));
             }
         }
     }
 
-    public static Fragment findAddFragment(BackStackRecord backStackRecord) {
-        BackStackRecord.Op op = backStackRecord.mHead;
-        while (op != null) {
-            if (op.cmd == BackStackRecord.OP_ADD) {
-                return op.fragment;
+    public static Fragment findAddedFragment(BackStackRecord backStackRecord) {
+        ArrayList<BackStackRecord.Op> ops = backStackRecord.mOps;
+        for (BackStackRecord.Op op : ops) {
+            if (op != null) {
+                if (op.cmd == BackStackRecord.OP_ADD) {
+                    return op.fragment;
+                }
             }
-            op = op.next;
         }
         return null;
     }
 
-    public static Fragment findInBackStackFragment(BackStackRecord backStackRecord) {
+    public static Fragment findStillInBackStackFragment(BackStackRecord backStackRecord) {
         // 未來可能會出現  一次把兩個以上 推入 InBackStack 的 Fragment
-        BackStackRecord.Op op = backStackRecord.mHead;
-        while (op != null) {
-            if (op.cmd == BackStackRecord.OP_REMOVE || op.cmd == BackStackRecord.OP_DETACH) {
-                return op.fragment;
+        ArrayList<BackStackRecord.Op> ops = backStackRecord.mOps;
+        for (BackStackRecord.Op op : ops) {
+            if (op != null) {
+                if (op.cmd == BackStackRecord.OP_REMOVE || op.cmd == BackStackRecord.OP_DETACH) {
+                    return op.fragment;
+                }
             }
-            op = op.next;
         }
         return null;
     }
 
-
+    public static FragmentActivity getFragmentActivity(View srcView) {
+        Context context = srcView.getContext();
+        FragmentActivity fragmentActivity;
+        if (context instanceof TintContextWrapper) {
+            TintContextWrapper tintContextWrapper = (TintContextWrapper) context;
+            context = tintContextWrapper.getBaseContext();
+        }
+        if (context instanceof FragmentActivity) {
+            fragmentActivity = (FragmentActivity) context;
+        } else {
+            throw new RuntimeException(String.format("You must use FragmentActivity. %s", srcView));
+        }
+        return fragmentActivity;
+    }
 }

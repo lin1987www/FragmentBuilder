@@ -57,7 +57,7 @@ public class DialogFrag extends FragmentFix implements View.OnClickListener, Fra
             }
             FragmentBuilder
                     .popBackStackRecord(getActivity())
-                    .setTailPopStackListener(this)
+                    .setPopStackListener(this)
                     .popBackStack();
         }
     }

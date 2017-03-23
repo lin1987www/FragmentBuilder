@@ -16,13 +16,17 @@ import com.lin1987www.common.Utility;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import fix.java.util.concurrent.Duty;
 import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.observables.ConnectableObservable;
 import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
 
 
 /**
@@ -43,17 +47,20 @@ public class FragmentFix extends Fragment {
     protected ArrayList<Duty<?>> mDutyList = new ArrayList<>();
     protected final AtomicBoolean mIsEnterAnim = new AtomicBoolean();
 
-    protected LinkedList<ConnectableObservable<?>> mConnectableObservableList = new LinkedList<>();
-    protected CompositeDisposable mCompositeDisposable = new CompositeDisposable();
-
-    protected FragmentArgs mFragmentArgs;
-    Animation.AnimationListener mFragmentAnimListener;
-
+    private boolean mIsDuringResume = false;
     private boolean mIsReady = false;
 
     public boolean isReady() {
         return mIsReady;
     }
+
+    protected LinkedList<ConnectableObservable<?>> mOnResumeObservableList = new LinkedList<>();
+    protected LinkedList<ConnectableObservable<?>> mOnReadyObservableList = new LinkedList<>();
+    protected CompositeDisposable mCompositeDisposable = new CompositeDisposable();
+
+    protected FragmentArgs mFragmentArgs;
+    Animation.AnimationListener mFragmentAnimListener;
+
 
     protected void prepareAnim() {
         if (DEBUG) {
@@ -64,7 +71,7 @@ public class FragmentFix extends Fragment {
 
     protected void endAnim() {
         mIsEnterAnim.set(false);
-        performPendingDuty("endAnim");
+        performResumeIfReady("endAnim");
     }
 
     public FragmentArgs getFragmentArgs() {
@@ -206,7 +213,7 @@ public class FragmentFix extends Fragment {
             }
         }
         super.onCreate(savedInstanceState);
-        BackStackRecordShell.wrap(this, getChildFragmentManager());
+        ExecCommit.wrap(mChildFragmentManager);
     }
 
     @Override
@@ -255,6 +262,7 @@ public class FragmentFix extends Fragment {
             Log.d(TAG, String.format(FORMAT, "onViewStateRestored"));
         }
         super.onViewStateRestored(savedInstanceState);
+        ExecCommit.wrap(mChildFragmentManager);
     }
 
     @Override
@@ -262,6 +270,10 @@ public class FragmentFix extends Fragment {
         FragmentUtils.log(this, "performStart before");
         super.performStart();
         FragmentUtils.log(this, "performStart after");
+        // v25.3.0 開始動畫會在 OnResume 後才執行，避免卡住
+        if (getNextTransition() != 0 || getNextTransitionStyle() != 0) {
+            prepareAnim();
+        }
     }
 
     @Override
@@ -275,7 +287,8 @@ public class FragmentFix extends Fragment {
 
     @Override
     void performResume() {
-        super.performResume();
+        // 修改原本的 performResume 行為，保持 onResume 被呼叫一次
+        // super.performResume();
         FragmentUtils.log(this, "performResume before");
         if (mChildFragmentManager != null) {
             mChildFragmentManager.noteStateNotSaved();
@@ -283,7 +296,7 @@ public class FragmentFix extends Fragment {
         }
         mState = RESUMED;
 //        mCalled = false;
-        performPendingDuty("performResume");
+        performResumeIfReady("performResume");
 //        if (!mCalled) {
 //            throw new SuperNotCalledException("Fragment " + this
 //                    + " did not call through to super.onResume()");
@@ -293,6 +306,13 @@ public class FragmentFix extends Fragment {
             mChildFragmentManager.execPendingActions();
         }
         FragmentUtils.log(this, "performResume after");
+        mIsDuringResume = true;
+        if (mOnResumeObservableList.size() > 0) {
+            while (null != mOnResumeObservableList.peekFirst()) {
+                ConnectableObservable connectableObservable = mOnResumeObservableList.pollFirst();
+                mCompositeDisposable.add(connectableObservable.connect());
+            }
+        }
     }
 
     @Override
@@ -307,6 +327,7 @@ public class FragmentFix extends Fragment {
     @Override
     void performPause() {
         FragmentUtils.log(this, "performPause before");
+        mIsDuringResume = false;
         mIsReady = false;
         if (mDutyList.size() > 0) {
             // Cancel all take
@@ -325,7 +346,8 @@ public class FragmentFix extends Fragment {
             mDutyList.clear();
         }
         mCompositeDisposable.clear();
-        mConnectableObservableList.clear();
+        mOnReadyObservableList.clear();
+        mOnResumeObservableList.clear();
         super.performPause();
         FragmentUtils.log(this, "performPause after");
     }
@@ -412,7 +434,7 @@ public class FragmentFix extends Fragment {
         mUserVisibleHint = isVisibleToUser;
         super.setUserVisibleHint(isVisibleToUser);
         if (isVisibleToUser && isResumed()) {
-            performPendingDuty("setUserVisibleHint");
+            performResumeIfReady("setUserVisibleHint");
         }
         if (getFragmentArgs().isUserVisibleHintOnResume() && !isVisibleToUser) {
             Log.d(TAG, String.format(FORMAT, String.format("isUserVisibleHintOnResume set mIsReady false")));
@@ -420,55 +442,61 @@ public class FragmentFix extends Fragment {
         }
     }
 
-    protected void performPendingDuty(String tag) {
+    protected void performResumeIfReady(String tag) {
         if (!getUserVisibleHint()) {
             if (DEBUG) {
-                Log.d(TAG, String.format(FORMAT, String.format("performPendingDuty skip for getUserVisibleHint false by %s", tag)));
+                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady for getUserVisibleHint false by %s", tag)));
             }
             return;
         }
         if (!FragmentUtils.getUserVisibleHintAllParent(this)) {
             if (DEBUG) {
-                Log.d(TAG, String.format(FORMAT, String.format("performPendingDuty skip for getUserVisibleHintAllParent() is false by %s", tag)));
+                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady getUserVisibleHintAllParent() false by %s", tag)));
             }
             return;
         }
         if (!FragmentUtils.isFragmentAvailable(this)) {
             if (DEBUG) {
-                Log.d(TAG, String.format(FORMAT, String.format("performPendingDuty skip for isFragmentAvailable false by %s", tag)));
+                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady isFragmentAvailable false by %s", tag)));
             }
             return;
         }
         if (mIsEnterAnim.get()) {
             if (DEBUG) {
-                Log.d(TAG, String.format(FORMAT, String.format("performPendingDuty skip for anim true by %s", tag)));
+                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady for enter anim by %s", tag)));
             }
             return;
         }
         if (getFragmentArgs().consumePopOnResume()) {
             if (DEBUG) {
-                Log.d(TAG, String.format(FORMAT, String.format("performPendingDuty consume by %s", tag)));
+                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady consume by %s", tag)));
+            }
+            return;
+        }
+        if (getFragmentArgs().consumeDisableReady()) {
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady consumeDisableReady by %s", tag)));
             }
             return;
         }
         if (mIsReady) {
             if (DEBUG) {
-                Log.d(TAG, String.format(FORMAT, String.format("performPendingDuty skip for mIsReady true by %s", tag)));
+                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady mIsReady true by %s", tag)));
             }
             return;
+        }
+        if (DEBUG) {
+            Log.d(TAG, String.format(FORMAT, String.format("performResumeIfReady by %s", tag)));
         }
         if (DEBUG) {
             Log.d(TAG, String.format(FORMAT, String.format("onResume by %s", tag)));
         }
         mIsReady = true;
         mCalled = false;
+
         onResume();
         if (!mCalled) {
-            throw new SuperNotCalledException("Fragment " + this
-                    + " did not call through to super.onResume()");
-        }
-        if (DEBUG) {
-            Log.d(TAG, String.format(FORMAT, String.format("performPendingDuty by %s", tag)));
+            throw new SuperNotCalledException("Fragment " + this + " did not call through to super.onResume()");
         }
         if (mDutyList.size() > 0) {
             for (Duty duty : mDutyList) {
@@ -480,9 +508,9 @@ public class FragmentFix extends Fragment {
                 }
             }
         }
-        if (mConnectableObservableList.size() > 0) {
-            while (null != mConnectableObservableList.peekFirst()) {
-                ConnectableObservable connectableObservable = mConnectableObservableList.pollFirst();
+        if (mOnReadyObservableList.size() > 0) {
+            while (null != mOnReadyObservableList.peekFirst()) {
+                ConnectableObservable connectableObservable = mOnReadyObservableList.pollFirst();
                 mCompositeDisposable.add(connectableObservable.connect());
             }
         }
@@ -517,6 +545,43 @@ public class FragmentFix extends Fragment {
         }
     }
 
+    public void resume(final Runnable task) {
+        resume(Observable.timer(0, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.computation()).observeOn(AndroidSchedulers.mainThread())
+        ).subscribe(new Consumer<Long>() {
+            @Override
+            public void accept(Long aLong) throws Exception {
+                task.run();
+            }
+        });
+    }
+
+    public <T> ConnectableObservable<T> resume(Observable<T> observable) {
+        ConnectableObservable<T> connectableObservable;
+        if (observable instanceof ConnectableObservable) {
+            connectableObservable = (ConnectableObservable<T>) observable;
+        } else {
+            connectableObservable = observable.publish();
+        }
+        if (mIsDuringResume) {
+            mCompositeDisposable.add(connectableObservable.connect());
+        } else {
+            mOnReadyObservableList.add(connectableObservable);
+        }
+        return connectableObservable;
+    }
+
+    public void post(final Runnable task) {
+        wrap(Observable.timer(0, TimeUnit.SECONDS))
+                .subscribeOn(Schedulers.computation()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Long>() {
+                    @Override
+                    public void accept(Long aLong) throws Exception {
+                        task.run();
+                    }
+                });
+    }
+
     public <T> ConnectableObservable<T> wrap(Observable<T> observable) {
         ConnectableObservable<T> connectableObservable;
         if (observable instanceof ConnectableObservable) {
@@ -527,7 +592,7 @@ public class FragmentFix extends Fragment {
         if (mIsReady) {
             mCompositeDisposable.add(connectableObservable.connect());
         } else {
-            mConnectableObservableList.add(connectableObservable);
+            mOnReadyObservableList.add(connectableObservable);
         }
         return connectableObservable;
     }
@@ -554,7 +619,7 @@ public class FragmentFix extends Fragment {
                 connectableObservable = observable.publish();
             }
             connectableObservable.subscribeWith(observer);
-            mConnectableObservableList.add(connectableObservable);
+            mOnReadyObservableList.add(connectableObservable);
         }
     }
 }

@@ -75,7 +75,7 @@ public class FragmentActivityFix extends FragmentActivity {
         for (PuppetActivity puppetActivity : puppetActivities) {
             puppetActivity.onCreate(savedInstanceState);
         }
-        BackStackRecordShell.wrap(this, getSupportFragmentManager());
+        ExecCommit.wrap(getSupportFragmentManager());
     }
 
     @CallSuper
@@ -280,9 +280,16 @@ public class FragmentActivityFix extends FragmentActivity {
             }
         }
         //
+        /*
         FragmentBuilder.FragmentCarriers record = FragmentBuilder.popBackStackRecord(this);
         if (record != null) {
             record.popBackStack();
+            return;
+        }
+        */
+        FragmentBuilder.FragCarrier carrier = FragmentBuilder.popBackStackRecord(this);
+        if (carrier.getWillPopRecord() != null) {
+            carrier.popBackStack();
             return;
         }
         // 都沒有Pop Fragment時會用到，大概是用於SideMenu上

@@ -7,6 +7,7 @@ import android.view.View;
 import com.lin1987www.common.Utility;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 
 import fix.java.util.concurrent.ExceptionHelper;
 
@@ -207,13 +208,12 @@ public class FragmentUtils {
         backStackRecord.setTransitionStyle(styleRes);
         backStackRecord.setCustomAnimations(enter, exit, popEnter, popExit);
 
-        BackStackRecord.Op op = backStackRecord.mHead;
-        while (op != null) {
+        ArrayList<BackStackRecord.Op> ops = backStackRecord.mOps;
+        for (BackStackRecord.Op op : ops) {
             op.enterAnim = enter;
             op.exitAnim = exit;
             op.popEnterAnim = popEnter;
             op.popExitAnim = popExit;
-            op = op.next;
         }
     }
 

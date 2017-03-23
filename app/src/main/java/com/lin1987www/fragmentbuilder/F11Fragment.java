@@ -33,6 +33,8 @@ public class F11Fragment extends FragmentFix implements View.OnClickListener, Fr
     EditText mEditText;
     Button mNextStepButton;
 
+    int times = 0;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f11, container, false);
@@ -73,7 +75,7 @@ public class F11Fragment extends FragmentFix implements View.OnClickListener, Fr
 
     public boolean onDuty(GetUser task) {
         if (task.isDone()) {
-            Toast.makeText(getActivity(), String.format("%s onResume %s", TAG, task.userName), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), String.format("%s onResume %s %s", TAG, task.userName, ++times), Toast.LENGTH_SHORT).show();
             return true;
         } else {
             return false;
