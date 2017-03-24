@@ -633,7 +633,7 @@ public class FragmentBuilder {
                 if (currentBuilder != null) {
                     fragmentBuilderQueue.poll();
                     currentBuilder.buildImmediate();
-                    ExecCommit.enqueueAction(currentBuilder.getFragmentManager(), this);
+                    FragContent.post(currentBuilder.getFragmentManager(), this);
                 } else {
                     if (fragmentBuilderQueue.size() == 0) {
                         mExecutingActions.set(false);
