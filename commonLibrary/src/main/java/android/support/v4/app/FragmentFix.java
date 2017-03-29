@@ -23,9 +23,11 @@ import fix.java.util.concurrent.Duty;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
+import io.reactivex.internal.functions.Functions;
 import io.reactivex.observables.ConnectableObservable;
-import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 
 
@@ -58,6 +60,7 @@ public class FragmentFix extends Fragment {
     protected LinkedList<ConnectableObservable<?>> mOnReadyObservableList = new LinkedList<>();
     protected CompositeDisposable mOnResumeCompositeDisposable = new CompositeDisposable();
     protected CompositeDisposable mOnReadyCompositeDisposable = new CompositeDisposable();
+    protected CompositeDisposable mCompositeDisposable = new CompositeDisposable();
 
     protected FragmentArgs mFragmentArgs;
     Animation.AnimationListener mFragmentAnimListener;
@@ -311,7 +314,8 @@ public class FragmentFix extends Fragment {
         if (mOnResumeObservableList.size() > 0) {
             while (null != mOnResumeObservableList.peekFirst()) {
                 ConnectableObservable connectableObservable = mOnResumeObservableList.pollFirst();
-                mOnResumeCompositeDisposable.add(connectableObservable.connect());
+                add(connectableObservable.connect());
+                //mOnResumeCompositeDisposable.add(connectableObservable.connect());
             }
         }
     }
@@ -346,8 +350,9 @@ public class FragmentFix extends Fragment {
             }
             mDutyList.clear();
         }
-        mOnResumeCompositeDisposable.clear();
-        mOnReadyCompositeDisposable.clear();
+        mCompositeDisposable.clear();
+        //mOnResumeCompositeDisposable.clear();
+        //mOnReadyCompositeDisposable.clear();
         mOnReadyObservableList.clear();
         mOnResumeObservableList.clear();
         super.performPause();
@@ -506,7 +511,8 @@ public class FragmentFix extends Fragment {
         if (mOnReadyObservableList.size() > 0) {
             while (null != mOnReadyObservableList.peekFirst()) {
                 ConnectableObservable connectableObservable = mOnReadyObservableList.pollFirst();
-                mOnReadyCompositeDisposable.add(connectableObservable.connect());
+                add(connectableObservable.connect());
+                //mOnReadyCompositeDisposable.add(connectableObservable.connect());
             }
         }
     }
@@ -540,10 +546,15 @@ public class FragmentFix extends Fragment {
         }
     }
 
+    public void add(Disposable disposable) {
+        mCompositeDisposable.add(disposable);
+    }
+
     public void resume(Runnable task) {
-        resume(Observable.timer(0, TimeUnit.SECONDS)
+        Disposable disposable = resume(Observable.timer(0, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.computation()).observeOn(AndroidSchedulers.mainThread())
         ).subscribe(new ConsumerTask<>(task));
+        add(disposable);
     }
 
     public <T> ConnectableObservable<T> resume(Observable<T> observable) {
@@ -554,17 +565,34 @@ public class FragmentFix extends Fragment {
             connectableObservable = observable.publish();
         }
         if (mIsDuringResume) {
-            mOnResumeCompositeDisposable.add(connectableObservable.connect());
+            add(connectableObservable.connect());
+            //mOnResumeCompositeDisposable.add(connectableObservable.connect());
         } else {
             mOnResumeObservableList.add(connectableObservable);
         }
         return connectableObservable;
     }
 
+    public <T> void resume(Observable<T> observable, Consumer<? super T> onNext) {
+        resume(observable, onNext, Functions.ON_ERROR_MISSING);
+    }
+
+    public <T> void resume(Observable<T> observable, Consumer<? super T> onNext, Consumer<? super Throwable> onError) {
+        resume(observable, onNext, onError, Functions.EMPTY_ACTION);
+    }
+
+    public <T> void resume(Observable<T> observable, Consumer<? super T> onNext, Consumer<? super Throwable> onError, Action onComplete) {
+        ConnectableObservable<T> connectableObservable = resume(observable);
+        Disposable disposable = connectableObservable.subscribe(onNext, onError, onComplete);
+        add(disposable);
+    }
+
     public void ready(Runnable task) {
-        ready(Observable.timer(0, TimeUnit.SECONDS))
-                .subscribeOn(Schedulers.computation()).observeOn(AndroidSchedulers.mainThread())
+        Disposable disposable = ready(Observable.timer(0, TimeUnit.SECONDS))
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new ConsumerTask<>(task));
+        add(disposable);
     }
 
     public <T> ConnectableObservable<T> ready(Observable<T> observable) {
@@ -575,37 +603,26 @@ public class FragmentFix extends Fragment {
             connectableObservable = observable.publish();
         }
         if (mIsReady) {
-            mOnReadyCompositeDisposable.add(connectableObservable.connect());
+            add(connectableObservable.connect());
+            //mOnReadyCompositeDisposable.add(connectableObservable.connect());
         } else {
             mOnReadyObservableList.add(connectableObservable);
         }
         return connectableObservable;
     }
 
-    public <T> void ready(Observable<T> observable, DisposableObserver<T> observer) {
-        // If fragment will removed don't accept any duty.
-        // Don't care isResumed true or false. Because duty be pended and wait perform
-        if (!isAdded()) {
-            return;
-        }
-        if (mIsReady) {
-            if (DEBUG) {
-                Log.d(TAG, String.format(FORMAT, "subscribe " + observable.toString()));
-            }
-            mOnReadyCompositeDisposable.add(observable.subscribeWith(observer));
-        } else {
-            if (DEBUG) {
-                Log.d(TAG, String.format(FORMAT, "pending subscribe " + observable.toString()));
-            }
-            ConnectableObservable connectableObservable;
-            if (observable instanceof ConnectableObservable) {
-                connectableObservable = (ConnectableObservable) observable;
-            } else {
-                connectableObservable = observable.publish();
-            }
-            connectableObservable.subscribeWith(observer);
-            mOnReadyObservableList.add(connectableObservable);
-        }
+    public <T> void ready(Observable<T> observable, Consumer<? super T> onNext) {
+        ready(observable, onNext, Functions.ON_ERROR_MISSING);
+    }
+
+    public <T> void ready(Observable<T> observable, Consumer<? super T> onNext, Consumer<? super Throwable> onError) {
+        ready(observable, onNext, onError, Functions.EMPTY_ACTION);
+    }
+
+    public <T> void ready(Observable<T> observable, Consumer<? super T> onNext, Consumer<? super Throwable> onError, Action onComplete) {
+        ConnectableObservable<T> connectableObservable = ready(observable);
+        Disposable disposable = connectableObservable.subscribe(onNext, onError, onComplete);
+        add(disposable);
     }
 
     private static class ConsumerTask<T> implements Consumer<T> {
