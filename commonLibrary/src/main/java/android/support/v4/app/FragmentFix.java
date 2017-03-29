@@ -58,8 +58,6 @@ public class FragmentFix extends Fragment {
 
     protected LinkedList<ConnectableObservable<?>> mOnResumeObservableList = new LinkedList<>();
     protected LinkedList<ConnectableObservable<?>> mOnReadyObservableList = new LinkedList<>();
-    protected CompositeDisposable mOnResumeCompositeDisposable = new CompositeDisposable();
-    protected CompositeDisposable mOnReadyCompositeDisposable = new CompositeDisposable();
     protected CompositeDisposable mCompositeDisposable = new CompositeDisposable();
 
     protected FragmentArgs mFragmentArgs;
@@ -315,7 +313,6 @@ public class FragmentFix extends Fragment {
             while (null != mOnResumeObservableList.peekFirst()) {
                 ConnectableObservable connectableObservable = mOnResumeObservableList.pollFirst();
                 add(connectableObservable.connect());
-                //mOnResumeCompositeDisposable.add(connectableObservable.connect());
             }
         }
     }
@@ -351,8 +348,6 @@ public class FragmentFix extends Fragment {
             mDutyList.clear();
         }
         mCompositeDisposable.clear();
-        //mOnResumeCompositeDisposable.clear();
-        //mOnReadyCompositeDisposable.clear();
         mOnReadyObservableList.clear();
         mOnResumeObservableList.clear();
         super.performPause();
@@ -566,7 +561,6 @@ public class FragmentFix extends Fragment {
         }
         if (mIsDuringResume) {
             add(connectableObservable.connect());
-            //mOnResumeCompositeDisposable.add(connectableObservable.connect());
         } else {
             mOnResumeObservableList.add(connectableObservable);
         }

@@ -89,6 +89,13 @@ public abstract class Tasks<THIS> extends Observable<THIS> {
             subTaskObservers = new ArrayList<>();
         } else {
             throw new RuntimeException("Can't connect again after disposed.");
+            // 以下概念可以嘗試，當dispose後又connect，怕被之前尚未取消的影響
+            // 可以把 subTaskObservers 清除後判斷 SubTaskObserver 是否在陣列中
+            // 如果在陣列中就繼續執行，但依然可能發生Race的情況，所以不目前不知道再次connect
+            /*
+            mCompositeDisposable = new CompositeDisposable();
+            subTaskObservers.clear();
+            */
         }
         // 如果 Observer 取消訂閱的話  我們可以透過 observer.onSubscribe 得知，因此傳入 Disposable
         // 如果 Observable 將 Disposable 設定為 dispose 但不會影響 observer
