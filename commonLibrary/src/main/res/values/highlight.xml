@@ -2,6 +2,6 @@
 <resources>
     <!--reds-->
     <color name="highlight_blue">#6633B5E5</color>
-    <color name="highlight_gray">#66EEEEEE</color>
+    <color name="highlight_gray">#66888888</color>
     <color name="highlight_orange">#66FFBD3C</color>
 </resources>

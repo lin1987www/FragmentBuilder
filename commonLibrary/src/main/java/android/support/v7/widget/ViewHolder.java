@@ -5,7 +5,6 @@ import android.support.annotation.LayoutRes;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -129,19 +128,5 @@ public abstract class ViewHolder extends RecyclerView.ViewHolder {
             throw new RuntimeException(throwable);
         }
         return viewHolder;
-    }
-
-
-    public static View wrap(View itemView) {
-        View view;
-        if (itemView instanceof RelativeLayout) {
-            view = itemView;
-        } else {
-            RelativeLayout wrapper = new RelativeLayout(itemView.getContext());
-            wrapper.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT));
-            wrapper.addView(itemView);
-            view = wrapper;
-        }
-        return view;
     }
 }
