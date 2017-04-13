@@ -546,8 +546,10 @@ public class FragmentFix extends Fragment {
     }
 
     public void resume(Runnable task) {
-        Disposable disposable = resume(Observable.timer(0, TimeUnit.SECONDS)
-                .subscribeOn(Schedulers.computation()).observeOn(AndroidSchedulers.mainThread())
+        Disposable disposable = resume(
+                Observable.timer(0, TimeUnit.SECONDS)
+                        .subscribeOn(Schedulers.computation())
+                        .observeOn(AndroidSchedulers.mainThread())
         ).subscribe(new ConsumerTask<>(task));
         add(disposable);
     }
@@ -582,10 +584,11 @@ public class FragmentFix extends Fragment {
     }
 
     public void ready(Runnable task) {
-        Disposable disposable = ready(Observable.timer(0, TimeUnit.SECONDS))
-                .subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new ConsumerTask<>(task));
+        Disposable disposable = ready(
+                Observable.timer(0, TimeUnit.SECONDS)
+                        .subscribeOn(Schedulers.computation())
+                        .observeOn(AndroidSchedulers.mainThread())
+        ).subscribe(new ConsumerTask<>(task));
         add(disposable);
     }
 

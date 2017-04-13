@@ -262,4 +262,11 @@ public class Utility {
             ExceptionHelper.throwRuntimeException(e);
         }
     }
+
+    public static boolean isHtml(String text) {
+        Pattern pattern = Pattern.compile("(?><(\\w+)>.*</\\1>)");
+        Matcher matcher = pattern.matcher(text);
+        boolean isHtml = matcher.find();
+        return isHtml;
+    }
 }
