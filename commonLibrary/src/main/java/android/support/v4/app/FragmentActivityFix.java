@@ -55,6 +55,11 @@ public class FragmentActivityFix extends FragmentActivity {
         puppetActivities.add(puppetActivity);
     }
 
+    public void onError(Throwable throwable) {
+        Throwable ex = Utility.getNestedError(throwable);
+        ex.printStackTrace();
+    }
+
     @CallSuper
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -156,7 +161,11 @@ public class FragmentActivityFix extends FragmentActivity {
                 }
             }
         }
-        super.onRestoreInstanceState(savedInstanceState);
+        try {
+            super.onRestoreInstanceState(savedInstanceState);
+        } catch (Throwable e) {
+            onError(e);
+        }
     }
 
     @Override

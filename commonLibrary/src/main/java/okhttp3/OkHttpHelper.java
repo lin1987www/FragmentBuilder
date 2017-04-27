@@ -17,6 +17,8 @@ public class OkHttpHelper {
                 if (mOkHttpClientBuilder == null) {
                     mOkHttpClientBuilder = new OkHttpClient.Builder();
                     mOkHttpClientBuilder.cookieJar(CookieKeeper.getInstance().cookieJar);
+                    mOkHttpClientBuilder.retryOnConnectionFailure(true);
+                    mOkHttpClientBuilder.addInterceptor(new ConnectionResetByPeerInterceptor());
                     if (Utility.DEBUG) {
                         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
                         logging.setLevel(HttpLoggingInterceptor.Level.BASIC);

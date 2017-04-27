@@ -239,21 +239,38 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
         if (wrapperResId != 0) {
             wrapper = (ViewGroup) inflater.inflate(wrapperResId, parent, false);
             ViewGroup viewHolderContainer = (ViewGroup) wrapper.findViewById(R.id.viewHolderContainer);
-            switch (getViewMode()) {
-                case AbsListView.CHOICE_MODE_MULTIPLE:
-                    wrapViewHolderMultiple(wrapper, viewHolderContainer, itemView, resId);
-                    break;
-                default:
-                    wrapViewHolderSingle(wrapper, viewHolderContainer, itemView, resId);
-                    break;
+            if (getWrapViewHolderItemViewLayoutId() == 0) {
+                switch (getViewMode()) {
+                    case AbsListView.CHOICE_MODE_MULTIPLE:
+                        wrapViewHolderMultiple(wrapper, viewHolderContainer, itemView, resId);
+                        break;
+                    default:
+                        wrapViewHolderSingle(wrapper, viewHolderContainer, itemView, resId);
+                        break;
+                }
+            } else {
+                wrapViewHolderCustom(wrapper, viewHolderContainer, itemView, resId);
             }
-
             viewHolderContainer.addView(itemView);
         }
         return (wrapper != null) ? wrapper : itemView;
     }
 
     public void wrapViewHolderSingle(View wrapper, ViewGroup viewHolderContainer, View itemView, int resId) {
+        ViewGroup.LayoutParams wrapperLayoutParams = wrapper.getLayoutParams();
+        ViewGroup.LayoutParams viewHolderLayoutParams = viewHolderContainer.getLayoutParams();
+        ViewGroup.LayoutParams itemLayoutParams = itemView.getLayoutParams();
+        if (itemLayoutParams.width < 0) {
+            wrapperLayoutParams.width = itemLayoutParams.width;
+            viewHolderLayoutParams.width = itemLayoutParams.width;
+        }
+        if (itemLayoutParams.height < 0) {
+            wrapperLayoutParams.height = itemLayoutParams.height;
+            viewHolderLayoutParams.height = itemLayoutParams.height;
+        }
+    }
+
+    public void wrapViewHolderCustom(View wrapper, ViewGroup viewHolderContainer, View itemView, int resId) {
         ViewGroup.LayoutParams wrapperLayoutParams = wrapper.getLayoutParams();
         ViewGroup.LayoutParams viewHolderLayoutParams = viewHolderContainer.getLayoutParams();
         ViewGroup.LayoutParams itemLayoutParams = itemView.getLayoutParams();

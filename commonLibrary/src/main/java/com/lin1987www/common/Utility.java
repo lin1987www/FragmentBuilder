@@ -24,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import fix.java.util.concurrent.ExceptionHelper;
+import io.reactivex.exceptions.CompositeException;
 
 /**
  * Created by lin on 2014/9/11.
@@ -32,6 +33,8 @@ public class Utility {
     public static boolean DEBUG = BuildConfig.DEBUG;
 
     private final static SimpleDateFormat mDateFormat;
+
+    public static final String ECONNRESET = "recvfrom failed: ECONNRESET (Connection reset by peer)";
 
     static {
         mDateFormat = new SimpleDateFormat("yyyy/MM/dd a hh:mm");
@@ -75,6 +78,15 @@ public class Utility {
         DetectShowAllText detectShowAllText = new DetectShowAllText(textView, listener);
     }
 
+    public static Throwable getNestedError(Throwable throwable) {
+        if (throwable instanceof CompositeException) {
+            CompositeException compositeException = (CompositeException) throwable;
+            return getNestedError(compositeException.getExceptions().get(0));
+        } else {
+            Throwable ex = ExceptionHelper.getNestedCause(throwable);
+            return ex;
+        }
+    }
 
     public static class DetectShowAllText implements ViewTreeObserver.OnGlobalLayoutListener {
         private TextView mTextView;

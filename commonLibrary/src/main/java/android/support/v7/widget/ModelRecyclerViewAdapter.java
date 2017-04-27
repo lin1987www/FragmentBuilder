@@ -63,6 +63,10 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
 
     private int mLoadingPage = -1;
 
+    public int getLoadingPage() {
+        return mLoadingPage;
+    }
+
     public boolean isOnLoadPageDuringScrollCallback = false;
 
     @Override
