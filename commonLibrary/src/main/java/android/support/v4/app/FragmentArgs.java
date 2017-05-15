@@ -8,10 +8,10 @@ import com.lin1987www.common.Utility;
  * Created by Administrator on 2015/7/8.
  */
 public class FragmentArgs {
-    private final static String suffix = FragmentArgs.class.getName();
-    private final static String key_userVisibleHintOnResume = key("key_userVisibleHintOnResume");
-    private final static String key_fragmentBuilderText = key("key_fragmentBuilderText");
-    private final static String key_disableReady = key("key_disableReady");
+    private final static String suffix = FragmentArgs.class.getSimpleName();
+    private final static String KEY_fragmentBuilderText = key("KEY_fragmentBuilderText");
+    private final static String KEY_isUserVisible = key("KEY_isUserVisible");
+    private final static String KEY_consumeReady = key("KEY_consumeReady");
 
     private static String key(String name) {
         return String.format("%s_%s", name, suffix);
@@ -30,32 +30,32 @@ public class FragmentArgs {
         bundle.setClassLoader(Utility.getClassLoader());
     }
 
-    boolean consumeDisableReady() {
-        boolean disableReady = bundle.getBoolean(key_disableReady, false);
-        if (bundle.containsKey(key_disableReady)) {
-            bundle.remove(key_disableReady);
-        }
-        return disableReady;
-    }
-
-    void disableReady() {
-        bundle.putBoolean(key_disableReady, true);
-    }
-
-    public boolean isUserVisibleHintOnResume() {
-        boolean useNormalResume = bundle.getBoolean(key_userVisibleHintOnResume, false);
-        return useNormalResume;
-    }
-
-    public void userVisibleHintOnResume() {
-        bundle.putBoolean(key_userVisibleHintOnResume, true);
-    }
-
     public String getFragmentBuilderText() {
-        return bundle.getString(key_fragmentBuilderText);
+        return bundle.getString(KEY_fragmentBuilderText);
     }
 
     void setFragmentBuilderText(String value) {
-        bundle.putString(key_fragmentBuilderText, value);
+        bundle.putString(KEY_fragmentBuilderText, value);
+    }
+
+    boolean getUserVisible() {
+        boolean value = bundle.getBoolean(KEY_isUserVisible, true);
+        return value;
+    }
+
+    void setUserVisible(boolean value) {
+        bundle.putBoolean(KEY_isUserVisible, value);
+    }
+
+    boolean isConsumeReady() {
+        boolean value = bundle.getBoolean(KEY_consumeReady, false);
+        if (bundle.containsKey(KEY_consumeReady)) {
+            bundle.remove(KEY_consumeReady);
+        }
+        return value;
+    }
+
+    void consumeReady() {
+        bundle.putBoolean(KEY_consumeReady, true);
     }
 }

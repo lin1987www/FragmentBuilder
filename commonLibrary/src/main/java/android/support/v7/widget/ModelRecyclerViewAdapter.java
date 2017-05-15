@@ -2,9 +2,11 @@ package android.support.v7.widget;
 
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.v4.app.Fragment;
 
 import com.lin1987www.app.PageArrayList;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -21,6 +23,49 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
     private final static String KEY_page = "KEY_page";
     private final static String KEY_viewMode = "KEY_viewMode";
     private final static String KEY_selectedPositions = "KEY_selectedPositions";
+    private final static String KEY_itemsBundle = "KEY_itemsBundle";
+
+    private Bundle mItemsBundle;
+
+    private String getItemBundleKey(int position) {
+        return String.format("%s", position);
+    }
+
+    public Bundle getItemBundle(int position) {
+        Bundle bundle;
+        if (mItemsBundle == null) {
+            mItemsBundle = new Bundle();
+        }
+        String key = getItemBundleKey(position);
+        if (mItemsBundle.containsKey(key)) {
+            bundle = mItemsBundle.getBundle(key);
+        } else {
+            bundle = new Bundle();
+            mItemsBundle.putBundle(key, bundle);
+        }
+        return bundle;
+    }
+
+    public ArrayList<Bundle> getSelectedItemBundle() {
+        ArrayList<Bundle> arrayList = new ArrayList<>();
+        if (getSelectedPositions().size() > 0) {
+            for (int position : getSelectedPositions()) {
+                Bundle bundle = getItemBundle(position);
+                arrayList.add(bundle);
+            }
+        }
+        return arrayList;
+    }
+
+    private WeakReference<Fragment> mFragmentWeakReference;
+
+    public <T extends Fragment> void setFragment(T fragment) {
+        mFragmentWeakReference = new WeakReference<>(fragment);
+    }
+
+    public <T extends Fragment> T getFragment() {
+        return (T) mFragmentWeakReference.get();
+    }
 
     private PageArrayList mPageArrayList = new PageArrayList();
 
@@ -89,13 +134,20 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
 
     public abstract void onLoadPage(int page);
 
-    public void addPageData(Collection<? extends T> pageData, int page) {
+    public <DATA extends T> void addPageData(Collection<DATA> pageData, int page) {
         setLoading(false);
         if (pageData == null) {
             pageData = new ArrayList<>();
         }
         if (page == 1) {
-            clear();
+            if (getPageArrayList().getList() == pageData) {
+                ArrayList<DATA> tempPageData = new ArrayList<>();
+                tempPageData.addAll(pageData);
+                clear();
+                pageData.addAll(tempPageData);
+            } else {
+                clear();
+            }
         } else if (getPageArrayList().getPageSize() == 0 && page == 2) {
             getPageArrayList().setPageSize(getPageArrayList().getList().size());
         }
@@ -141,6 +193,10 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
 
     public void clear() {
         getPageArrayList().clear();
+        getSelectedPositions().clear();
+        if (mItemsBundle != null) {
+            mItemsBundle.clear();
+        }
         setLoading(false);
         notifyDataSetChanged();
     }
@@ -150,27 +206,38 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
     }
 
     public void saveState(Bundle outState) {
-        Bundle bundle = new Bundle();
-        bundle.putParcelable(KEY_page, getPageArrayList());
-        bundle.putIntegerArrayList(KEY_selectedPositions, mSelectedAdapterPositions);
-        bundle.putInt(KEY_viewMode, mViewMode);
-        recyclerViewHolder.saveState(bundle);
-        //
-        outState.putParcelable(getSaveStateKey(), bundle);
+        if (getPageArrayList().getList().size() > 0) {
+            Bundle bundle = new Bundle();
+            bundle.putParcelable(KEY_page, getPageArrayList());
+            bundle.putIntegerArrayList(KEY_selectedPositions, mSelectedAdapterPositions);
+            bundle.putInt(KEY_viewMode, mViewMode);
+            bundle.putBundle(KEY_itemsBundle, mItemsBundle);
+            recyclerViewHolder.saveState(bundle);
+            //
+            outState.putBundle(getSaveStateKey(), bundle);
+        }
     }
 
     public void restoreState(Bundle savedInstanceState) {
+        // 當在正在入時，離開了Fragment後，載入任務被取消，返回但因為 adapter 依然存在，因此在等待載入已被取消的任務
+        setLoading(false);
         if (savedInstanceState == null) {
             return;
         }
         if (!savedInstanceState.containsKey(getSaveStateKey())) {
             return;
         }
-        Bundle bundle = savedInstanceState.getParcelable(getSaveStateKey());
-        setLoading(false);
-        mPageArrayList = bundle.getParcelable(KEY_page);
-        mSelectedAdapterPositions = bundle.getIntegerArrayList(KEY_selectedPositions);
-        setViewMode(covertViewMode(bundle.getInt(KEY_viewMode)));
-        recyclerViewHolder.restoreState(bundle);
+        try {
+            Bundle bundle = savedInstanceState.getBundle(getSaveStateKey());
+            // setLoading(false);
+            mPageArrayList = bundle.getParcelable(KEY_page);
+            mSelectedAdapterPositions = bundle.getIntegerArrayList(KEY_selectedPositions);
+            setViewMode(covertViewMode(bundle.getInt(KEY_viewMode)));
+            mItemsBundle = bundle.getBundle(KEY_itemsBundle);
+            recyclerViewHolder.restoreState(bundle);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+            clear();
+        }
     }
 }

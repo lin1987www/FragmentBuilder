@@ -3,20 +3,29 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/empty.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/empty.xml" charset="x-windows-950" />
+    <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/empty.xml" charset="x-windows-950" />
+    <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/slide_bottom_in.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/slide_bottom_in.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/slide_bottom_in.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/slide_bottom_out.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/slide_bottom_out.xml" charset="x-windows-950" />
+    <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/slide_bottom_out.xml" charset="x-windows-950" />
+    <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/slide_left_in.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/slide_left_in.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/slide_left_in.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/slide_left_out.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/slide_left_out.xml" charset="x-windows-950" />
+    <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/slide_left_out.xml" charset="x-windows-950" />
+    <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/slide_right_in.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/slide_right_in.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/slide_right_in.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/slide_right_out.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/slide_right_out.xml" charset="x-windows-950" />
+    <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/slide_right_out.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/zoom_in.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/zoom_in.xml" charset="x-windows-950" />
+    <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/zoom_in.xml" charset="x-windows-950" />
+    <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/zoom_out.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/zoom_out.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/zoom_out.xml" charset="x-windows-950" />
     <file url="PROJECT" charset="UTF-8" />

@@ -2,6 +2,7 @@ package android.support.v4.app;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.CallSuper;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -44,17 +45,16 @@ public class FragmentFix extends Fragment {
         }
     };
 
-    protected final String FORMAT = String.format("%s %s", toString(), "%s");
+    protected String FORMAT = String.format("%s %%s", toString());
 
     protected ArrayList<Duty<?>> mDutyList = new ArrayList<>();
     protected final AtomicBoolean mIsEnterAnim = new AtomicBoolean();
 
     private boolean mIsDuringResume = false;
-    private boolean mIsReady = false;
-
-    public boolean isReady() {
-        return mIsReady;
-    }
+    // 滿足 Ready 條件時，onResume就會被執行，同時只會執行這一次，因此　mDidOnReady　跟　mIsReady　同樣狀態，因此省略共用
+    // Ready 的條件是 動畫完成, getUserVisibleHint true, Fragment state RESUMED
+    private boolean mDidReady = false;
+    private boolean mDidUserVisible = false;
 
     protected LinkedList<ConnectableObservable<?>> mOnResumeObservableList = new LinkedList<>();
     protected LinkedList<ConnectableObservable<?>> mOnReadyObservableList = new LinkedList<>();
@@ -62,7 +62,6 @@ public class FragmentFix extends Fragment {
 
     protected FragmentArgs mFragmentArgs;
     Animation.AnimationListener mFragmentAnimListener;
-
 
     protected void prepareAnim() {
         if (DEBUG) {
@@ -161,6 +160,16 @@ public class FragmentFix extends Fragment {
     }
 
     @Override
+    void performCreate(Bundle savedInstanceState) {
+        if (getTag() != null) {
+            FORMAT = String.format("%s %%s", toString().replace("%", "%%"));
+        }
+        FragmentUtils.log(this, "performCreate before");
+        super.performCreate(savedInstanceState);
+        FragmentUtils.log(this, "performCreate after");
+    }
+
+    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         // 不要因為mHost = null 而使用instantiateChildFragmentManager()
         // 會導致Activity Restore 的時候發生錯誤
@@ -219,13 +228,6 @@ public class FragmentFix extends Fragment {
     }
 
     @Override
-    void performCreate(Bundle savedInstanceState) {
-        FragmentUtils.log(this, "performCreate before");
-        super.performCreate(savedInstanceState);
-        FragmentUtils.log(this, "performCreate after");
-    }
-
-    @Override
     View performCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view;
         FragmentUtils.log(this, "performCreateView before");
@@ -263,6 +265,13 @@ public class FragmentFix extends Fragment {
         if (DEBUG && null != savedInstanceState) {
             Log.d(TAG, String.format(FORMAT, "onViewStateRestored"));
         }
+        if (savedInstanceState != null) {
+            boolean isUserVisible = getFragmentArgs().getUserVisible();
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, "onViewStateRestored setUserVisibleHint"));
+            }
+            setUserVisibleHint(isUserVisible);
+        }
         super.onViewStateRestored(savedInstanceState);
         ExecCommit.wrap(mChildFragmentManager);
     }
@@ -298,7 +307,16 @@ public class FragmentFix extends Fragment {
         }
         mState = RESUMED;
 //        mCalled = false;
+        // ---------
+        mIsDuringResume = true;
+        if (mOnResumeObservableList.size() > 0) {
+            while (null != mOnResumeObservableList.peekFirst()) {
+                ConnectableObservable connectableObservable = mOnResumeObservableList.pollFirst();
+                add(connectableObservable.connect());
+            }
+        }
         performResumeIfReady("performResume");
+        // ---------
 //        if (!mCalled) {
 //            throw new SuperNotCalledException("Fragment " + this
 //                    + " did not call through to super.onResume()");
@@ -308,13 +326,73 @@ public class FragmentFix extends Fragment {
             mChildFragmentManager.execPendingActions();
         }
         FragmentUtils.log(this, "performResume after");
-        mIsDuringResume = true;
-        if (mOnResumeObservableList.size() > 0) {
-            while (null != mOnResumeObservableList.peekFirst()) {
-                ConnectableObservable connectableObservable = mOnResumeObservableList.pollFirst();
-                add(connectableObservable.connect());
+    }
+
+    void performResumeIfReady(String tag) {
+        boolean toDo = false;
+        if (!getUserVisibleHint()) {
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady for getUserVisibleHint false by %s", tag)));
+            }
+        } else if (!FragmentUtils.getUserVisibleHintAllParent(this)) {
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady getUserVisibleHintAllParent() false by %s", tag)));
+            }
+
+        } else if (!FragmentUtils.isFragmentAvailable(this)) {
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady isFragmentAvailable false by %s", tag)));
+            }
+        } else if (mIsEnterAnim.get()) {
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady for enter anim by %s", tag)));
+            }
+        } else if (getFragmentArgs().isConsumeReady()) {
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady isConsumeReady by %s", tag)));
+            }
+        } else if (!isResumed()) {
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady for is not Resumed by %s", tag)));
+            }
+        } else if (mDidReady) {
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady mDidReady true by %s", tag)));
+            }
+        } else {
+            toDo = true;
+        }
+        if (toDo) {
+            mDidReady = true;
+            mCalled = false;
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("performResumeIfReady by %s", tag)));
+            }
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("onResume by %s", tag)));
+            }
+            onResume();
+            if (!mCalled) {
+                throw new SuperNotCalledException("Fragment " + this + " did not call through to super.onResume()");
+            }
+            if (mDutyList.size() > 0) {
+                for (Duty duty : mDutyList) {
+                    if (!duty.isSubmitted()) {
+                        duty.submit();
+                        if (DEBUG) {
+                            Log.d(TAG, String.format(FORMAT, "perform pending duty " + duty.toString()));
+                        }
+                    }
+                }
+            }
+            if (mOnReadyObservableList.size() > 0) {
+                while (null != mOnReadyObservableList.peekFirst()) {
+                    ConnectableObservable connectableObservable = mOnReadyObservableList.pollFirst();
+                    add(connectableObservable.connect());
+                }
             }
         }
+        performUserVisible(tag);
     }
 
     @Override
@@ -326,11 +404,53 @@ public class FragmentFix extends Fragment {
         super.onResume();
     }
 
+    void performUserVisible(String tag) {
+        boolean toDo = false;
+        if (!getUserVisibleHint()) {
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("skip performUserVisible for getUserVisibleHint false by %s", tag)));
+            }
+        } else if (!FragmentUtils.getUserVisibleHintAllParent(this)) {
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("skip performUserVisible getUserVisibleHintAllParent() false by %s", tag)));
+            }
+        } else if (!mDidReady) {
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("skip performUserVisible for is not ready by %s", tag)));
+            }
+        } else if (mDidUserVisible) {
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("skip performUserVisible mDidUserVisible true by %s", tag)));
+            }
+        } else {
+            toDo = true;
+        }
+        if (toDo) {
+            mDidUserVisible = true;
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("performUserVisible by %s", tag)));
+            }
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("onUserVisible by %s", tag)));
+            }
+            onUserVisible();
+        }
+    }
+
+    @CallSuper
+    public void onUserVisible() {
+        if (DEBUG) {
+            Log.d(TAG, String.format(FORMAT, "onUserVisible"));
+        }
+        FragmentUtils.log(this, "onUserVisible");
+    }
+
     @Override
     void performPause() {
         FragmentUtils.log(this, "performPause before");
         mIsDuringResume = false;
-        mIsReady = false;
+        mDidReady = false;
+        mDidUserVisible = false;
         if (mDutyList.size() > 0) {
             // Cancel all take
             int isNotDone = 0;
@@ -370,6 +490,7 @@ public class FragmentFix extends Fragment {
         FragmentUtils.log(this, "performSaveInstanceState after");
     }
 
+    @CallSuper
     @Override
     public void onSaveInstanceState(Bundle outState) {
         FragmentUtils.log(this, "onSaveInstanceState");
@@ -416,99 +537,32 @@ public class FragmentFix extends Fragment {
         FragmentUtils.log(this, "performDestroy after");
     }
 
-    private boolean mUserVisibleHint = true;
-
     @Override
     public boolean getUserVisibleHint() {
         boolean superUserVisibleHint = super.getUserVisibleHint();
-        if (superUserVisibleHint != mUserVisibleHint) {
-            super.setUserVisibleHint(mUserVisibleHint);
+        boolean isUserVisible = getFragmentArgs().getUserVisible();
+        if (superUserVisibleHint != isUserVisible) {
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, String.format("getUserVisibleHint is not equal saved value. %s -> %s", superUserVisibleHint, isUserVisible)));
+            }
+            super.setUserVisibleHint(isUserVisible);
         }
-        return mUserVisibleHint;
+        return isUserVisible;
     }
 
     @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        boolean lastUserVisibleHint = getUserVisibleHint();
+    public void setUserVisibleHint(boolean isVisible) {
+        boolean lastIsVisible = getUserVisibleHint();
         if (DEBUG) {
-            Log.d(TAG, String.format(FORMAT, String.format("setUserVisibleHint %s -> %s", lastUserVisibleHint, isVisibleToUser)));
+            Log.d(TAG, String.format(FORMAT, String.format("setUserVisibleHint %s -> %s", lastIsVisible, isVisible)));
         }
-        mUserVisibleHint = isVisibleToUser;
-        super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser && isResumed()) {
+        getFragmentArgs().setUserVisible(isVisible);
+        if (!isVisible) {
+            mDidUserVisible = false;
+        }
+        super.setUserVisibleHint(isVisible);
+        if (isVisible && isResumed()) {
             performResumeIfReady("setUserVisibleHint");
-        }
-        if (getFragmentArgs().isUserVisibleHintOnResume() && !isVisibleToUser) {
-            Log.d(TAG, String.format(FORMAT, String.format("isUserVisibleHintOnResume set mIsReady false")));
-            mIsReady = false;
-        }
-    }
-
-    protected void performResumeIfReady(String tag) {
-        if (!getUserVisibleHint()) {
-            if (DEBUG) {
-                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady for getUserVisibleHint false by %s", tag)));
-            }
-            return;
-        }
-        if (!FragmentUtils.getUserVisibleHintAllParent(this)) {
-            if (DEBUG) {
-                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady getUserVisibleHintAllParent() false by %s", tag)));
-            }
-            return;
-        }
-        if (!FragmentUtils.isFragmentAvailable(this)) {
-            if (DEBUG) {
-                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady isFragmentAvailable false by %s", tag)));
-            }
-            return;
-        }
-        if (mIsEnterAnim.get()) {
-            if (DEBUG) {
-                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady for enter anim by %s", tag)));
-            }
-            return;
-        }
-        if (getFragmentArgs().consumeDisableReady()) {
-            if (DEBUG) {
-                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady consumeDisableReady by %s", tag)));
-            }
-            return;
-        }
-        if (mIsReady) {
-            if (DEBUG) {
-                Log.d(TAG, String.format(FORMAT, String.format("skip performResumeIfReady mIsReady true by %s", tag)));
-            }
-            return;
-        }
-        mIsReady = true;
-        mCalled = false;
-        if (DEBUG) {
-            Log.d(TAG, String.format(FORMAT, String.format("performResumeIfReady by %s", tag)));
-        }
-        if (DEBUG) {
-            Log.d(TAG, String.format(FORMAT, String.format("onResume by %s", tag)));
-        }
-        onResume();
-        if (!mCalled) {
-            throw new SuperNotCalledException("Fragment " + this + " did not call through to super.onResume()");
-        }
-        if (mDutyList.size() > 0) {
-            for (Duty duty : mDutyList) {
-                if (!duty.isSubmitted()) {
-                    duty.submit();
-                    if (DEBUG) {
-                        Log.d(TAG, String.format(FORMAT, "perform pending duty " + duty.toString()));
-                    }
-                }
-            }
-        }
-        if (mOnReadyObservableList.size() > 0) {
-            while (null != mOnReadyObservableList.peekFirst()) {
-                ConnectableObservable connectableObservable = mOnReadyObservableList.pollFirst();
-                add(connectableObservable.connect());
-                //mOnReadyCompositeDisposable.add(connectableObservable.connect());
-            }
         }
     }
 
@@ -529,7 +583,7 @@ public class FragmentFix extends Fragment {
             return;
         }
         mDutyList.add(duty);
-        if (mIsReady) {
+        if (mDidReady) {
             if (DEBUG) {
                 Log.d(TAG, String.format(FORMAT, "submit duty " + duty.toString()));
             }
@@ -547,9 +601,7 @@ public class FragmentFix extends Fragment {
 
     public void resume(Runnable task) {
         Disposable disposable = resume(
-                Observable.timer(0, TimeUnit.SECONDS)
-                        .subscribeOn(Schedulers.computation())
-                        .observeOn(AndroidSchedulers.mainThread())
+                Observable.timer(0, TimeUnit.SECONDS).subscribeOn(Schedulers.computation()).observeOn(AndroidSchedulers.mainThread())
         ).subscribe(new ConsumerTask<>(task));
         add(disposable);
     }
@@ -585,9 +637,7 @@ public class FragmentFix extends Fragment {
 
     public void ready(Runnable task) {
         Disposable disposable = ready(
-                Observable.timer(0, TimeUnit.SECONDS)
-                        .subscribeOn(Schedulers.computation())
-                        .observeOn(AndroidSchedulers.mainThread())
+                Observable.timer(0, TimeUnit.SECONDS).subscribeOn(Schedulers.computation()).observeOn(AndroidSchedulers.mainThread())
         ).subscribe(new ConsumerTask<>(task));
         add(disposable);
     }
@@ -599,9 +649,8 @@ public class FragmentFix extends Fragment {
         } else {
             connectableObservable = observable.publish();
         }
-        if (mIsReady) {
+        if (mDidReady) {
             add(connectableObservable.connect());
-            //mOnReadyCompositeDisposable.add(connectableObservable.connect());
         } else {
             mOnReadyObservableList.add(connectableObservable);
         }

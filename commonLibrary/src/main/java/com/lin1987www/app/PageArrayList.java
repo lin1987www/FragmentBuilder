@@ -201,21 +201,27 @@ public class PageArrayList<T extends Parcelable> implements Parcelable {
                 selection = 0;
             } else {
                 // 第一次載入資料
-                mList.addAll(pageData);
-                mStartPage = page;
-                mEndPage = page;
-                selection = 0;
+                if (pageData.size() > 0) {
+                    mList.addAll(pageData);
+                    mStartPage = page;
+                    mEndPage = page;
+                    selection = 0;
+                }
             }
         } else if (isNextPage) {
             // Load Next Page
-            mList.addAll(pageData);
-            mEndPage = page;
-            selection = (mEndPage - mStartPage) * mPageSize;
+            if (pageData.size() > 0) {
+                mList.addAll(pageData);
+                mEndPage = page;
+                selection = (mEndPage - mStartPage) * mPageSize;
+            }
         } else {
             // Load Prev Page
-            mList.addAll(0, pageData);
-            mStartPage = page;
-            selection = mPageSize - 1;
+            if (pageData.size() > 0) {
+                mList.addAll(0, pageData);
+                mStartPage = page;
+                selection = mPageSize - 1;
+            }
         }
         return selection;
     }

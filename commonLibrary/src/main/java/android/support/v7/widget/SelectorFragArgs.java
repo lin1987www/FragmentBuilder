@@ -21,16 +21,16 @@ public class SelectorFragArgs extends FragmentArgs {
         super(bundle);
     }
 
-    private ArrayList<? extends Selector.Item> mSelections;
+    private ArrayList<Selector.Item> mSelections;
 
-    public ArrayList<? extends Selector.Item> getSelections() {
+    public <T extends Selector.Item> ArrayList<T> getSelections() {
         if (mSelections == null) {
             mSelections = bundle.getParcelableArrayList(KEY_selections);
         }
-        return mSelections;
+        return (ArrayList<T>) mSelections;
     }
 
-    public SelectorFragArgs setSelections(ArrayList<? extends Selector.Item> value) {
+    public <T extends Selector.Item> SelectorFragArgs setSelections(ArrayList<T> value) {
         bundle.putParcelableArrayList(KEY_selections, value);
         return this;
     }

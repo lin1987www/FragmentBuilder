@@ -938,7 +938,7 @@ public class FragmentBuilder {
                 int value = map.get(fragment);
                 if (value == -1) {
                     FragmentFix f = (FragmentFix) fragment;
-                    f.getFragmentArgs().consumeDisableReady();
+                    f.getFragmentArgs().isConsumeReady();
                     f.performResumeIfReady("FragCarrier finish.");
                 }
             }
@@ -1000,7 +1000,7 @@ public class FragmentBuilder {
             public void disableReady() {
                 if (inBackStackFrag != null) {
                     FragmentArgs fragmentArgs = new FragmentArgs(inBackStackFrag.getArguments());
-                    fragmentArgs.disableReady();
+                    fragmentArgs.consumeReady();
                 }
             }
 

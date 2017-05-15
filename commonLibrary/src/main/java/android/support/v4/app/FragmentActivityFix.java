@@ -2,6 +2,7 @@ package android.support.v4.app;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.support.annotation.CallSuper;
@@ -32,6 +33,7 @@ public class FragmentActivityFix extends FragmentActivity {
     public static boolean DEBUG = Utility.DEBUG;
     public final static String TAG = FragmentActivityFix.class.getSimpleName();
     public final static String KEY_startActivityFragContentPath = "KEY_startActivityFragContentPath";
+    public final static String KEY_versionCode = "KEY_versionCode";
     protected final String KEY_savedInstanceState = "KEY_savedInstanceState_" + getClass().getSimpleName();
     protected final String FORMAT = String.format("%s %s", toString(), "%s");
 
@@ -339,6 +341,12 @@ public class FragmentActivityFix extends FragmentActivity {
     }
 
     private void saveToPreferences(Bundle in) {
+        try {
+            PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            int versionCode = pInfo.versionCode;
+            in.putInt(KEY_versionCode, versionCode);
+        } catch (Throwable e) {
+        }
         String serialized = serializeBundle(in);
         if (serialized != null) {
             SharedPreferences settings = getSharedPreferences(KEY_savedInstanceState, MODE_PRIVATE);
@@ -354,6 +362,15 @@ public class FragmentActivityFix extends FragmentActivity {
         String serialized = settings.getString(KEY_savedInstanceState, null);
         if (serialized != null) {
             bundle = deserializeBundle(serialized);
+        }
+        try {
+            PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            int versionCode = pInfo.versionCode;
+            int vc = bundle.getInt(KEY_versionCode, 0);
+            if (vc == 0 || vc != versionCode) {
+                return null;
+            }
+        } catch (Throwable e) {
         }
         return bundle;
     }

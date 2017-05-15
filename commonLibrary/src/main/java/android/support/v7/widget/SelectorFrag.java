@@ -46,8 +46,8 @@ public class SelectorFrag extends FragmentFix implements View.OnClickListener {
         mContentView.setOnClickListener(this);
 
         mLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
-
         mRecyclerView.setLayoutManager(mLayoutManager);
+
         if (mAdapter == null) {
             mAdapter = new SelectorItemAdapter();
             mAdapter.setViewMode(fragArgs.getViewMode());
@@ -56,7 +56,6 @@ public class SelectorFrag extends FragmentFix implements View.OnClickListener {
             mAdapter.getSelectedPositions().addAll(fragArgs.getSelectedPositions());
         }
         mRecyclerView.setAdapter(mAdapter);
-
         mAdapter.restoreState(fragArgs.bundle);
 
         switch (fragArgs.getViewMode()) {
@@ -72,9 +71,11 @@ public class SelectorFrag extends FragmentFix implements View.OnClickListener {
     }
 
     @Override
-    public void onPause() {
-        mAdapter.saveState(fragArgs.bundle);
-        super.onPause();
+    public void onSaveInstanceState(Bundle outState) {
+        if (mAdapter != null) {
+            mAdapter.saveState(fragArgs.bundle);
+        }
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -130,7 +131,7 @@ public class SelectorFrag extends FragmentFix implements View.OnClickListener {
     /**
      * Created by Administrator on 2016/10/24.
      */
-    @ViewHolder.LayoutResName(layout = R.layout.class, name = "listitem_selector_item")
+    @ViewHolder.LayoutResName(layout = R.layout.class, name = "list_item_selector_item")
     public static class SelectorItemViewHolder extends ViewHolder {
         TextView mName;
         ImageView mSelectedImageView;

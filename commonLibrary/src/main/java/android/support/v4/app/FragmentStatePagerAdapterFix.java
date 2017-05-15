@@ -83,11 +83,18 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
     }
 
     public void add(Class<? extends Fragment> fragClass, Bundle args, String tag, int position) {
-        mFragments.add(position, null);
-        mFragmentStates.add(position, null);
-        mFragmentTags.add(position, tag);
-        mFragmentClassNames.add(position, fragClass.getName());
-        mFragmentArgs.add(position, args);
+        while (getCount() <= position) {
+            mFragments.add(null);
+            mFragmentStates.add(null);
+            mFragmentTags.add(null);
+            mFragmentClassNames.add(null);
+            mFragmentArgs.add(null);
+        }
+        mFragments.set(position, null);
+        mFragmentStates.set(position, null);
+        mFragmentTags.set(position, tag);
+        mFragmentClassNames.set(position, fragClass.getName());
+        mFragmentArgs.set(position, args);
         mTempPositionChange = new boolean[getCount()];
     }
 

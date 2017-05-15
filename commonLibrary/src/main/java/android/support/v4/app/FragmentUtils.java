@@ -174,7 +174,7 @@ public class FragmentUtils {
             log(logBundle, stringBuilder, "getChildFragmentManager activity is null", String.valueOf(getFragmentManagerActivity(fragment.mChildFragmentManager) == null));
         }
         if (stringBuilder.length() > 0) {
-            stringBuilder.insert(0, String.format("FragmentLog: %s\nMethod: %s\n", (fragment.getTag() == null) ? fragment.toString() : fragment.getTag(), name));
+            stringBuilder.insert(0, String.format("FragmentLog: %s\nMethod: %s\n", fragment.toString(), name));
             String log = stringBuilder.toString();
             Log.d(TAG, log);
         }
