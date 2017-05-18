@@ -262,10 +262,10 @@ public class FragmentFix extends Fragment {
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         FragmentUtils.log(this, "onViewStateRestored");
-        if (DEBUG && null != savedInstanceState) {
-            Log.d(TAG, String.format(FORMAT, "onViewStateRestored"));
-        }
         if (savedInstanceState != null) {
+            if (DEBUG) {
+                Log.d(TAG, String.format(FORMAT, "onViewStateRestored"));
+            }
             boolean isUserVisible = getFragmentArgs().getUserVisible();
             if (DEBUG) {
                 Log.d(TAG, String.format(FORMAT, "onViewStateRestored setUserVisibleHint"));
@@ -486,6 +486,9 @@ public class FragmentFix extends Fragment {
     @Override
     void performSaveInstanceState(Bundle outState) {
         FragmentUtils.log(this, "performSaveInstanceState before");
+        if (DEBUG) {
+            Log.d(TAG, String.format(FORMAT, "performSaveInstanceState"));
+        }
         super.performSaveInstanceState(outState);
         FragmentUtils.log(this, "performSaveInstanceState after");
     }
@@ -517,6 +520,9 @@ public class FragmentFix extends Fragment {
     @Override
     void performDestroyView() {
         FragmentUtils.log(this, "performDestroyView before");
+        if (DEBUG) {
+            Log.d(TAG, String.format(FORMAT, "performDestroyView"));
+        }
         super.performDestroyView();
         FragmentUtils.log(this, "performDestroyView after");
     }
@@ -552,6 +558,7 @@ public class FragmentFix extends Fragment {
 
     @Override
     public void setUserVisibleHint(boolean isVisible) {
+        // 重復被設定為 true 並不影響動作
         boolean lastIsVisible = getUserVisibleHint();
         if (DEBUG) {
             Log.d(TAG, String.format(FORMAT, String.format("setUserVisibleHint %s -> %s", lastIsVisible, isVisible)));
@@ -563,6 +570,17 @@ public class FragmentFix extends Fragment {
         super.setUserVisibleHint(isVisible);
         if (isVisible && isResumed()) {
             performResumeIfReady("setUserVisibleHint");
+            // children fragment 會因為未顯示跳過 preformResume，因此需要設定children
+            if (mChildFragmentManager != null && mChildFragmentManager.getFragments() != null) {
+                for (Fragment fragment : mChildFragmentManager.getFragments()) {
+                    if (fragment != null && fragment instanceof FragmentFix) {
+                        FragmentFix f = (FragmentFix) fragment;
+                        if (f.isResumed() && f.getUserVisibleHint() && !f.mDidReady) {
+                            f.setUserVisibleHint(true);
+                        }
+                    }
+                }
+            }
         }
     }
 

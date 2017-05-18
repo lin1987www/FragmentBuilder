@@ -22,8 +22,6 @@ public class F2Fragment extends FragmentFix implements FragmentBuilder.OnPopFrag
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_f2, container, false);
-        FragmentArgs fragmentArgs = new FragmentArgs(getArguments());
-        fragmentArgs.userVisibleHintOnResume();
 
         mTextView = (TextView) view.findViewById(R.id.textView);
         mTextView.setText(String.format("%s", getTag()));

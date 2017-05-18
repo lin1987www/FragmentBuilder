@@ -448,10 +448,12 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
         if (index < 0) {
             return PagerAdapter.POSITION_NONE;
         }
-        boolean isPositionChange = mTempPositionChange[index];
         int result = PagerAdapter.POSITION_UNCHANGED;
-        if (isPositionChange) {
-            result = PagerAdapter.POSITION_NONE;
+        if (mTempPositionChange != null) {
+            boolean isPositionChange = mTempPositionChange[index];
+            if (isPositionChange) {
+                result = PagerAdapter.POSITION_NONE;
+            }
         }
         return result;
     }

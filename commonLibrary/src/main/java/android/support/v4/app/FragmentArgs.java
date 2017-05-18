@@ -1,6 +1,9 @@
 package android.support.v4.app;
 
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.util.SparseArray;
+import android.view.View;
 
 import com.lin1987www.common.Utility;
 
@@ -12,6 +15,7 @@ public class FragmentArgs {
     private final static String KEY_fragmentBuilderText = key("KEY_fragmentBuilderText");
     private final static String KEY_isUserVisible = key("KEY_isUserVisible");
     private final static String KEY_consumeReady = key("KEY_consumeReady");
+    private final static String KEY_saveViewState = key("KEY_saveViewState");
 
     private static String key(String name) {
         return String.format("%s_%s", name, suffix);
@@ -57,5 +61,57 @@ public class FragmentArgs {
 
     void consumeReady() {
         bundle.putBoolean(KEY_consumeReady, true);
+    }
+
+    String getSaveStateKey(View view) {
+        if (view.getId() == View.NO_ID) {
+            throw new RuntimeException(String.format("View must set a id. %s", view));
+        }
+        return String.format("%s", view.getId());
+    }
+
+    String getSaveStateKey(Fragment fragment) {
+        return fragment.getClass().getName();
+    }
+
+    public void saveViewState(Fragment fragment) {
+        saveViewState(getSaveStateKey(fragment), fragment.getView());
+    }
+
+    public void saveViewState(View view) {
+        saveViewState(getSaveStateKey(view), view);
+    }
+
+    public void saveViewState(String key, View view) {
+        Bundle viewStateBundle = bundle.getBundle(KEY_saveViewState);
+        if (viewStateBundle == null) {
+            viewStateBundle = new Bundle();
+        }
+        SparseArray<Parcelable> container = new SparseArray<>();
+        view.saveHierarchyState(container);
+        viewStateBundle.putSparseParcelableArray(key, container);
+        bundle.putBundle(KEY_saveViewState, viewStateBundle);
+    }
+
+    public void restoreViewState(Fragment fragment) {
+        restoreViewState(getSaveStateKey(fragment), fragment.getView());
+    }
+
+    public void restoreViewState(View view) {
+        restoreViewState(getSaveStateKey(view), view);
+    }
+
+    public void restoreViewState(String key, View view) {
+        if (bundle.containsKey(KEY_saveViewState)) {
+            Bundle viewStateBundle = bundle.getBundle(KEY_saveViewState);
+            if (viewStateBundle != null) {
+                if (viewStateBundle.containsKey(key)) {
+                    SparseArray<Parcelable> container = viewStateBundle.getSparseParcelableArray(key);
+                    if (container != null) {
+                        view.restoreHierarchyState(container);
+                    }
+                }
+            }
+        }
     }
 }

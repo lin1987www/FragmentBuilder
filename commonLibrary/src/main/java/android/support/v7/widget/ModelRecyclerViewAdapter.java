@@ -205,6 +205,10 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
         return String.format("%s_%s", KEY_ModelRecyclerViewAdapter, getClass().getName());
     }
 
+    /**
+     *  After saveState, RecyclerView adapter will be set null.
+     * @param outState
+     */
     public void saveState(Bundle outState) {
         if (getPageArrayList().getList().size() > 0) {
             Bundle bundle = new Bundle();

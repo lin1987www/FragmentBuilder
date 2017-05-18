@@ -425,6 +425,7 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
                 // save RecyclerView state
                 getRecyclerViewState(recyclerView).save(recyclerView);
                 //
+                // mRecyclerViewAdapter.onDetachedFromRecyclerView(recyclerView);
                 recyclerView.setAdapter(null);
             }
             outState.putSparseParcelableArray(KEY_RecyclerViewHolder, mRecyclerViewStateSparseArray);
@@ -456,7 +457,19 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
         * */
         private WeakHashMap<RecyclerView, ItemTouchHelper> mRecyclerViewItemTouchHelperWeakHashMap = new WeakHashMap<>();
 
+        public boolean isAvailable(RecyclerView recyclerView) {
+            boolean isAvailable = recyclerView != null && recyclerView.isAttachedToWindow();
+            return isAvailable;
+        }
+
         public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+            for (RecyclerView rv : mRecyclerViewItemTouchHelperWeakHashMap.keySet()) {
+                if (!isAvailable(rv)) {
+                    // 因為 Fragment 被detach 不會執行 onDetachedFromRecyclerView 跟 onSaveInstanceState
+                    // 所以必須將無效的 recyclerView 移除
+                    rv.setAdapter(null);
+                }
+            }
             if (null == mRecyclerViewOnItemTouchListener) {
                 mRecyclerViewOnItemTouchListener = new RecyclerViewOnItemTouchListener(recyclerView.getContext());
             }
@@ -472,16 +485,18 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
         }
 
         public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
+            ItemTouchHelper itemTouchHelper = mRecyclerViewItemTouchHelperWeakHashMap.get(recyclerView);
+            if (itemTouchHelper != null) {
+                itemTouchHelper.attachToRecyclerView(null);
+                mRecyclerViewItemTouchHelperWeakHashMap.remove(recyclerView);
+            }
             recyclerView.removeOnScrollListener(mRecyclerViewOnScrollListener);
             recyclerView.removeOnItemTouchListener(mRecyclerViewOnItemTouchListener);
-            ItemTouchHelper itemTouchHelper = mRecyclerViewItemTouchHelperWeakHashMap.get(recyclerView);
-            itemTouchHelper.attachToRecyclerView(null);
-            mRecyclerViewItemTouchHelperWeakHashMap.remove(recyclerView);
         }
 
         public void adjustGridSpan() {
             for (RecyclerView recyclerView : mRecyclerViewItemTouchHelperWeakHashMap.keySet()) {
-                if (recyclerView == null) {
+                if (!isAvailable(recyclerView)) {
                     continue;
                 }
                 adjustGridSpan(recyclerView);
@@ -513,7 +528,7 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
 
         public void scrollForFillSpace() {
             for (RecyclerView recyclerView : mRecyclerViewItemTouchHelperWeakHashMap.keySet()) {
-                if (recyclerView == null) {
+                if (!isAvailable(recyclerView)) {
                     continue;
                 }
                 recyclerView.post(new RecyclerViewOnScrollListener.ScrollRunnable(recyclerView, 0, 0));
@@ -536,7 +551,6 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
                 RecyclerViewState recyclerViewState = getRecyclerViewState(rv);
                 ArrayList<ViewHolderState> viewHolderStateArrayList = recyclerViewState.viewHolderStateList;
                 viewHolderStateArrayList.remove(position);
-
             }
         }
 
@@ -552,6 +566,9 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
         }
 
         @Override
+        /*
+        * 復原資料
+        * */
         public void run() {
             for (RecyclerView recyclerView : mRecyclerViewItemTouchHelperWeakHashMap.keySet()) {
                 RecyclerViewState recyclerViewState = getRecyclerViewState(recyclerView);
