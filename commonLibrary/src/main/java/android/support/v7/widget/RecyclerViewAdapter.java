@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import android.support.annotation.CallSuper;
 import android.support.annotation.IntDef;
 import android.support.annotation.LayoutRes;
+import android.support.v4.app.FragmentUtils;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.support.v7.widget.helper.ItemTouchHelperFix;
 import android.util.SparseArray;
@@ -342,10 +343,11 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
         // restore state
         RecyclerViewState recyclerViewState = recyclerViewHolder.getRecyclerViewState(holder.mOwnerRecyclerView);
         if (recyclerViewState != null) {
-            if (position < recyclerViewState.viewHolderStateList.size()) {
+            if (position > -1 && position < recyclerViewState.viewHolderStateList.size()) {
                 ViewHolderState viewHolderState = recyclerViewState.viewHolderStateList.get(position);
                 if (viewHolderState != null) {
                     viewHolderState.restore(holder);
+                    recyclerViewState.viewHolderStateList.set(position, null);
                 }
             }
         }
@@ -354,7 +356,24 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
     @CallSuper
     @Override
     public void onViewRecycled(ViewHolder holder) {
+        saveViewHolder(holder);
+    }
+
+    public void saveViewHolder(ViewHolder holder) {
         recyclerViewHolder.saveViewHolder(holder);
+    }
+
+    public void clearViewHolderSavedState(ViewHolder holder) {
+        int position = holder.getAdapterPosition();
+        RecyclerViewState recyclerViewState = recyclerViewHolder.getRecyclerViewState(holder.mOwnerRecyclerView);
+        if (recyclerViewState != null) {
+            if (position > -1 && position < recyclerViewState.viewHolderStateList.size()) {
+                ViewHolderState viewHolderState = recyclerViewState.viewHolderStateList.get(position);
+                if (viewHolderState != null) {
+                    recyclerViewState.viewHolderStateList.set(position, null);
+                }
+            }
+        }
     }
 
     public static class RecyclerViewHolder implements Runnable {
@@ -458,7 +477,15 @@ public abstract class RecyclerViewAdapter<T extends Parcelable> extends Recycler
         private WeakHashMap<RecyclerView, ItemTouchHelper> mRecyclerViewItemTouchHelperWeakHashMap = new WeakHashMap<>();
 
         public boolean isAvailable(RecyclerView recyclerView) {
-            boolean isAvailable = recyclerView != null && recyclerView.isAttachedToWindow();
+            boolean isAvailable;
+            if (recyclerView == null) {
+                isAvailable = false;
+            } else if (recyclerView.isAttachedToWindow()) {
+                isAvailable = true;
+            } else {
+                // When screen rotation, somehow isAttachedToWindow() will delay turn true.
+                isAvailable = FragmentUtils.isFragmentAvailable(recyclerView);
+            }
             return isAvailable;
         }
 

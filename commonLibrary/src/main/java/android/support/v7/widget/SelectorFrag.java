@@ -71,11 +71,11 @@ public class SelectorFrag extends FragmentFix implements View.OnClickListener {
     }
 
     @Override
-    public void onPause() {
+    public void onSaveState() {
         if (mAdapter != null) {
             mAdapter.saveState(fragArgs.bundle);
         }
-        super.onPause();
+        super.onSaveState();
     }
 
     @Override

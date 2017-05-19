@@ -500,7 +500,9 @@ public class FragmentBuilder {
         fragmentAlreadyExist = fragmentManager.findFragmentByTag(fragmentTag);
         if (FragmentUtils.isFragmentExist(fragmentAlreadyExist)) {
             // If isRemoving() is true, the fragment maybe be popped out during animation.
-            Log.e(TAG, String.format("Fragment exist in fragmentManager. tag: %s %s", fragmentTag, fragmentAlreadyExist.isRemoving()));
+            if (Utility.DEBUG) {
+                Log.e(TAG, String.format("Fragment exist in fragmentManager. tag: %s %s", fragmentTag, fragmentAlreadyExist.isRemoving()));
+            }
             if (ifExistPolicy.equals(ExistPolicy.doNothing)) {
                 return;
             } else if (ifExistPolicy.equals(ExistPolicy.reAttach)) {
@@ -642,7 +644,9 @@ public class FragmentBuilder {
                         throw new RuntimeException(msg);
                     }
                 }
-                Log.d(TAG, String.format("FragmentBuilder.Executor.run size %s", fragmentBuilderQueue.size()));
+                if (Utility.DEBUG) {
+                    Log.d(TAG, String.format("FragmentBuilder.Executor.run size %s", fragmentBuilderQueue.size()));
+                }
             }
         }
     }

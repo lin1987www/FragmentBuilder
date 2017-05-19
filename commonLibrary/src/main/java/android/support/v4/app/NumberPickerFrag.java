@@ -92,11 +92,11 @@ public class NumberPickerFrag extends FragmentFix implements View.OnClickListene
     }
 
     @Override
-    public void onPause() {
+    public void onSaveState() {
         if (adapter != null) {
             adapter.saveState(getFragmentArgs().bundle);
         }
-        super.onPause();
+        super.onSaveState();
     }
 
     @Override

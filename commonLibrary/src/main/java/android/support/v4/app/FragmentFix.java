@@ -55,6 +55,7 @@ public class FragmentFix extends Fragment {
     // Ready 的條件是 動畫完成, getUserVisibleHint true, Fragment state RESUMED
     private boolean mDidReady = false;
     private boolean mDidUserVisible = false;
+    private boolean mDidSaveState = false;
 
     protected LinkedList<ConnectableObservable<?>> mOnResumeObservableList = new LinkedList<>();
     protected LinkedList<ConnectableObservable<?>> mOnReadyObservableList = new LinkedList<>();
@@ -309,6 +310,7 @@ public class FragmentFix extends Fragment {
 //        mCalled = false;
         // ---------
         mIsDuringResume = true;
+        mDidSaveState = false;
         if (mOnResumeObservableList.size() > 0) {
             while (null != mOnResumeObservableList.peekFirst()) {
                 ConnectableObservable connectableObservable = mOnResumeObservableList.pollFirst();
@@ -470,6 +472,9 @@ public class FragmentFix extends Fragment {
         mCompositeDisposable.clear();
         mOnReadyObservableList.clear();
         mOnResumeObservableList.clear();
+        if (!isRemoving()) {
+            performSaveState("performPause is not removing");
+        }
         super.performPause();
         FragmentUtils.log(this, "performPause after");
     }
@@ -485,6 +490,7 @@ public class FragmentFix extends Fragment {
 
     @Override
     void performSaveInstanceState(Bundle outState) {
+        performSaveState("performSaveInstanceState");
         FragmentUtils.log(this, "performSaveInstanceState before");
         if (DEBUG) {
             Log.d(TAG, String.format(FORMAT, "performSaveInstanceState"));
@@ -501,6 +507,24 @@ public class FragmentFix extends Fragment {
             Log.d(TAG, String.format(FORMAT, "onSaveInstanceState"));
         }
         super.onSaveInstanceState(outState);
+    }
+
+    @CallSuper
+    void performSaveState(String tag) {
+        if (DEBUG) {
+            Log.d(TAG, String.format(FORMAT, String.format("performSaveState by %s", tag)));
+        }
+        if (!mDidSaveState) {
+            mDidSaveState = true;
+            onSaveState();
+        }
+    }
+
+    @CallSuper
+    public void onSaveState() {
+        if (DEBUG) {
+            Log.d(TAG, String.format(FORMAT, "onSaveState"));
+        }
     }
 
     @Override

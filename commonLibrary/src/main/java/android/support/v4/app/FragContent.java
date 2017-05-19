@@ -266,7 +266,7 @@ public class FragContent {
     }
 
     private static Fragment findFragmentByView(List<Fragment> fragmentList, View srcView, View contentView) {
-        if (fragmentList == null || fragmentList.size() == 0 || srcView == null) {
+        if (fragmentList == null || fragmentList.size() == 0 || srcView == null || contentView == null) {
             return null;
         }
         for (Fragment frag : fragmentList) {
