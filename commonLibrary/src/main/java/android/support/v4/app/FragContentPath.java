@@ -62,7 +62,7 @@ public class FragContentPath {
     }
 
     private static View findViewByPath(View parent, ArrayList<Integer> viewPath, int index) {
-        if (parent == null) {
+        if (parent == null || !(parent instanceof ViewGroup)) {
             return null;
         }
         int i = viewPath.get(index);

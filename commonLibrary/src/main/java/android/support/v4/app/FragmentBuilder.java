@@ -918,7 +918,9 @@ public class FragmentBuilder {
             HashMap<Fragment, Integer> map = new HashMap<>();
             for (FragPackage fragPackage : fragPackages) {
                 if (!fragPackage.didSent) {
-                    Log.e(TAG, String.format("Didn't send %s", fragPackage.packageFrag));
+                    if (Utility.DEBUG) {
+                        Log.e(TAG, String.format("Didn't send %s", fragPackage.packageFrag));
+                    }
                 }
                 if (fragPackage.inBackStackFrag != null) {
                     int value = 0;
