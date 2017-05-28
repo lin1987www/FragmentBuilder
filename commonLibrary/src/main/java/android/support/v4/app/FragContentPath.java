@@ -1,7 +1,10 @@
 package android.support.v4.app;
 
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.lin1987www.common.Utility;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,6 +71,14 @@ public class FragContentPath {
         int i = viewPath.get(index);
         ViewGroup viewGroup = (ViewGroup) parent;
         View view = viewGroup.getChildAt(i);
+        if (viewGroup instanceof SwipeRefreshLayout) {
+            SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) viewGroup;
+            // FragContentPath maybe change by SwipeRefreshLayout, we will try to get right view back
+            View circleView = Utility.getFieldValue(swipeRefreshLayout, "mCircleView");
+            if (circleView.equals(view)) {
+                view = viewGroup.getChildAt(1 - i);
+            }
+        }
         if (viewPath.size() == (index + 1)) {
             return view;
         } else {

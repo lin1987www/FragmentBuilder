@@ -247,6 +247,22 @@ public class Utility {
         return null;
     }
 
+
+    public static <T> T getFieldValue(Object obj, String fieldName) {
+        Field field = Utility.findUnderlying(obj.getClass(), fieldName);
+        T result = null;
+        if (field != null) {
+            boolean origin = field.isAccessible();
+            field.setAccessible(true);
+            try {
+                result = (T) field.get(obj);
+            } catch (Throwable e) {
+            }
+            field.setAccessible(origin);
+        }
+        return result;
+    }
+
     public static void setFieldValue(Object obj, String fieldName, Object value) {
         Field field = Utility.findUnderlying(obj.getClass(), fieldName);
         setFieldValue(obj, field, value);
