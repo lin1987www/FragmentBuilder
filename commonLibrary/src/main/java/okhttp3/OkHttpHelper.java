@@ -20,28 +20,11 @@ public class OkHttpHelper {
             synchronized (OkHttpHelper.class) {
                 if (mHttpLogging == null) {
                     mHttpLogging = new HttpLoggingInterceptor();
-                    mHttpLogging.setLevel(HttpLoggingInterceptor.Level.BASIC);
+                    mHttpLogging.setLevel(HttpLoggingInterceptor.Level.BODY);
                 }
             }
         }
         return mHttpLogging;
-    }
-
-    private static OkHttpClient mHttpDnsClient;
-
-    public static OkHttpClient getHttpDnsClient() {
-        if (mHttpDnsClient == null) {
-            synchronized (OkHttpHelper.class) {
-                if (mHttpDnsClient == null) {
-                    OkHttpClient.Builder builder = new OkHttpClient.Builder();
-                    if (Utility.DEBUG) {
-                        builder.addInterceptor(getHttpLogging());
-                    }
-                    mHttpDnsClient = builder.build();
-                }
-            }
-        }
-        return mHttpDnsClient;
     }
 
     public static Dns HTTP_DNS = new Dns() {
@@ -76,6 +59,24 @@ public class OkHttpHelper {
             return addressList;
         }
     };
+
+    private static OkHttpClient mHttpDnsClient;
+
+    public static OkHttpClient getHttpDnsClient() {
+        if (mHttpDnsClient == null) {
+            synchronized (OkHttpHelper.class) {
+                if (mHttpDnsClient == null) {
+                    OkHttpClient.Builder builder = new OkHttpClient.Builder();
+                    builder.dns(HTTP_DNS);
+                    if (Utility.DEBUG) {
+                        builder.addInterceptor(getHttpLogging());
+                    }
+                    mHttpDnsClient = builder.build();
+                }
+            }
+        }
+        return mHttpDnsClient;
+    }
 
     private static OkHttpClient.Builder mOkHttpClientBuilder;
 

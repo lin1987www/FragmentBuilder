@@ -185,6 +185,9 @@ public *** get*();
     <init>(...);
 }
 
+# 有用到內部屬性名稱
+-keep class android.support.v4.widget.SwipeRefreshLayout{*;}
+
 -keep class * {
 @com.fasterxml.jackson.annotation.** *;
 }
