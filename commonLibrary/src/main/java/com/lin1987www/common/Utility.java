@@ -36,6 +36,8 @@ public class Utility {
 
     public static final String ECONNRESET = "recvfrom failed: ECONNRESET (Connection reset by peer)";
 
+    public static final String UNEXPECTED_END_OF_STREAM = "unexpected end of stream";
+
     static {
         mDateFormat = new SimpleDateFormat("yyyy/MM/dd a hh:mm");
         mDateFormat.setTimeZone(TimeZone.getDefault());

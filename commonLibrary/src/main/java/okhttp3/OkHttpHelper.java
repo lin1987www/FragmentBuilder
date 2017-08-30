@@ -6,6 +6,7 @@ import com.lin1987www.http.cookie.CookieKeeper;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.logging.HttpLoggingInterceptor;
 
@@ -60,6 +61,16 @@ public class OkHttpHelper {
         }
     };
 
+    private static ConnectionPool mConnectionPool;
+
+    public static ConnectionPool getConnectionPool() {
+        if (mConnectionPool == null) {
+            // 使用很短時間的保持 keep-alive 幾乎等於使用 Connection: close
+            mConnectionPool = new ConnectionPool(5, 1, TimeUnit.NANOSECONDS);
+        }
+        return mConnectionPool;
+    }
+
     private static OkHttpClient mHttpDnsClient;
 
     public static OkHttpClient getHttpDnsClient() {
@@ -85,10 +96,16 @@ public class OkHttpHelper {
             synchronized (OkHttpHelper.class) {
                 if (mOkHttpClientBuilder == null) {
                     mOkHttpClientBuilder = new OkHttpClient.Builder();
+                    // mOkHttpClientBuilder.connectionPool(getConnectionPool());
                     mOkHttpClientBuilder.cookieJar(CookieKeeper.getInstance().cookieJar);
                     mOkHttpClientBuilder.retryOnConnectionFailure(true);
                     mOkHttpClientBuilder.dns(HTTP_DNS);
-                    mOkHttpClientBuilder.addInterceptor(new ConnectionResetByPeerInterceptor());
+                    ConnectionCloseInterceptor cci = new ConnectionCloseInterceptor();
+                    mOkHttpClientBuilder.addNetworkInterceptor(cci);
+                    mOkHttpClientBuilder.addInterceptor(cci);
+                    ConnectionResetByPeerInterceptor cr = new ConnectionResetByPeerInterceptor();
+                    mOkHttpClientBuilder.addNetworkInterceptor(cr);
+                    mOkHttpClientBuilder.addInterceptor(cr);
                     if (Utility.DEBUG) {
                         mOkHttpClientBuilder.addInterceptor(getHttpLogging());
                     }
