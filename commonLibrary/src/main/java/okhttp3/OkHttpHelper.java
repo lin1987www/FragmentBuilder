@@ -96,7 +96,7 @@ public class OkHttpHelper {
             synchronized (OkHttpHelper.class) {
                 if (mOkHttpClientBuilder == null) {
                     mOkHttpClientBuilder = new OkHttpClient.Builder();
-                    // mOkHttpClientBuilder.connectionPool(getConnectionPool());
+                    mOkHttpClientBuilder.connectionPool(getConnectionPool());
                     mOkHttpClientBuilder.cookieJar(CookieKeeper.getInstance().cookieJar);
                     mOkHttpClientBuilder.retryOnConnectionFailure(true);
                     mOkHttpClientBuilder.dns(HTTP_DNS);
