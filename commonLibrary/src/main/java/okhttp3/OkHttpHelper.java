@@ -65,8 +65,8 @@ public class OkHttpHelper {
 
     public static ConnectionPool getConnectionPool() {
         if (mConnectionPool == null) {
-            // 使用很短時間的保持 keep-alive 幾乎等於使用 Connection: close
-            mConnectionPool = new ConnectionPool(5, 1, TimeUnit.NANOSECONDS);
+            // 在短時間內檢查　需要釋放的連線
+            mConnectionPool = new ConnectionPool(1, 1, TimeUnit.NANOSECONDS);
         }
         return mConnectionPool;
     }

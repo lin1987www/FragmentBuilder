@@ -1,12 +1,15 @@
 package okhttp3;
 
+import android.util.Log;
+
 import com.lin1987www.common.Utility;
 
 import java.io.IOException;
 
-import okio.BufferedSource;
-
 public class ConnectionResetByPeerInterceptor implements Interceptor {
+
+    public final static String TAG = ConnectionResetByPeerInterceptor.class.getSimpleName();
+
     @Override
     public Response intercept(Chain chain) throws IOException {
         // Ref:
@@ -30,11 +33,16 @@ public class ConnectionResetByPeerInterceptor implements Interceptor {
             } catch (Throwable throwable) {
                 ex = Utility.getNestedError(throwable);
                 if (Utility.ECONNRESET.equals(ex.getMessage()) ||
-                        Utility.UNEXPECTED_END_OF_STREAM.equals(ex.getMessage())
+                        Utility.UNEXPECTED_END_OF_STREAM.equals(ex.getMessage()) ||
+                        ex instanceof java.io.EOFException
                         ) {
                     request = request.newBuilder().build();
                     continue;
                 } else {
+                    if (Utility.DEBUG) {
+                        ex.printStackTrace();
+                        Log.w(TAG, ex.toString());
+                    }
                     break;
                 }
             }
