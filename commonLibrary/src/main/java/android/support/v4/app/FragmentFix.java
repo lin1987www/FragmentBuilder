@@ -1,5 +1,6 @@
 package android.support.v4.app;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
@@ -11,7 +12,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
+import android.view.animation.ScaleAnimation;
 
 import com.lin1987www.common.Utility;
 
@@ -105,16 +108,16 @@ public class FragmentFix extends Fragment {
                 if (styleIndex >= 0) {
                     switch (styleIndex) {
                         case FragmentManagerImpl.ANIM_STYLE_OPEN_ENTER:
-                            anim = FragmentManagerImpl.makeOpenCloseAnimation(getActivity(), 1.125f, 1.0f, 0, 1);
+                            anim = makeOpenCloseAnimation(getActivity(), 1.125f, 1.0f, 0, 1);
                             break;
                         case FragmentManagerImpl.ANIM_STYLE_OPEN_EXIT:
-                            anim = FragmentManagerImpl.makeOpenCloseAnimation(getActivity(), 1.0f, .975f, 1, 0);
+                            anim = makeOpenCloseAnimation(getActivity(), 1.0f, .975f, 1, 0);
                             break;
                         case FragmentManagerImpl.ANIM_STYLE_CLOSE_ENTER:
-                            anim = FragmentManagerImpl.makeOpenCloseAnimation(getActivity(), .975f, 1.0f, 0, 1);
+                            anim = makeOpenCloseAnimation(getActivity(), .975f, 1.0f, 0, 1);
                             break;
                         case FragmentManagerImpl.ANIM_STYLE_CLOSE_EXIT:
-                            anim = FragmentManagerImpl.makeOpenCloseAnimation(getActivity(), 1.0f, 1.075f, 1, 0);
+                            anim = makeOpenCloseAnimation(getActivity(), 1.0f, 1.075f, 1, 0);
                             break;
                         case FragmentManagerImpl.ANIM_STYLE_FADE_ENTER:
                             //anim = FragmentManagerImpl.makeFadeAnimation(getActivity(), 0, 1);
@@ -158,6 +161,20 @@ public class FragmentFix extends Fragment {
             anim.setAnimationListener(mFragmentAnimListener);
         }
         return anim;
+    }
+
+    static AnimationSet makeOpenCloseAnimation(Context context, float startScale, float endScale, float startAlpha, float endAlpha) {
+        AnimationSet set = new AnimationSet(false);
+        ScaleAnimation scale = new ScaleAnimation(startScale, endScale, startScale, endScale,
+                Animation.RELATIVE_TO_SELF, .5f, Animation.RELATIVE_TO_SELF, .5f);
+        scale.setInterpolator(FragmentManagerImpl.DECELERATE_QUINT);
+        scale.setDuration(FragmentManagerImpl.ANIM_DUR);
+        set.addAnimation(scale);
+        AlphaAnimation alpha = new AlphaAnimation(startAlpha, endAlpha);
+        alpha.setInterpolator(FragmentManagerImpl.DECELERATE_CUBIC);
+        alpha.setDuration(FragmentManagerImpl.ANIM_DUR);
+        set.addAnimation(alpha);
+        return set;
     }
 
     @Override

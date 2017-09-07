@@ -148,7 +148,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             // http://stackoverflow.com/questions/24355838/cant-change-tag-of-fragment-error-trying-to-use-a-pageradapter-for-switching
             if ((fs.mTag != null && fs.mTag.equals(mFragmentTags.get(position))) ||
                     (fs.mTag == null && mFragmentTags.get(position) == null)) {
-                fragment = fs.instantiate(FragmentUtils.getFragmentHostCallback(fragmentManager), getParentFragment(), FragmentUtils.getFragmentManagerNonConfig(fragmentManager));
+                fragment = fs.instantiate(FragmentUtils.getFragmentHostCallback(fragmentManager), FragmentUtils.getFragmentContainer(fragmentManager), getParentFragment(), FragmentUtils.getFragmentManagerNonConfig(fragmentManager));
                 // Fix bug
                 // http://stackoverflow.com/questions/11381470/classnotfoundexception-when-unmarshalling-android-support-v4-view-viewpagersav
                 if (fragment.mSavedFragmentState != null) {
@@ -362,11 +362,11 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             for (int i = 0; i < mFragmentManager.mAdded.size(); i++) {
                 Fragment f = mFragmentManager.mAdded.get(i);
                 if (f != null) {
-                    if (!mFragmentManager.mActive.contains(f)) {
+                    if (mFragmentManager.mActive.indexOfValue(f) < 0) {
                         if (f.getUserVisibleHint() && !f.isResumed()) {
                             if (!FragmentUtils.isStateLoss(f.getFragmentManager())) {
                                 mFragmentManager.beginTransaction().detach(f).attach(f).commit();
-                                Log.e(TAG, String.format("fix didn't show up %s, %s, mIndex:%s, contains:%s", f, i, f.mIndex, mFragmentManager.mActive.contains(f)));
+                                Log.e(TAG, String.format("fix didn't show up %s, %s, mIndex:%s, contains:%s", f, i, f.mIndex, (mFragmentManager.mActive.indexOfValue(f) > -1)));
                             }
                         }
                     }
@@ -375,6 +375,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
         }
     }
 
+    /*
     private void fixActiveSizeDidNotEnough() {
         if (mFragmentManager.mAdded != null) {
             for (int i = 0; i < mFragmentManager.mAdded.size(); i++) {
@@ -391,6 +392,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             }
         }
     }
+    */
 
     public static void fixActiveFragment(FragmentManager fragmentManager, Fragment fragment) {
         FragmentManagerImpl fm = (FragmentManagerImpl) fragmentManager;
@@ -421,7 +423,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
                     }
                 }
             }
-            fm.mActive.set(index, fragment);
+            fm.mActive.put(index, fragment);
             if (willRemoveFrag != null) {
                 // 2016.01.26 Fix bug mAdded not match
                 // 瀏覽所有Fragment後，轉至後瀏覽其他Fragment會產生衝突
@@ -480,7 +482,7 @@ public class FragmentStatePagerAdapterFix extends PagerAdapter {
             for (int i = 0; i < mFragmentManager.mActive.size(); i++) {
                 Fragment f = mFragmentManager.mActive.get(i);
                 if (f != null) {
-                    Log.d(TAG, String.format("%s, %s, mIndex:%s, contains:%s", f, i, f.mIndex, mFragmentManager.mActive.contains(f)));
+                    Log.d(TAG, String.format("%s, %s, mIndex:%s, contains:%s", f, i, f.mIndex, (mFragmentManager.mActive.indexOfValue(f) > -1)));
                 }
             }
         }

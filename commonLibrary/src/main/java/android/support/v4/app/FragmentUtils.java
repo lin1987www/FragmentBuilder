@@ -67,6 +67,11 @@ public class FragmentUtils {
         return fm.mHost;
     }
 
+    public static FragmentContainer getFragmentContainer(FragmentManager fragmentManager) {
+        FragmentManagerImpl fm = (FragmentManagerImpl) fragmentManager;
+        return fm.mContainer;
+    }
+
     public static FragmentManagerNonConfig getFragmentManagerNonConfig(FragmentManager fragmentManager) {
         FragmentManagerImpl fm = (FragmentManagerImpl) fragmentManager;
         return fm.retainNonConfig();

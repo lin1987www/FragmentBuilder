@@ -1,7 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.lin1987www.common"
-    android:versionCode="32"
-    android:versionName="25.3.1.18">
+    android:versionCode="33"
+    android:versionName="26.0.2.1">
 
-    <uses-sdk android:minSdkVersion="10" />
+
+    <uses-sdk
+        android:minSdkVersion="14"
+        />
+
 </manifest>
