@@ -368,9 +368,10 @@ public class FragmentActivityFix extends FragmentActivity {
             int versionCode = pInfo.versionCode;
             int vc = bundle.getInt(KEY_versionCode, 0);
             if (vc == 0 || vc != versionCode) {
-                return null;
+                bundle = null;
             }
         } catch (Throwable e) {
+            bundle = null;
         }
         return bundle;
     }

@@ -1,9 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.lin1987www.common"
-    android:versionCode="34"
-    android:versionName="26.0.2.2">
-
+    android:versionCode="35"
+    android:versionName="26.0.2.3">
 
     <uses-sdk
         android:minSdkVersion="14"
