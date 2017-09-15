@@ -54,6 +54,10 @@ public class NumberWatcher implements TextWatcher {
             }
         }
 
+        if (text != null && text.trim().equals("-")) {
+            return;
+        }
+
         double value = defaultValue;
         try {
             value = Double.parseDouble(text);
@@ -82,8 +86,13 @@ public class NumberWatcher implements TextWatcher {
     }
 
     private String shortNumberString(double value) {
-        long valueLong = Double.valueOf(max).longValue();
-        String shortNumberString = String.valueOf(Math.ceil(valueLong) == value ? valueLong : value);
+        long valueLong = Double.valueOf(value).longValue();
+        String shortNumberString;
+        if (Math.ceil(valueLong) == value) {
+            shortNumberString = String.valueOf(valueLong);
+        } else {
+            shortNumberString = String.valueOf(value);
+        }
         shortNumberString = toDecimalPlaces(shortNumberString);
         return shortNumberString;
     }
