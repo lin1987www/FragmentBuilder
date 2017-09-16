@@ -48,7 +48,7 @@ public class NumberWatcher implements TextWatcher, InputFilter, Runnable {
 
     }
 
-    public boolean IsInRange() {
+    public boolean isInRange() {
         boolean IsInAGivenRange = false;
         if (decimalPlacesPattern != null) {
             try {
@@ -58,6 +58,10 @@ public class NumberWatcher implements TextWatcher, InputFilter, Runnable {
             }
         }
         return IsInAGivenRange;
+    }
+
+    public String getTextToString() {
+        return mEditText.getText().toString();
     }
 
     @Override
