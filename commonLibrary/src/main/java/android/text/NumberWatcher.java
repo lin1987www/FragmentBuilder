@@ -64,6 +64,10 @@ public class NumberWatcher implements TextWatcher, InputFilter, Runnable {
         return mEditText.getText().toString();
     }
 
+    public void setNumber(double number) {
+        mEditText.setText(shortNumberString(number));
+    }
+
     @Override
     public void afterTextChanged(Editable editable) {
         if (decimalPlacesPattern == null) {
