@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/windowBackground"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary">
+
+        <android.support.v4.widget.BackButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true" />
+
+        <TextView
+            android:id="@+id/headerTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:textAppearance="?android:textAppearanceLarge"
+            android:textColor="@color/textColorPrimary" />
+
+        <Button
+            android:id="@+id/doneButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginBottom="@dimen/gap_medium"
+            android:layout_marginRight="@dimen/gap_medium"
+            android:layout_marginTop="@dimen/gap_medium"
+            android:ems="5"
+            android:text="@string/done"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:textColor="@android:color/white" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerViewLeft"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:fadeScrollbars="true"
+            android:scrollbars="vertical" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerViewRight"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:fadeScrollbars="true"
+            android:scrollbars="vertical" />
+    </LinearLayout>
+
+    <android.view.View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorPrimaryDark" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/resetButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/gap_medium"
+            android:layout_marginLeft="@dimen/gap_medium"
+            android:layout_marginRight="@dimen/gap_medium"
+            android:layout_marginTop="@dimen/gap_medium"
+            android:layout_weight="1"
+            android:paddingBottom="@dimen/gap_medium"
+            android:paddingLeft="@dimen/gap_xl"
+            android:paddingRight="@dimen/gap_xl"
+            android:paddingTop="@dimen/gap_medium"
+            android:text="@string/reset" />
+
+        <Button
+            android:id="@+id/okButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/gap_medium"
+            android:layout_marginRight="@dimen/gap_medium"
+            android:layout_marginTop="@dimen/gap_medium"
+            android:layout_weight="2"
+            android:paddingBottom="@dimen/gap_medium"
+            android:paddingLeft="@dimen/gap_xl"
+            android:paddingRight="@dimen/gap_xl"
+            android:paddingTop="@dimen/gap_medium"
+            android:text="@string/confirm" />
+    </LinearLayout>
+</LinearLayout>

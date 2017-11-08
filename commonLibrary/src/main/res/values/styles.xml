@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme. -->
+    <style name="BaseTheme" parent="Theme.AppCompat.Light">
+        <!-- 沒有 Action Bar -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <!-- 進入全螢幕沒有狀態列 -->
+        <item name="android:windowFullscreen">?android:windowFullscreen</item>
+        <!-- 視窗內容覆蓋 -->
+        <item name="android:windowContentOverlay">@null</item>
+
+        <!-- 背景底色 -->
+        <item name="android:windowBackground">@color/windowBackground</item>
+        <!-- 元件預設背景顏色 -->
+        <item name="android:colorBackground">@color/colorBackground</item>
+
+        <!-- Customize your theme here. -->
+        <!--
+
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorAccent">@color/colorAccent</item>
+
+        <item name="android:textColorPrimary">@color/textColorPrimary</item>
+        <item name="android:textColorSecondary">@color/textColorSecondary</item>
+        <item name="android:textColorTertiary">@color/textColorTertiary</item>
+
+        <item name="android:textColorHint">@color/md_grey_700</item>
+        <item name="android:textColorPrimaryDisableOnly">@color/md_grey_700</item>
+        -->
+    </style>
+</resources>

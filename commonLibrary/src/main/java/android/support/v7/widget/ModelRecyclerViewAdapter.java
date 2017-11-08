@@ -202,14 +202,23 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
     }
 
     public String getSaveStateKey() {
-        return String.format("%s_%s", KEY_ModelRecyclerViewAdapter, getClass().getName());
+        return getSaveStateKey("");
+    }
+
+    public String getSaveStateKey(String name) {
+        return String.format("%s_%s_%s", KEY_ModelRecyclerViewAdapter, getClass().getName(), name);
     }
 
     /**
-     *  After saveState, RecyclerView adapter will be set null.
+     * After saveState, RecyclerView adapter will be set null.
+     *
      * @param outState
      */
     public void saveState(Bundle outState) {
+        saveState(outState, getSaveStateKey(""));
+    }
+
+    public void saveState(Bundle outState, String key) {
         if (getPageArrayList().getList().size() > 0) {
             Bundle bundle = new Bundle();
             bundle.putParcelable(KEY_page, getPageArrayList());
@@ -218,22 +227,25 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
             bundle.putBundle(KEY_itemsBundle, mItemsBundle);
             recyclerViewHolder.saveState(bundle);
             //
-            outState.putBundle(getSaveStateKey(), bundle);
+            outState.putBundle(key, bundle);
         }
     }
 
     public void restoreState(Bundle savedInstanceState) {
+        restoreState(savedInstanceState, getSaveStateKey(""));
+    }
+
+    public void restoreState(Bundle savedInstanceState, String key) {
         // 當在正在入時，離開了Fragment後，載入任務被取消，返回但因為 adapter 依然存在，因此在等待載入已被取消的任務
         setLoading(false);
         if (savedInstanceState == null) {
             return;
         }
-        if (!savedInstanceState.containsKey(getSaveStateKey())) {
+        if (!savedInstanceState.containsKey(key)) {
             return;
         }
         try {
-            Bundle bundle = savedInstanceState.getBundle(getSaveStateKey());
-            // setLoading(false);
+            Bundle bundle = savedInstanceState.getBundle(key);
             mPageArrayList = bundle.getParcelable(KEY_page);
             mSelectedAdapterPositions = bundle.getIntegerArrayList(KEY_selectedPositions);
             setViewMode(covertViewMode(bundle.getInt(KEY_viewMode)));
@@ -242,6 +254,19 @@ public abstract class ModelRecyclerViewAdapter<T extends Parcelable> extends Rec
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             clear();
+        }
+    }
+
+    public void removeState(Bundle savedInstanceState) {
+        removeState(savedInstanceState, getSaveStateKey(""));
+    }
+
+    public void removeState(Bundle savedInstanceState, String key) {
+        if (savedInstanceState == null) {
+            return;
+        }
+        if (savedInstanceState.containsKey(key)) {
+            savedInstanceState.remove(key);
         }
     }
 }

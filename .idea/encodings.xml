@@ -19,6 +19,10 @@
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/zoom_in.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/zoom_out.xml" charset="x-windows-950" />
     <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/anim/zoom_out.xml" charset="x-windows-950" />
+    <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/layout/back_button.xml" charset="x-windows-950" />
+    <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/layout/back_button.xml" charset="x-windows-950" />
+    <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/mipmap-hdpi/icon_back.png" charset="x-windows-950" />
+    <file url="file://$PROJECT_DIR$/commonLibrary/src/main/res/mipmap-hdpi/icon_back.png" charset="x-windows-950" />
     <file url="PROJECT" charset="UTF-8" />
   </component>
 </project>

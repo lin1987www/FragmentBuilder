@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_selector_item"
+    android:background="@drawable/highlight"
     android:minHeight="@dimen/min_height_button"
     android:orientation="horizontal">
 

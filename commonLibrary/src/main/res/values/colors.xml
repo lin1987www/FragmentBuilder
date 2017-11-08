@@ -6,9 +6,13 @@
     <color name="colorAccent">#607D8B</color>
 
     <color name="windowBackground">#F1F1F1</color>
+    <color name="colorBackground">#00000000</color>
 
     <color name="textColorPrimary">#212121</color>
     <color name="textColorSecondary">#727272</color>
     <color name="textColorTertiary">#B6B6B6</color>
 
+    <color name="highlight_blue">#6633B5E5</color>
+    <color name="highlight_gray">#66888888</color>
+    <color name="highlight_orange">#66FFBD3C</color>
 </resources>

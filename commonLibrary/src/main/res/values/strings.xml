@@ -1,3 +1,7 @@
 <resources>
     <string name="app_msg_loading">Loading</string>
+
+    <string name="done">done</string>
+    <string name="reset">reset</string>
+    <string name="confirm">confirm</string>
 </resources>

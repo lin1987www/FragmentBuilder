@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ImageButton xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/backButton"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:background="@drawable/highlight"
+    android:focusable="false"
+    android:focusableInTouchMode="false"
+    android:onClick="onBackPressed"
+    android:padding="@dimen/gap_large"
+    android:src="@mipmap/icon_back" />

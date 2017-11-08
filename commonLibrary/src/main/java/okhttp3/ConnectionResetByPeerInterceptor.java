@@ -6,6 +6,8 @@ import com.lin1987www.common.Utility;
 
 import java.io.IOException;
 
+import okhttp3.internal.http.RetryAndFollowUpInterceptor;
+
 public class ConnectionResetByPeerInterceptor implements Interceptor {
 
     public final static String TAG = ConnectionResetByPeerInterceptor.class.getSimpleName();

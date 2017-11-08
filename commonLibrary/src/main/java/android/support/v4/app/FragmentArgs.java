@@ -63,26 +63,26 @@ public class FragmentArgs {
         bundle.putBoolean(KEY_consumeReady, true);
     }
 
-    String getSaveStateKey(View view) {
+    public String getSaveStateKey(View view) {
         if (view.getId() == View.NO_ID) {
             throw new RuntimeException(String.format("View must set a id. %s", view));
         }
         return String.format("%s", view.getId());
     }
 
-    String getSaveStateKey(Fragment fragment) {
+    public String getSaveStateKey(Fragment fragment) {
         return fragment.getClass().getName();
     }
 
     public void saveViewState(Fragment fragment) {
-        saveViewState(getSaveStateKey(fragment), fragment.getView());
+        saveViewState(fragment.getView(), getSaveStateKey(fragment));
     }
 
     public void saveViewState(View view) {
-        saveViewState(getSaveStateKey(view), view);
+        saveViewState(view, getSaveStateKey(view));
     }
 
-    public void saveViewState(String key, View view) {
+    public void saveViewState(View view, String key) {
         Bundle viewStateBundle = bundle.getBundle(KEY_saveViewState);
         if (viewStateBundle == null) {
             viewStateBundle = new Bundle();
@@ -94,14 +94,14 @@ public class FragmentArgs {
     }
 
     public void restoreViewState(Fragment fragment) {
-        restoreViewState(getSaveStateKey(fragment), fragment.getView());
+        restoreViewState(fragment.getView(), getSaveStateKey(fragment));
     }
 
     public void restoreViewState(View view) {
-        restoreViewState(getSaveStateKey(view), view);
+        restoreViewState(view, getSaveStateKey(view));
     }
 
-    public void restoreViewState(String key, View view) {
+    public void restoreViewState(View view, String key) {
         if (bundle.containsKey(KEY_saveViewState)) {
             Bundle viewStateBundle = bundle.getBundle(KEY_saveViewState);
             if (viewStateBundle != null) {
@@ -110,6 +110,25 @@ public class FragmentArgs {
                     if (container != null) {
                         view.restoreHierarchyState(container);
                     }
+                }
+            }
+        }
+    }
+
+    public void removeViewState(Fragment fragment) {
+        removeViewState(getSaveStateKey(fragment));
+    }
+
+    public void removeViewState(View view) {
+        removeViewState(getSaveStateKey(view));
+    }
+
+    public void removeViewState(String key) {
+        if (bundle.containsKey(KEY_saveViewState)) {
+            Bundle viewStateBundle = bundle.getBundle(KEY_saveViewState);
+            if (viewStateBundle != null) {
+                if (viewStateBundle.containsKey(key)) {
+                    viewStateBundle.remove(key);
                 }
             }
         }
