@@ -34,6 +34,7 @@ public class FragmentActivityFix extends FragmentActivity {
     public final static String TAG = FragmentActivityFix.class.getSimpleName();
     public final static String KEY_startActivityFragContentPath = "KEY_startActivityFragContentPath";
     public final static String KEY_versionCode = "KEY_versionCode";
+    public final static String KEY_versionName = "KEY_versionName";
     protected final String KEY_savedInstanceState = "KEY_savedInstanceState_" + getClass().getSimpleName();
     protected final String FORMAT = String.format("%s %s", toString(), "%s");
 
@@ -345,6 +346,8 @@ public class FragmentActivityFix extends FragmentActivity {
             PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
             int versionCode = pInfo.versionCode;
             in.putInt(KEY_versionCode, versionCode);
+            String versionName = pInfo.versionName;
+            in.putString(KEY_versionName, versionName);
         } catch (Throwable e) {
         }
         String serialized = serializeBundle(in);
@@ -367,7 +370,9 @@ public class FragmentActivityFix extends FragmentActivity {
             PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
             int versionCode = pInfo.versionCode;
             int vc = bundle.getInt(KEY_versionCode, 0);
-            if (vc == 0 || vc != versionCode) {
+            String versionName = pInfo.versionName;
+            String vn = bundle.getString(KEY_versionName, "");
+            if (vc == 0 || vc != versionCode || !versionName.equals(vn)) {
                 bundle = null;
             }
         } catch (Throwable e) {
