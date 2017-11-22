@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.lin1987www.common"
     android:versionCode="41"
-    android:versionName="26.0.2.10">
+    android:versionName="26.1.0.1">
 
     <uses-sdk
         android:minSdkVersion="14"
